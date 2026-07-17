@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     "accounts",
     "campaigns",
     "dashboard",
+    "characters",
+    "inventory",
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,9 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+MAX_CHARACTER_LEVEL = env.int("MAX_CHARACTER_LEVEL", default=20)
+MAX_IMAGE_UPLOAD_SIZE = env.int("MAX_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
+MAX_FILE_UPLOAD_SIZE = env.int("MAX_FILE_UPLOAD_SIZE", default=10 * 1024 * 1024)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"

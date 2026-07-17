@@ -2,3 +2,4 @@ body { min-height: 100vh; }
 .campaign-cover { max-height: 26rem; object-fit: cover; }
 form p label { display: block; margin-bottom: .4rem; font-weight: 600; }
 form p input:not([type="checkbox"]), form p textarea, form p select { width: 100%; padding: .5rem .75rem; border: 1px solid #dee2e6; border-radius: .375rem; }
+.portrait{width:110px;height:110px;object-fit:cover;border-radius:.75rem}.inventory-image{width:100%;height:130px;object-fit:cover}.sheet-section{break-inside:avoid;border-bottom:1px solid #ddd;padding:.5rem 0}@media print{nav,.navbar,.btn,.modal{display:none!important}body{background:#fff!important}.card{box-shadow:none!important}}

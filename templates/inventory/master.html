@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="d-flex justify-content-between"><h1>Inventário de {{character.name}}</h1><button class="btn btn-primary" hx-get="{% url 'inventory:add' character.pk %}" hx-target="#modal-content">Adicionar item</button></div>{% include 'inventory/partials/item_list.html' with is_master=True %}{% endblock %}
