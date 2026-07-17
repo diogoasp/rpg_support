@@ -6,3 +6,8 @@ class SessionRecord(models.Model):
  is_published=models.BooleanField('publicado',default=False); published_at=models.DateTimeField('publicado em',null=True,blank=True); created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
  class Meta: ordering=('-session_date','-session_number'); constraints=[models.UniqueConstraint(fields=['campaign','session_number'],name='unique_session_number_per_campaign')]; indexes=[models.Index(fields=['campaign','is_published','session_date']),models.Index(fields=['campaign','session_number'])]
  def __str__(self): return f'Sessão {self.session_number}: {self.title}'
+ def save(self,*args,**kwargs):
+  if self.campaign_id and type(self).objects.filter(campaign_id=self.campaign_id,session_number=self.session_number).exclude(pk=self.pk).exists():
+   from django.db import IntegrityError
+   raise IntegrityError('unique_session_number_per_campaign')
+  return super().save(*args,**kwargs)

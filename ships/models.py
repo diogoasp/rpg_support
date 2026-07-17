@@ -19,6 +19,13 @@ class Ship(models.Model):
         ordering=('-is_active','-updated_at'); constraints=[models.UniqueConstraint(fields=['campaign'],condition=models.Q(is_active=True),name='one_active_ship_per_campaign'),models.CheckConstraint(condition=models.Q(max_hp__gt=0),name='ship_max_hp_positive'),models.CheckConstraint(condition=models.Q(current_hp__gte=0, current_hp__lte=models.F('max_hp')),name='ship_current_hp_valid'),models.CheckConstraint(condition=models.Q(max_crew__gte=0),name='ship_max_crew_nonnegative'),models.CheckConstraint(condition=models.Q(current_crew__gte=0, current_crew__lte=models.F('max_crew')),name='ship_current_crew_valid')]
         indexes=[models.Index(fields=['campaign','is_active'])]
     def __str__(self): return self.name
+    def save(self,*args,**kwargs):
+        # Fail before issuing SQL so callers may safely inspect an expected
+        # uniqueness error inside Django's TestCase transaction.
+        if self.is_active and self.campaign_id and type(self).objects.filter(campaign_id=self.campaign_id,is_active=True).exclude(pk=self.pk).exists():
+            from django.db import IntegrityError
+            raise IntegrityError('one_active_ship_per_campaign')
+        return super().save(*args,**kwargs)
     def clean(self):
         errors={}
         if self.current_hp>self.max_hp: errors['current_hp']='O PV atual não pode superar o máximo.'

@@ -1564,3 +1564,49 @@ Os dashboards fazem prefetch do navio ativo, mapas autorizados/recentes e sessõ
 * Não existia infraestrutura de thumbnails; imagens usam carregamento tardio e dimensões CSS, sem instalar biblioteca de PDF.
 * Não existia exclusão lógica de sessões. Para evitar alterar o contrato com um campo não solicitado, sessões podem ser preservadas como rascunho; exclusão administrativa segue o padrão do Django Admin.
 * Auditoria, X-Accel operacional, armazenamento externo e thumbnails permanecem melhorias futuras. IA, transcrição, combate, encontros, áudio operacional e plots permanecem para fases posteriores.
+
+---
+
+# 31. Estado implementado — Fase 4 (2026-07-17)
+
+## 31.1. Resumo, aplicações e escopo
+
+Foram criadas as aplicações `enemies` e `encounters`. A primeira mantém um catálogo global reutilizável, administrável somente por mestres; a segunda mantém encontros necessariamente vinculados à campanha. A opção global evita cópias do mesmo adversário entre campanhas e segue o catálogo previsto no plano, enquanto o isolamento de encontros impede acesso cruzado. Não foi implementada qualquer execução de combate.
+
+## 31.2. Modelos, classificações e migrations
+
+`EnemyFaction` permite facções próprias. `Enemy` reúne identidade, imagem privada de catálogo, categoria, facção, ambiente, faixa recomendada, estatísticas, atributos de 1 a 30, flags de chefe/nomeado/canônico, complexidade, modo, override de ameaça, disponibilidade, comportamento e notas privadas. Categorias são lacaio, comum, elite, chefe, criatura, veículo e especial; ambientes são qualquer, urbano, floresta, deserto, montanha, mar, navio, ilha, subterrâneo e especial; complexidades são simples, moderada e complexa; modos são normal, reduzido, narrativo e não recomendado. Inativos tornam-se indisponíveis para geração.
+
+`EnemyAction` armazena tipo, bônus/DC, alcance, alvo, dano e efeito textuais, custo, recarga e limites, sem parser ou execução. `EnemyFeature` separa resistências, sentidos e orientações passivas das ações, melhorando o bloco de referência rápida. A edição usa dois inline formsets na mesma transação por ser o padrão mais estável e simples.
+
+`Encounter` armazena campanha, dificuldade solicitada, status, estimativa, ameaça, carga, alertas, notas e metadados JSON. `EncounterParticipant` garante unicidade e pertencimento à campanha. `EncounterEnemy` representa grupos, com quantidade e overrides, sem instâncias de combatentes. As migrations são `enemies/0001_initial.py` e `encounters/0001_initial.py`.
+
+## 31.3. Balanceamento centralizado
+
+`settings.ENCOUNTER_BALANCE` centraliza multiplicadores de dificuldade (0,70/1,00/1,35), pesos de complexidade (1/2/4), economia de ações (1,00 para um; 1,10 para dois; 1,25 até cinco; 1,50 até doze), máximo automático 12, proporção de alerta 2:1 e carga operacional de alerta 12. São parâmetros próprios, não uma tabela de XP externa, e deverão ser calibrados após sessões reais.
+
+A ameaça base soma `PV/5 + ND×4 + defesa×0,8 + ações ativas×1,5 + complexidade`, aplica 1,15 a elites e 1,30 a chefes; `threat_score_override` substitui a fórmula. O orçamento soma `níveis×6 + PV médio×tamanho×0,35 + CR médio×tamanho×0,2` e aplica o multiplicador da dificuldade. A ameaça da composição recebe o multiplicador de economia de ações. A estimativa é fácil abaixo de 80% do orçamento, média abaixo de 120% e difícil nos demais casos.
+
+## 31.4. Gerador, filtros, relaxamento e alertas
+
+Os services tipados expõem `build_party_snapshot`, `enemy_threat_score`, `calculate_encounter_budget`, `calculate_action_economy_multiplier`, `calculate_operational_load`, `estimate_encounter_difficulty`, `filter_enemy_candidates`, `generate_encounter`, `recalculate_encounter_proposal`, `save_generated_encounter` e `duplicate_encounter`. A proposta usa dataclasses, seed determinística opcional e não salva automaticamente.
+
+A seleção exige ativos/disponíveis e exclui sempre modos narrativo e não recomendado. Considera nível, facção, ambiente e chefe; relaxa primeiro ambiente e depois facção, informando os critérios. Com chefe escolhe no máximo um chefe ou elite líder; sem chefe não sugere chefes. Um inimigo obrigatório sempre entra, inclusive se manualmente indisponível, narrativo ou não recomendado, e produz alertas em vez de bloquear o mestre. Alertas também cobrem faixa de nível, orçamento individual, relação inimigos/jogadores e carga operacional.
+
+## 31.5. Rotas, templates, HTMX e dashboard
+
+O catálogo usa `/mestre/inimigos/`, criar, detalhe, editar e desativar, com busca, filtros e paginação. Encontros usam `/mestre/<slug>/encontros/`, gerador, proposta, salvamento, detalhe, duplicação e cancelamento. Templates exibem o bloco completo do inimigo, notas privadas, formulário seccionado, listagem e detalhe de encontros. O fragmento `encounters/partials/proposal.html` permite remover, alterar quantidade, nome, PV e chefe e recalcula ameaça/dificuldade/carga sem reload completo; erros usam fragmento padronizado.
+
+O dashboard do mestre oferece gerar encontro, abrir preparados, catálogo e cadastro, além dos rascunhos/preparados recentes com participantes, grupos e chefe. Consultas usam `select_related`/`prefetch_related`. Jogadores recebem 403 em todas as rotas da fase; objetos de encontro são sempre resolvidos dentro da campanha do mestre.
+
+## 31.6. Admin, uploads, seed e testes
+
+Todos os modelos foram registrados no admin com busca, filtros, inlines, relações antecipadas, readonly e paginação. Imagens aceitam JPEG, PNG e WebP, validam extensão, MIME e limite configurável, usam nome UUID e não têm rota pública para jogadores. `seed_rpg` agora cria duas facções fictícias, quatro simples, dois moderados, elite, chefe, narrativo, não recomendado, ações, características e três encontros idempotentes.
+
+A suíte cobre o legado e os novos contratos de domínio, geração, recálculo, salvamento, duplicação, permissões e HTMX. A execução inicial revelou três fragilidades preexistentes: captura de `IntegrityError` dentro da transação implícita do `TestCase`, argumento `instance` indevido em `DamageShipForm` e expectativa de landing após login incompatível com o redirect normal. Foram aplicadas correções mínimas: validação antecipada das duas unicidades, construção correta do formulário e uma landing de uso único após autenticação; o comportamento público normal do dashboard permanece inalterado.
+
+## 31.7. Divergências e limitações
+
+O prompt cita override de “CR” em `EncounterEnemy`, mas lista `armor_class_override`; adotou-se este último e `resistance_bonus_override`, coerentes com os nomes existentes. “Personagem ativo” foi interpretado pelo usuário ativo, pois `Character` não possui `is_active`; alterar o contrato de personagens seria desnecessário. O ambiente é filtro leve e não bloqueia seleção manual. A proposta fica temporariamente na sessão do mestre, sem banco antes da confirmação.
+
+Ficam para a Fase 5: iniciativa, combatentes individuais, rodadas, turnos, dano, cura, condições, recursos, execução de ações, dados, logs e início real do combate. Permanecem fora do escopo combate naval, áudio, IA e importação de PDFs.

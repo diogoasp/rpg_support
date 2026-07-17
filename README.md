@@ -1,4 +1,4 @@
-# Grand Line Companion — Fase 1
+# Grand Line Companion — Fase 4
 
 Fundação de um sistema Django para apoio presencial a campanhas de RPG. Esta fase inclui autenticação, usuários com papéis de mestre e jogador, campanhas, autorização no backend e dashboards separados.
 
@@ -55,3 +55,14 @@ Uploads são armazenados em `media/ships`, `media/maps` e `media/history`. Mapas
 | `MAX_DOCUMENT_UPLOAD_SIZE` | Limite de PDF em bytes (20 MiB) |
 | `MAX_AUDIO_UPLOAD_SIZE` | Limite de áudio em bytes (250 MiB) |
 | `PROTECTED_MEDIA_MODE` | `django` no desenvolvimento; reservado para integração com servidor web em produção |
+| `MAX_ENEMY_IMAGE_UPLOAD_SIZE` | Limite de imagens privadas do catálogo (5 MiB) |
+
+## Fase 4 — inimigos e encontros preparados
+
+O mestre dispõe de catálogo global reutilizável em `/mestre/inimigos/` e, no card de cada campanha, do gerador de encontros. O gerador considera participantes, dificuldade, quantidade, chefe, facção, ambiente e inimigo obrigatório; sua proposta é editável por HTMX e só é persistida após confirmação como rascunho ou preparada. A estimativa é deliberadamente orientativa e não inicia combate.
+
+Para criar/atualizar os dados fictícios idempotentes das Fases 1–4:
+
+```bash
+python manage.py seed_rpg
+```

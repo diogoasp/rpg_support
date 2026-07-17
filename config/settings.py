@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     "ships",
     "maps",
     "history",
+    "enemies",
+    "encounters",
 ]
 
 MIDDLEWARE = [
@@ -82,6 +84,15 @@ MAX_FILE_UPLOAD_SIZE = env.int("MAX_FILE_UPLOAD_SIZE", default=10 * 1024 * 1024)
 MAX_DOCUMENT_UPLOAD_SIZE = env.int("MAX_DOCUMENT_UPLOAD_SIZE", default=20 * 1024 * 1024)
 MAX_AUDIO_UPLOAD_SIZE = env.int("MAX_AUDIO_UPLOAD_SIZE", default=250 * 1024 * 1024)
 PROTECTED_MEDIA_MODE = env("PROTECTED_MEDIA_MODE", default="django")
+MAX_ENEMY_IMAGE_UPLOAD_SIZE = env.int("MAX_ENEMY_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
+ENCOUNTER_BALANCE = {
+    "difficulty_multipliers": {"easy": 0.7, "medium": 1.0, "hard": 1.35},
+    "complexity_weights": {"simple": 1, "moderate": 2, "complex": 4},
+    "action_economy_multipliers": ((1, 1.0), (2, 1.1), (5, 1.25), (12, 1.5)),
+    "max_generated_enemies": 12,
+    "action_economy_warning_ratio": 2,
+    "operational_load_warning": 12,
+}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
