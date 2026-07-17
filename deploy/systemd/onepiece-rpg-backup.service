@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup One Piece RPG
+[Service]
+Type=oneshot
+WorkingDirectory=/CAMINHO/DO/PROJETO
+ExecStart=/usr/bin/make backup

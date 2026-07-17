@@ -1,0 +1,46 @@
+services:
+  db:
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in production}
+    volumes: [${POSTGRES_DATA_DIR:-./data/postgres}:/var/lib/postgresql/data]
+    security_opt: [no-new-privileges:true]
+  web:
+    build: {target: production}
+    image: ${APP_IMAGE_NAME:-onepiece-rpg}:${APP_IMAGE_TAG:-latest}
+    command: /app/docker/django/start-production.sh
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required in production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in production}
+      DJANGO_DEBUG: "False"
+      MEDIA_ROOT: /app/protected_media
+      PROTECTED_MEDIA_ROOT: /app/protected_media
+      PROTECTED_MEDIA_MODE: x-accel
+      X_ACCEL_REDIRECT_ENABLED: "True"
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-False}
+      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+      SECURE_HSTS_INCLUDE_SUBDOMAINS: ${SECURE_HSTS_INCLUDE_SUBDOMAINS:-False}
+      SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD:-False}
+    volumes:
+      - static_data:/app/staticfiles
+      - ${MEDIA_DATA_DIR:-./data/media}:/app/media
+      - ${PROTECTED_MEDIA_DATA_DIR:-./data/protected_media}:/app/protected_media
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs: [/tmp:mode=1777,size=64m]
+  nginx:
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-80}:80"]
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/templates:/etc/nginx/templates:ro
+      - static_data:/srv/static:ro
+      - ${MEDIA_DATA_DIR:-./data/media}:/srv/media:ro
+      - ${PROTECTED_MEDIA_DATA_DIR:-./data/protected_media}:/srv/protected_media:ro
+      - ${CERTIFICATES_DIR:-./certificates}:/etc/nginx/certificates:ro
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]

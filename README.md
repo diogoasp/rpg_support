@@ -1,4 +1,4 @@
-# Grand Line Companion — Fase 6
+# Grand Line Companion — Fase 7
 
 Fundação de um sistema Django para apoio presencial a campanhas de RPG. Esta fase inclui autenticação, usuários com papéis de mestre e jogador, campanhas, autorização no backend e dashboards separados.
 
@@ -77,3 +77,27 @@ Encontros preparados agora podem ser iniciados no modo Livre (padrão), Ordem si
 A biblioteca privada em `/mestre/audios/` organiza músicas, ambientes, efeitos e falas por campanha. O painel inferior exclusivo do mestre mantém três canais locais independentes, favoritos, recentes, pausa, parada, volume, loop e fade durante atualizações HTMX. O dashboard prioriza confronto ativo e reúne atalhos de sessão para encontro, inventário, navio, mapas, histórico e áudio.
 
 Atalhos do player: `Espaço` pausa/retoma o canal ativo e `Ctrl+Shift+S` para todos os canais. Eles são ignorados dentro de campos de formulário. Por restrições dos navegadores, uma recarga completa não inicia nem retoma áudio automaticamente; preferências de volume e abertura do painel são restauradas localmente.
+
+## Fase 7 — execução por containers
+
+A operação suportada agora usa Docker Compose; Python e PostgreSQL no host deixaram de ser requisitos. Copie o exemplo de ambiente e nunca versione o `.env`:
+
+```bash
+cp .env.example .env
+make build
+make up
+make migrate
+make seed
+```
+
+Testes e verificações usam `make test` e `make check`. Para uma primeira subida de produção, configure segredos/domínio no `.env` da VPS e execute:
+
+```bash
+make prod-build
+make prod-up
+make prod-migrate
+make prod-collectstatic
+make prod-smoke
+```
+
+Atualizações normais usam `make deploy`; a opção recomendada na VPS é `make deploy-safe`, que cria backups antes. Consulte [OPERATIONS.md](OPERATIONS.md) para SSL, volumes, restauração, rollback e troubleshooting. O banco e o Gunicorn não possuem portas públicas em produção; somente o Nginx é publicado.
