@@ -1,0 +1,4 @@
+body { min-height: 100vh; }
+.campaign-cover { max-height: 26rem; object-fit: cover; }
+form p label { display: block; margin-bottom: .4rem; font-weight: 600; }
+form p input:not([type="checkbox"]), form p textarea, form p select { width: 100%; padding: .5rem .75rem; border: 1px solid #dee2e6; border-radius: .375rem; }
