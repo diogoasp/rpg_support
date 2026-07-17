@@ -1638,3 +1638,43 @@ Todas as views resolvem confronto e combatente dentro de campanha cujo mestre é
 ## 32.5. Testes e limitações deliberadas
 
 A suíte da fase cobre individualização, overrides, idempotência, referência exclusiva, faixas de estado, precedência manual, limites de dano/cura, zero ativo, desfazer, ordenação de iniciativa, encerramento/reabertura sem duplicação e autorização. Recursos de jogador são armazenados no snapshot quando selecionados, mas a interface deliberadamente não se torna controle obrigatório; PP/condições continuam sendo geridos na ficha existente. Reordenação visual por arrastar, consumo opcional de ações limitadas e auditoria ampla permanecem melhorias futuras.
+
+---
+
+# 33. Estado implementado — Fase 6 (2026-07-17)
+
+## 33.1. Biblioteca, domínio e uploads
+
+Foi criada a aplicação `audio_panel`. `AudioAsset` pertence obrigatoriamente à campanha, possui slug único nesse escopo, categorias e canais em escolhas estáveis, metadados de personagem/cena/tags, favorito, destaque, ativação lógica, volume de 0 a 1, loop, ordenação e métricas leves. A conversão visual para percentual fica na propriedade `volume_percent`; o player combina volume geral, do canal e do ativo. Índices compostos atendem biblioteca, favoritos, canal, destaque, recentes e uso sem duplicar o índice implícito da FK.
+
+Uploads aceitam MP3, OGG, M4A, WAV e WebM, validando extensão, MIME e o limite `MAX_AUDIO_UPLOAD_SIZE`, agora 100 MiB por padrão. O caminho usa UUID e isolamento em `audio/campaigns/<campaign_id>/`. Não há conversão, normalização, edição, upload pelo player ou integração externa.
+
+## 33.2. Autorização e mídia protegida
+
+Biblioteca, cadastro, edição, desativação, favoritos, registro e arquivo resolvem o objeto apenas entre campanhas do mestre autenticado. Jogadores, anônimos e mestres de outra campanha não obtêm arquivo nem metadados. O fallback de desenvolvimento usa `FileResponse`, mídia inline, `Accept-Ranges`, cache privado sem armazenamento e nunca recebe um caminho do cliente.
+
+Em produção, configure `PROTECTED_MEDIA_MODE=x-accel`, mantenha `MEDIA_ROOT` fora da raiz pública e crie no Nginx uma `location /_protected_media/ { internal; alias /caminho/para/media/; }`, ajustando `PROTECTED_MEDIA_ACCEL_PREFIX` se necessário. A aplicação então autoriza e entrega somente `X-Accel-Redirect`; o Nginx gerencia Range eficientemente.
+
+## 33.3. Player persistente e HTMX
+
+`AudioPanelController` mantém três elementos `Audio`: música, ambiente e efeito/fala. Cada canal toca somente um ativo; efeito não interrompe música ou ambiente. Nova música/ambiente substitui a anterior com transição curta. Há pausa/retomada, parada do canal, parada global, progresso, volume geral, loop padrão e fade cancelável. O fade restaura o volume calculado para a próxima execução.
+
+O componente fica fora das áreas trocadas por HTMX no layout-base do mestre e existe também no combate. Listeners recebem uma marca de inicialização e controles novos são ligados após `htmx:afterSwap`, sem recriar canais. `localStorage` guarda somente preferências de volume, painel recolhido e identificação conveniente do último ativo; URLs privadas e credenciais não são persistidas. Não há autoplay depois de recarga completa.
+
+Atalhos: Espaço pausa/retoma o canal ativo e Ctrl+Shift+S para tudo. Inputs, selects, textareas e editores ignoram atalhos. Escape permanece reservado ao comportamento nativo de modal/offcanvas do Bootstrap.
+
+## 33.4. Biblioteca, favoritos, recentes e dashboard
+
+A biblioteca pagina 24 itens, usa `preload=none` por não criar elementos de mídia até o clique, busca título/tags, filtra categoria/personagem/cena/favorito/atividade e ordena por título, criação ou uso. Favoritar troca somente o botão via HTMX. O registro de início é uma requisição tolerante a falha, incrementa contador atomicamente e atualiza uma única data; pausa e progresso não são registrados. Recentes derivam dessa data, logo cada ativo aparece uma vez.
+
+O dashboard prioriza confronto em andamento e apresenta ações rápidas para encontro, item, navio, mapa, áudio e sessão, com navio, preparados, favoritos de áudio e mapas em blocos compactos. O painel persistente disponibiliza favoritos e recentes em todas as páginas que estendem o layout do mestre, inclusive combate, inimigos, encontros, navio, mapas, história, inventário e fichas.
+
+## 33.5. Divergências e limites deliberados
+
+O projeto já possuía áudio opcional de registro histórico, mas ele representa a gravação da sessão e tem autorização/fluxo próprios; reutilizá-lo como ativo operacional misturaria contratos, portanto foi preservado. Não existia `ActivityLog`, assim criação, edição e desativação não inventam uma auditoria paralela nesta fase. A duração não é processada no servidor: o navegador a conhece somente depois do clique, evitando leitura/download inicial.
+
+O endpoint Django anuncia Range, mas o suporte de produção recomendado e documentado é o Nginx/X-Accel; implementar um servidor binário completo na aplicação duplicaria infraestrutura. Recargas completas inevitavelmente recriam elementos de áudio do navegador; atualizações HTMX não os destroem. O estado conveniente é restaurado sem autoplay, conforme restrições de segurança dos navegadores. Streaming a jogadores, sincronização entre navegadores, múltiplos efeitos simultâneos, playlists complexas, WebSockets, edição, IA e serviços externos permanecem fora do escopo.
+
+## 33.6. Testes
+
+A suíte cobre defaults e validação do modelo, slug por campanha, upload válido, extensão/MIME/tamanho/ausência, autorização de arquivo para mestre/jogador/anônimo/outro mestre, favorito HTMX, registro atômico, ordenação/limite/escopo de recentes e presença exclusiva do painel. Não havia infraestrutura JavaScript de testes; o módulo foi exportado como classe testável e os cenários manuais obrigatórios são: iniciar música, executar dano via HTMX, confirmar continuidade; abrir modal, confirmar continuidade; iniciar fala e confirmar música/ambiente; testar fade e parada global.

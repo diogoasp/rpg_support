@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "enemies",
     "encounters",
     "combat",
+    "audio_panel",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "audio_panel.context_processors.master_audio_panel",
             ],
         },
     },
@@ -83,8 +85,9 @@ MAX_CHARACTER_LEVEL = env.int("MAX_CHARACTER_LEVEL", default=20)
 MAX_IMAGE_UPLOAD_SIZE = env.int("MAX_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
 MAX_FILE_UPLOAD_SIZE = env.int("MAX_FILE_UPLOAD_SIZE", default=10 * 1024 * 1024)
 MAX_DOCUMENT_UPLOAD_SIZE = env.int("MAX_DOCUMENT_UPLOAD_SIZE", default=20 * 1024 * 1024)
-MAX_AUDIO_UPLOAD_SIZE = env.int("MAX_AUDIO_UPLOAD_SIZE", default=250 * 1024 * 1024)
+MAX_AUDIO_UPLOAD_SIZE = env.int("MAX_AUDIO_UPLOAD_SIZE", default=100 * 1024 * 1024)
 PROTECTED_MEDIA_MODE = env("PROTECTED_MEDIA_MODE", default="django")
+PROTECTED_MEDIA_ACCEL_PREFIX = env("PROTECTED_MEDIA_ACCEL_PREFIX", default="/_protected_media/")
 MAX_ENEMY_IMAGE_UPLOAD_SIZE = env.int("MAX_ENEMY_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
 ENCOUNTER_BALANCE = {
     "difficulty_multipliers": {"easy": 0.7, "medium": 1.0, "hard": 1.35},

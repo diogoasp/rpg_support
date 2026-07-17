@@ -1,0 +1,5 @@
+<button type="button" class="btn btn-sm {% if asset.is_favorite %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+        hx-post="{% url 'audio_panel:favorite' asset.pk %}" hx-swap="outerHTML"
+        aria-label="{% if asset.is_favorite %}Remover {{ asset.title }} dos favoritos{% else %}Favoritar {{ asset.title }}{% endif %}">
+  {% if asset.is_favorite %}★ Favorito{% else %}☆ Favoritar{% endif %}
+</button>
