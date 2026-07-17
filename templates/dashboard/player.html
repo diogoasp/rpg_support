@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Painel do jogador{% endblock %}
+{% block content %}
+<p class="text-uppercase text-primary fw-semibold mb-1">Área do jogador</p><h1 class="h2 mb-4">Minhas campanhas</h1>
+<div class="row g-3">{% for campaign in campaigns %}<div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-body"><h2 class="h5">{{ campaign.name }}</h2><p class="mb-3">Mestre: {{ campaign.master.get_full_name|default:campaign.master.username }}</p><a class="btn btn-outline-primary" href="{{ campaign.get_absolute_url }}">Ver campanha</a></div></div></div>{% empty %}<div class="col"><div class="alert alert-info">Você ainda não participa de uma campanha.</div></div>{% endfor %}</div>
+{% endblock %}
