@@ -5,6 +5,10 @@ from django.views.generic import TemplateView
 
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
+from django.db.models import Prefetch, Q
+from ships.models import Ship
+from maps.models import CampaignMap
+from history.models import SessionRecord
 
 
 class DashboardRedirectView(LoginRequiredMixin, View):
@@ -19,9 +23,11 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["campaigns"] = Campaign.objects.filter(
-            master=self.request.user
-        ).prefetch_related("players")
+        context["campaigns"] = Campaign.objects.filter(master=self.request.user).prefetch_related(
+            "players", Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
+            Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
+            Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
+        )
         return context
 
 
@@ -30,5 +36,10 @@ class PlayerDashboardView(PlayerRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["campaigns"] = self.request.user.campaigns.select_related("master")
+        visible_maps = CampaignMap.objects.filter(is_active=True, is_visible_to_players=True).filter(Q(visible_to_users=self.request.user) | Q(visible_to_users__isnull=True)).distinct()
+        context["campaigns"] = self.request.user.campaigns.select_related("master").prefetch_related(
+            Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
+            Prefetch("maps", visible_maps, to_attr="dashboard_maps"),
+            Prefetch("session_records", SessionRecord.objects.filter(is_published=True), to_attr="dashboard_sessions"),
+        )
         return context

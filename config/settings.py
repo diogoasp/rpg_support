@@ -23,6 +23,9 @@ INSTALLED_APPS = [
     "dashboard",
     "characters",
     "inventory",
+    "ships",
+    "maps",
+    "history",
 ]
 
 MIDDLEWARE = [
@@ -76,6 +79,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 MAX_CHARACTER_LEVEL = env.int("MAX_CHARACTER_LEVEL", default=20)
 MAX_IMAGE_UPLOAD_SIZE = env.int("MAX_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
 MAX_FILE_UPLOAD_SIZE = env.int("MAX_FILE_UPLOAD_SIZE", default=10 * 1024 * 1024)
+MAX_DOCUMENT_UPLOAD_SIZE = env.int("MAX_DOCUMENT_UPLOAD_SIZE", default=20 * 1024 * 1024)
+MAX_AUDIO_UPLOAD_SIZE = env.int("MAX_AUDIO_UPLOAD_SIZE", default=250 * 1024 * 1024)
+PROTECTED_MEDIA_MODE = env("PROTECTED_MEDIA_MODE", default="django")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"

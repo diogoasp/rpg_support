@@ -42,3 +42,16 @@ python manage.py test
 | `DEBUG` | Ativa o modo de desenvolvimento |
 | `ALLOWED_HOSTS` | Hosts separados por vírgula |
 | `DATABASE_URL` | URL de conexão PostgreSQL |
+
+## Fase 3 — navio, mapas e história
+
+A aplicação inclui ficha operacional do navio, biblioteca de mapas com visibilidade global ou específica e histórico publicável das sessões. Execute `python manage.py seed_rpg` para criar dados demonstrativos idempotentes.
+
+Uploads são armazenados em `media/ships`, `media/maps` e `media/history`. Mapas e áudios são entregues por views autenticadas; em produção, mantenha `MEDIA_ROOT` fora da raiz pública e use Nginx interno/X-Accel conforme descrito em `documentação.md`.
+
+| Variável | Descrição / padrão |
+| --- | --- |
+| `MAX_IMAGE_UPLOAD_SIZE` | Limite de imagem em bytes (10 MiB sugeridos) |
+| `MAX_DOCUMENT_UPLOAD_SIZE` | Limite de PDF em bytes (20 MiB) |
+| `MAX_AUDIO_UPLOAD_SIZE` | Limite de áudio em bytes (250 MiB) |
+| `PROTECTED_MEDIA_MODE` | `django` no desenvolvimento; reservado para integração com servidor web em produção |
