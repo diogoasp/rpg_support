@@ -1,0 +1,1 @@
+<div class="modal-header"><h2 class="h5">Alterar publicação</h2><button class="btn-close" data-bs-dismiss="modal"></button></div><form class="modal-body" hx-post="{% url 'history:publication' campaign.slug record.pk %}" hx-target="#session-status-{{ record.pk }}" hx-swap="outerHTML">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Confirmar</button></form>

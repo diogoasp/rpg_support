@@ -1515,3 +1515,52 @@ Cada entrega deve:
 * informar arquivos alterados;
 * informar decisões arquiteturais;
 * informar pendências.
+
+---
+
+# 30. Estado implementado — Fase 3 (2026-07-17)
+
+## 30.1. Resumo e aplicações
+
+Foram criadas as aplicações Django `ships`, `maps` e `history`, preservando templates Django, Bootstrap 5, HTMX e regras de domínio em services. A Fase 3 não introduz combate, inimigos, encontros, player operacional de áudio ou automação/IA.
+
+## 30.2. Modelos e migrations
+
+* `Ship` mantém histórico de navios por campanha e uma restrição parcial garante somente um ativo. Contém identificação, imagem, categoria, descrição, PV, CR/bônus, velocidade, tripulação simples, nível abstrato de recursos, canhões, instalações e observações. A migration é `ships/0001_initial.py`.
+* `CampaignMap` contém tipo, imagem/PDF opcionais, destaque, ativação lógica, visibilidade global/específica e vínculo opcional a item de inventário. A migration é `maps/0001_initial.py`.
+* `SessionRecord` contém número único por campanha, data, capa, resumo, áudio, transcrição, estado e instante de publicação. Campos futuros de IA são somente armazenamento opcional, sem processamento. A migration é `history/0001_initial.py`.
+* FKs já produzem seus índices implícitos; foram adicionados apenas índices compostos dos filtros operacionais.
+
+## 30.3. Services e decisões de domínio
+
+Os services transacionais implementam criação/substituição do navio ativo, dano, reparo, recursos e tripulação; criação, visibilidade e desativação de mapas; criação, publicação e despublicação de sessões. Todos validam mestre e pertencimento à campanha no backend. Não havia `ActivityLog` no estado anterior, portanto não se criou auditoria isolada nesta fase para evitar antecipar/reformular arquitetura; essa pendência permanece explícita.
+
+O percentual de PV é derivado. A condição usa limites centralizados: mais de 75% Normal; mais de 50% Avariado; mais de 25% Danificado; de 1% a 25% Muito danificado; zero Inoperante. Dano aceita bruto, redução sugerida e valor final opcional; nunca reduz abaixo de zero. Reparos nunca superam o máximo.
+
+## 30.4. Permissões, visibilidade e arquivos
+
+O mestre administra apenas campanhas próprias. Membros veem o navio ativo. Mapas ativos requerem a chave global; sem usuários selecionados são visíveis a todos os jogadores da campanha e, com seleção, somente aos selecionados. O mestre sempre vê mapas de suas campanhas. Rascunhos de sessão são privados; publicação preenche `published_at`; despublicação preserva esse instante como registro da última publicação.
+
+Mapas/imagens, PDFs, capas e áudios são servidos por `FileResponse` após autenticação, associação à campanha e regra de visibilidade. Os IDs são resolvidos no banco, sem receber caminhos do cliente, impedindo traversal. Em produção, `MEDIA_ROOT` deve ficar fora de uma localização pública do Nginx; a evolução recomendada é trocar a resposta autorizada por `X-Accel-Redirect` para uma location `internal`. `PROTECTED_MEDIA_MODE` prepara essa configuração, mas o modo implementado nesta fase é `django`.
+
+Uploads aceitos: JPEG/PNG/WebP até `MAX_IMAGE_UPLOAD_SIZE`, PDF até `MAX_DOCUMENT_UPLOAD_SIZE`, e MP3/M4A/OGG/WAV até `MAX_AUDIO_UPLOAD_SIZE`. Extensão/MIME são avaliados pelo upload; conteúdo não é convertido nem processado.
+
+## 30.5. Rotas, formulários e templates
+
+Rotas compartilhadas: `/navio/`, `/mapas/`, `/historia/`, detalhe de sessão e endpoints protegidos de mídia. Rotas do mestre são contextualizadas pelo slug em `/mestre/<slug>/navio/`, `/mestre/<slug>/mapas/` e `/mestre/<slug>/historia/`, reduzindo ambiguidades com múltiplas campanhas.
+
+Há formulários separados para navio, dano, reparo, recursos, mapa, visibilidade, sessão e confirmação de publicação. Fragmentos HTMX atualizam somente card de navio, card de mapa ou badge de sessão. Cadastros extensos usam páginas completas. Templates de jogador não apresentam controles administrativos.
+
+## 30.6. Dashboards, admin e seed
+
+Os dashboards fazem prefetch do navio ativo, mapas autorizados/recentes e sessões relevantes, evitando queries em loops. O jogador recebe cards compactos; o mestre recebe ações operacionais de navio, mapas e histórico. Os três modelos foram registrados no admin com busca, filtros, relações antecipadas e datas somente leitura.
+
+`seed_rpg` permanece idempotente e agora cria um navio, três mapas (público, privado e específico) e três sessões (duas publicadas e um rascunho), sem arquivos protegidos por direitos autorais.
+
+## 30.7. Divergências, limitações e pendências
+
+* O arquivo histórico chamava-se `documentação.MD`, enquanto a solicitação referencia `documentação.md`; ele foi apenas renomeado, com todo o conteúdo anterior preservado.
+* A documentação original sugeria um campo editável `condition`; a implementação segue o requisito mais seguro desta fase e mantém condição exclusivamente derivada.
+* Não existia infraestrutura de thumbnails; imagens usam carregamento tardio e dimensões CSS, sem instalar biblioteca de PDF.
+* Não existia exclusão lógica de sessões. Para evitar alterar o contrato com um campo não solicitado, sessões podem ser preservadas como rascunho; exclusão administrativa segue o padrão do Django Admin.
+* Auditoria, X-Accel operacional, armazenamento externo e thumbnails permanecem melhorias futuras. IA, transcrição, combate, encontros, áudio operacional e plots permanecem para fases posteriores.

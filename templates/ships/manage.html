@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="d-flex justify-content-between"><h1>Gestão do navio · {{ campaign.name }}</h1><a class="btn btn-primary" href="{% url 'ships:edit' campaign.slug %}">{% if ship %}Editar{% else %}Criar navio{% endif %}</a></div>{% include 'ships/partials/card.html' with is_master=True %}{% endblock %}
