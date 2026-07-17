@@ -1,4 +1,4 @@
-# Grand Line Companion — Fase 5
+# Grand Line Companion — Fase 6
 
 Fundação de um sistema Django para apoio presencial a campanhas de RPG. Esta fase inclui autenticação, usuários com papéis de mestre e jogador, campanhas, autorização no backend e dashboards separados.
 
@@ -71,3 +71,9 @@ python manage.py seed_rpg
 ## Fase 5 — painel narrativo de combate
 
 Encontros preparados agora podem ser iniciados no modo Livre (padrão), Ordem simples ou Iniciativa completa. O painel exclusivo do mestre individualiza inimigos, oferece dano, cura, estados narrativos, notas, ficha rápida, desfazer PV, pausa, retomada e encerramento com atualizações HTMX compactas. Ele é um apoio presencial e não executa ataques, rolagens ou movimentação tática.
+
+## Fase 6 — áudio e dashboard operacional
+
+A biblioteca privada em `/mestre/audios/` organiza músicas, ambientes, efeitos e falas por campanha. O painel inferior exclusivo do mestre mantém três canais locais independentes, favoritos, recentes, pausa, parada, volume, loop e fade durante atualizações HTMX. O dashboard prioriza confronto ativo e reúne atalhos de sessão para encontro, inventário, navio, mapas, histórico e áudio.
+
+Atalhos do player: `Espaço` pausa/retoma o canal ativo e `Ctrl+Shift+S` para todos os canais. Eles são ignorados dentro de campos de formulário. Por restrições dos navegadores, uma recarga completa não inicia nem retoma áudio automaticamente; preferências de volume e abertura do painel são restauradas localmente.

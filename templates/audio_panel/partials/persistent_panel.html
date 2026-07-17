@@ -1,0 +1,20 @@
+<aside id="audio-panel" class="audio-panel shadow-lg" aria-label="Painel persistente de áudio" aria-live="polite">
+ <button id="audio-panel-toggle" class="btn btn-dark btn-sm audio-panel-toggle" type="button" aria-expanded="true">Áudio ▾</button>
+ <div class="audio-panel-body">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+   <strong id="audio-current-title">Nada reproduzindo</strong><span id="audio-current-meta" class="small text-muted"></span>
+   <button class="btn btn-sm btn-outline-primary" data-audio-action="toggle">Pausar/retomar</button>
+   <button class="btn btn-sm btn-outline-secondary" data-audio-action="stop">Parar canal</button>
+   <button class="btn btn-sm btn-outline-secondary" data-audio-action="fade" data-seconds="5">Fade 5s</button>
+   <button class="btn btn-sm btn-danger" data-audio-action="stop-all">Parar todos</button>
+   <label class="small mb-0" for="audio-master-volume">Geral</label><input id="audio-master-volume" type="range" min="0" max="100" value="100" aria-valuetext="100%">
+   <span id="audio-time" class="small tabular-nums">0:00 / 0:00</span>
+  </div>
+  <input id="audio-progress" class="w-100" type="range" min="0" max="100" value="0" aria-label="Progresso do áudio">
+  <div class="audio-quick-list mt-1">
+   <a class="btn btn-sm btn-link" href="{% url 'audio_panel:library' %}">Buscar/biblioteca</a>
+   {% for asset in audio_panel_favorites %}{% include "audio_panel/partials/play_button.html" %}{% endfor %}
+   {% for asset in audio_panel_recent %}{% if not asset.is_favorite %}{% include "audio_panel/partials/play_button.html" %}{% endif %}{% endfor %}
+  </div>
+ </div>
+</aside>

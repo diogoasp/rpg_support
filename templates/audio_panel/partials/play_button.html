@@ -1,0 +1,6 @@
+<button type="button" class="btn btn-sm btn-primary audio-play"
+ data-audio-id="{{ asset.pk }}" data-audio-title="{{ asset.title }}" data-audio-category="{{ asset.get_category_display }}"
+ data-audio-channel="{{ asset.default_channel }}" data-audio-volume="{{ asset.default_volume }}" data-audio-loop="{{ asset.default_loop|yesno:'true,false' }}"
+ data-audio-url="{% url 'audio_panel:file' asset.pk %}" data-register-url="{% url 'audio_panel:register_play' asset.pk %}">
+ Tocar
+</button>

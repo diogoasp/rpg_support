@@ -11,6 +11,7 @@ from maps.models import CampaignMap
 from history.models import SessionRecord
 from encounters.models import Encounter
 from combat.models import Combat
+from audio_panel.models import AudioAsset
 
 
 class DashboardRedirectView(LoginRequiredMixin, View):
@@ -34,6 +35,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
             Prefetch("combats", Combat.objects.filter(status__in=("active", "paused")).prefetch_related("combatants"), to_attr="dashboard_combats"),
+            Prefetch("audio_assets", AudioAsset.objects.filter(is_active=True, is_favorite=True).order_by("sort_order", "title")[:5], to_attr="dashboard_audio_favorites"),
         )
         return context
 
