@@ -1610,3 +1610,31 @@ A suíte cobre o legado e os novos contratos de domínio, geração, recálculo,
 O prompt cita override de “CR” em `EncounterEnemy`, mas lista `armor_class_override`; adotou-se este último e `resistance_bonus_override`, coerentes com os nomes existentes. “Personagem ativo” foi interpretado pelo usuário ativo, pois `Character` não possui `is_active`; alterar o contrato de personagens seria desnecessário. O ambiente é filtro leve e não bloqueia seleção manual. A proposta fica temporariamente na sessão do mestre, sem banco antes da confirmação.
 
 Ficam para a Fase 5: iniciativa, combatentes individuais, rodadas, turnos, dano, cura, condições, recursos, execução de ações, dados, logs e início real do combate. Permanecem fora do escopo combate naval, áudio, IA e importação de PDFs.
+
+---
+
+# 32. Estado implementado — Fase 5 (2026-07-17)
+
+## 32.1. Painel narrativo e escopo
+
+Foi criada a aplicação `combat` como painel exclusivo do mestre para confrontos presenciais. O modo padrão é Livre e concentra cards individuais, PV, estado narrativo, CR, resistência, chefe, ações principais e ficha rápida. Não foram introduzidos mapa, grid, tokens, dados, seleção de alvos, execução de ataques, WebSockets, IA ou log narrativo obrigatório.
+
+## 32.2. Persistência e domínio
+
+`Combat` vincula encontro e campanha, preserva modo, status, rodada/posição opcionais, configuração opcional de recursos dos jogadores, notas e resultado. Restrições parciais impedem confronto ativo duplicado por encontro e campanha. `Combatant` aceita exatamente uma referência de inimigo ou personagem, guarda snapshots operacionais, PV limitado, ordem/iniciativa, estado narrativo manual, chefe, atividade e nota privada. `HPChange` mantém somente o necessário para desfazer ajustes de PV; `CombatNote` oferece observações narrativas opcionais e não recebe eventos automáticos.
+
+O service transacional de início individualiza cada grupo, aplica overrides de PV/CR/resistência, preserva imagem e chefe, inclui participantes como referência e impede duplicação. Os services de dano e cura limitam PV, aceitam dano final sobrescrito, preservam estados manuais e tornam a derrota em zero opcional. Os limites sugeridos são configuráveis: acima de 50% normal, 26–50% ferido, 1–25% muito ferido e zero derrotado.
+
+## 32.3. Condução, ciclo de vida e interface
+
+Livre oculta turnos. Ordem simples oferece navegação manual sem iniciativa obrigatória. Iniciativa completa ordena em ordem decrescente e incrementa rodada no retorno ao primeiro. Mudanças de modo preservam combatentes. Pausa, retomada, encerramento e reabertura preservam fichas, PV, estados, notas e ordem; encerrar também finaliza o encontro, sem alterar inventário ou história.
+
+A página de encontro oferece “Iniciar confronto” com apenas modo e opção de controlar jogadores. O painel usa HTMX em dano, cura, estado, derrota, reativação, nota, ficha e desfazer, trocando apenas o card ou conteúdo modal. Filtros rápidos e busca apoiam consulta visual. O dashboard prioriza confronto ativo/pausado com “Continuar confronto”, mantendo o navio e ferramentas anteriores acessíveis.
+
+## 32.4. Permissões, condições e auditoria
+
+Todas as views resolvem confronto e combatente dentro de campanha cujo mestre é o usuário autenticado; jogadores recebem 403 mesmo por URL direta. A estrutura preexistente de condições pertence à ficha do personagem e não representa adequadamente estados efêmeros de inimigos; para evitar automação e carga administrativa, esta fase mantém apenas estado narrativo e texto especial curto. Como não existe `ActivityLog`, não foi criada uma segunda auditoria geral: `HPChange` é técnico, discreto e voltado exclusivamente a desfazer PV.
+
+## 32.5. Testes e limitações deliberadas
+
+A suíte da fase cobre individualização, overrides, idempotência, referência exclusiva, faixas de estado, precedência manual, limites de dano/cura, zero ativo, desfazer, ordenação de iniciativa, encerramento/reabertura sem duplicação e autorização. Recursos de jogador são armazenados no snapshot quando selecionados, mas a interface deliberadamente não se torna controle obrigatório; PP/condições continuam sendo geridos na ficha existente. Reordenação visual por arrastar, consumo opcional de ações limitadas e auditoria ampla permanecem melhorias futuras.

@@ -12,5 +12,6 @@ urlpatterns = [
     path("", include("history.urls")),
     path("", include("enemies.urls")),
     path("", include("encounters.urls")),
+    path("", include("combat.urls")),
     path("", include("dashboard.urls")),
 ]

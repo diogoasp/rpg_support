@@ -1,0 +1,1 @@
+<div class="modal-header"><h2 class="h5">{{ title }} · {{ item.display_name }}</h2><button class="btn-close" data-bs-dismiss="modal"></button></div><form class="modal-body" hx-post="{% url url_name combat.pk item.pk %}" hx-target="#combatant-{{ item.pk }}" hx-swap="outerHTML">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Aplicar</button></form>
