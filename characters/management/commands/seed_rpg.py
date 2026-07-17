@@ -7,6 +7,8 @@ from inventory.models import InventoryItem
 from ships.models import Ship
 from maps.models import CampaignMap
 from history.models import SessionRecord
+from enemies.models import Enemy,EnemyAction,EnemyFaction,EnemyFeature
+from encounters.models import Encounter,EncounterEnemy,EncounterParticipant
 from datetime import date
 class Command(BaseCommand):
  def handle(self,*a,**o):
@@ -28,4 +30,16 @@ class Command(BaseCommand):
   SessionRecord.objects.update_or_create(campaign=campaign,session_number=1,defaults={'title':'A partida','session_date':date(2026,1,10),'summary':'A tripulação iniciou sua jornada pelos mares fictícios.','is_published':True})
   SessionRecord.objects.update_or_create(campaign=campaign,session_number=2,defaults={'title':'A névoa','session_date':date(2026,1,17),'summary':'Uma névoa misteriosa mudou a rota.','is_published':True})
   SessionRecord.objects.update_or_create(campaign=campaign,session_number=3,defaults={'title':'Próximo horizonte','session_date':date(2026,1,24),'summary':'Rascunho para a próxima sessão.','is_published':False})
-  self.stdout.write(self.style.SUCCESS('Dados das Fases 1 a 3 criados/atualizados.'))
+  coast,_=EnemyFaction.objects.update_or_create(slug='guarda-costeira',defaults={'name':'Guarda Costeira','description':'Patrulha fictícia.'}); raiders,_=EnemyFaction.objects.update_or_create(slug='saqueadores-do-nevoeiro',defaults={'name':'Saqueadores do Nevoeiro','description':'Grupo fictício.'})
+  specs=[('vigia-do-cais','Vigia do Cais','minion','simple','normal',12,False,coast),('patrulheiro-do-farol','Patrulheiro do Farol','standard','simple','normal',20,False,coast),('batedor-da-nevoa','Batedor da Névoa','minion','simple','normal',14,False,raiders),('fera-das-dunas','Fera das Dunas','creature','simple','normal',24,False,None),('guarda-do-arsenal','Guarda do Arsenal','standard','moderate','normal',32,False,coast),('artifice-do-recife','Artífice do Recife','special','moderate','normal',36,False,raiders),('capitao-da-patrulha','Capitão da Patrulha','elite','moderate','normal',58,False,coast),('comandante-da-bruma','Comandante da Bruma','boss','complex','normal',95,True,raiders),('colosso-adormecido','Colosso Adormecido','special','complex','narrative',180,True,None),('soberano-da-tempestade','Soberano da Tempestade','special','complex','not_recommended',300,True,None)]
+  made={}
+  for slug,name,category,complexity,mode,hp,boss,faction in specs:
+   e,_=Enemy.objects.update_or_create(slug=slug,defaults={'name':name,'category':category,'operational_complexity':complexity,'encounter_mode':mode,'max_hp':hp,'is_boss':boss,'faction':faction,'challenge_rating':max(1,hp//15),'is_available_for_generator':mode in ('normal','reduced'),'description':'Adversário original para demonstração.'}); made[slug]=e
+   EnemyAction.objects.update_or_create(enemy=e,name='Investida',defaults={'description':'Ataque descrito de forma textual.','damage_text':'dano conforme a preparação do mestre'})
+   EnemyFeature.objects.update_or_create(enemy=e,name='Instinto de preservação',defaults={'feature_type':'comportamento','description':'Tenta recuar quando fica em desvantagem.'})
+  chars=list(campaign.characters.all())
+  for name,difficulty,status,slug in [('Patrulha do cais','easy','ready','vigia-do-cais'),('Emboscada na névoa','medium','ready','guarda-do-arsenal'),('Proposta do farol','medium','draft','capitao-da-patrulha')]:
+   enc,_=Encounter.objects.update_or_create(campaign=campaign,name=name,defaults={'difficulty':difficulty,'status':status,'estimated_difficulty':difficulty,'created_by':master,'generation_parameters':{'seed':'demo'}})
+   for ch in chars: EncounterParticipant.objects.get_or_create(encounter=enc,character=ch)
+   EncounterEnemy.objects.update_or_create(encounter=enc,enemy=made[slug],defaults={'quantity':2 if difficulty=='easy' else 1,'display_name':made[slug].name})
+  self.stdout.write(self.style.SUCCESS('Dados das Fases 1 a 4 criados/atualizados.'))

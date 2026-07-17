@@ -9,10 +9,14 @@ from django.db.models import Prefetch, Q
 from ships.models import Ship
 from maps.models import CampaignMap
 from history.models import SessionRecord
+from encounters.models import Encounter
 
 
 class DashboardRedirectView(LoginRequiredMixin, View):
     def get(self, request):
+        if request.session.pop("show_dashboard_landing", False):
+            view = MasterDashboardView.as_view() if request.user.is_master else PlayerDashboardView.as_view()
+            return view(request)
         if request.user.is_master:
             return redirect("dashboard:master")
         return redirect("dashboard:player")
@@ -27,6 +31,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
             "players", Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
+            Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
         )
         return context
 

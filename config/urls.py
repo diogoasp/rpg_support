@@ -10,5 +10,7 @@ urlpatterns = [
     path("", include("ships.urls")),
     path("", include("maps.urls")),
     path("", include("history.urls")),
+    path("", include("enemies.urls")),
+    path("", include("encounters.urls")),
     path("", include("dashboard.urls")),
 ]

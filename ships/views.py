@@ -29,7 +29,7 @@ def edit(request,slug):
 def _action(request,slug,kind):
  c=_campaign(request,slug)
  if c.master_id!=request.user.pk: raise PermissionDenied
- ship=get_object_or_404(Ship,campaign=c,is_active=True); forms={'damage':DamageShipForm,'repair':RepairShipForm,'resources':NavigationResourcesForm}; form=forms[kind](request.POST or None,instance=ship if kind=='resources' else None)
+ ship=get_object_or_404(Ship,campaign=c,is_active=True); forms={'damage':DamageShipForm,'repair':RepairShipForm,'resources':NavigationResourcesForm}; form=forms[kind](request.POST or None,**({'instance':ship} if kind=='resources' else {}))
  if request.method=='POST' and form.is_valid():
   if kind=='damage': ship=damage_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data)
   elif kind=='repair': ship=repair_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data)
