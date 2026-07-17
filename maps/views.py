@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.http import FileResponse,Http404
+from django.http import Http404
+from config.protected_media import protected_file_response
 from django.shortcuts import get_object_or_404,redirect,render
 from campaigns.models import Campaign
 from .forms import CampaignMapForm,MapVisibilityForm
@@ -39,4 +40,4 @@ def deactivate(request,slug,pk):
 def protected_file(request,pk,kind):
  obj=get_object_or_404(allowed(request.user),pk=pk); field=obj.image if kind=='image' else obj.file
  if not field: raise Http404
- return FileResponse(field.open('rb'),as_attachment=kind=='file',filename=field.name.rsplit('/',1)[-1])
+ return protected_file_response(field,attachment=kind=='file')

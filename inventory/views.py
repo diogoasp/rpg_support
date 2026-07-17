@@ -1,4 +1,4 @@
-from django.http import FileResponse
+from config.protected_media import protected_file_response
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 from django.views.generic import TemplateView
@@ -24,4 +24,4 @@ class ItemDeactivateView(MasterRequiredMixin,View):
         item=get_object_or_404(InventoryItem.objects.select_related('character__campaign'),pk=pk,character__campaign__master=r.user); deactivate_inventory_item(actor=r.user,item=item); return render(r,'inventory/partials/item_list.html',{'character':master_character(r,item.character_id),'is_master':True})
 class ProtectedFileView(PlayerRequiredMixin,View):
     def get(self,r,pk):
-        item=get_object_or_404(InventoryItem,pk=pk,character__user=r.user,is_active=True,is_visible=True); return FileResponse(item.file.open('rb'),as_attachment=True,filename=item.file.name.rsplit('/',1)[-1])
+        item=get_object_or_404(InventoryItem,pk=pk,character__user=r.user,is_active=True,is_visible=True); return protected_file_response(item.file,attachment=True)

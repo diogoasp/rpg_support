@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse,Http404
+from django.http import Http404
+from config.protected_media import protected_file_response
 from django.shortcuts import get_object_or_404,redirect,render
 from campaigns.models import Campaign
 from .forms import SessionRecordForm,PublicationForm
@@ -29,4 +30,4 @@ def publication(request,slug,pk):
 def protected_media(request,pk,kind):
  obj=get_object_or_404(allowed(request.user),pk=pk); f=obj.audio_file if kind=='audio' else obj.cover_image
  if not f: raise Http404
- return FileResponse(f.open('rb'),as_attachment=kind=='audio',filename=f.name.rsplit('/',1)[-1])
+ return protected_file_response(f,attachment=kind=='audio')

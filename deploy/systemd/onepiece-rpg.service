@@ -1,0 +1,13 @@
+[Unit]
+Description=One Piece RPG Docker Compose
+Requires=docker.service
+After=docker.service network-online.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/CAMINHO/DO/PROJETO
+ExecStart=/usr/bin/docker compose -f compose.yml -f compose.production.yml up -d
+ExecStop=/usr/bin/docker compose -f compose.yml -f compose.production.yml down
+TimeoutStartSec=0
+[Install]
+WantedBy=multi-user.target

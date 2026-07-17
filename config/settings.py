@@ -7,9 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY", default="unsafe-development-key-change-me")
-DEBUG = env.bool("DEBUG")
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+SECRET_KEY = env("DJANGO_SECRET_KEY", default=env("SECRET_KEY", default="unsafe-development-key-change-me"))
+DEBUG = env.bool("DJANGO_DEBUG", default=env.bool("DEBUG"))
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"]))
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -81,6 +82,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+PROTECTED_MEDIA_ROOT = Path(env("PROTECTED_MEDIA_ROOT", default=str(MEDIA_ROOT)))
 MAX_CHARACTER_LEVEL = env.int("MAX_CHARACTER_LEVEL", default=20)
 MAX_IMAGE_UPLOAD_SIZE = env.int("MAX_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
 MAX_FILE_UPLOAD_SIZE = env.int("MAX_FILE_UPLOAD_SIZE", default=10 * 1024 * 1024)
@@ -88,6 +90,8 @@ MAX_DOCUMENT_UPLOAD_SIZE = env.int("MAX_DOCUMENT_UPLOAD_SIZE", default=20 * 1024
 MAX_AUDIO_UPLOAD_SIZE = env.int("MAX_AUDIO_UPLOAD_SIZE", default=100 * 1024 * 1024)
 PROTECTED_MEDIA_MODE = env("PROTECTED_MEDIA_MODE", default="django")
 PROTECTED_MEDIA_ACCEL_PREFIX = env("PROTECTED_MEDIA_ACCEL_PREFIX", default="/_protected_media/")
+X_ACCEL_REDIRECT_ENABLED = env.bool("X_ACCEL_REDIRECT_ENABLED", default=PROTECTED_MEDIA_MODE == "x-accel")
+MAX_AUDIO_ASSET_UPLOAD_SIZE = env.int("MAX_AUDIO_ASSET_UPLOAD_SIZE", default=MAX_AUDIO_UPLOAD_SIZE)
 MAX_ENEMY_IMAGE_UPLOAD_SIZE = env.int("MAX_ENEMY_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024)
 ENCOUNTER_BALANCE = {
     "difficulty_multipliers": {"easy": 0.7, "medium": 1.0, "hard": 1.35},
@@ -103,3 +107,22 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+# Production-safe defaults remain configurable so local development keeps working.
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
+CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=21600)
+SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False)
+SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", default=False)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+LOGGING = {
+    "version": 1, "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
+}

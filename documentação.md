@@ -1678,3 +1678,39 @@ O endpoint Django anuncia Range, mas o suporte de produção recomendado e docum
 ## 33.6. Testes
 
 A suíte cobre defaults e validação do modelo, slug por campanha, upload válido, extensão/MIME/tamanho/ausência, autorização de arquivo para mestre/jogador/anônimo/outro mestre, favorito HTMX, registro atômico, ordenação/limite/escopo de recentes e presença exclusiva do painel. Não havia infraestrutura JavaScript de testes; o módulo foi exportado como classe testável e os cenários manuais obrigatórios são: iniciar música, executar dano via HTMX, confirmar continuidade; abrir modal, confirmar continuidade; iniciar fala e confirmar música/ambiente; testar fade e parada global.
+
+---
+
+# 34. Estado implementado — Fase 7 (2026-07-17)
+
+## 34.1. Consolidação e arquitetura Docker
+
+A Fase 7 não altera regras de campanha. Ela consolida os módulos das Fases 1–6 em três serviços isolados na rede `app_network`: Nginx público, Django/Gunicorn interno e PostgreSQL 16 interno. O Dockerfile multi-stage fixa Python 3.12, mantém compiladores apenas no builder, usa usuário `app`, cacheia dependências e nunca inclui `.env`. Desenvolvimento monta o código e publica somente interfaces loopback; produção não monta código nem publica web/db.
+
+## 34.2. Compose, persistência e configuração
+
+`compose.yml` concentra serviços, rede, volumes, dependências saudáveis e rotação de logs; overlays development/production escolhem alvo, comandos, portas, segurança e persistência. Desenvolvimento usa volumes nomeados. Na VPS, banco, mídia e mídia protegida usam bind mounts configuráveis para viabilizar backup fora dos containers; estáticos usam volume compartilhado. Nenhum fluxo operacional remove volumes.
+
+Os settings existentes foram preservados em módulo único para evitar uma migração estrutural desnecessária. Foram acrescentados aliases `DJANGO_*`, CSRF, roots configuráveis, flags de proxy/cookies/HSTS, sessão de seis horas, headers e logging de console. O entrypoint valida segredos em produção, aguarda PostgreSQL por prontidão ativa e não roda migrations/seeds automaticamente.
+
+## 34.3. Nginx, Gunicorn e arquivos
+
+Gunicorn usa 2 workers/2 threads configuráveis, timeout conservador e stdout/stderr. Nginx faz proxy por DNS `web`, serve estáticos e o volume público reservado, aplica limite de 110 MiB e headers, e possui location `internal` para X-Accel. Como os uploads históricos já eram todos autorizados por views, produção aponta `MEDIA_ROOT` ao bind protegido; isso evita expor por engano mapas, inventário, sessões, inimigos ou áudio. O Range fica a cargo do Nginx. TLS segue a opção de certificados do host montados read-only; ativação exige adaptar/validar certificado e então habilitar flags seguras.
+
+## 34.4. Saúde, diagnóstico, segurança e observabilidade
+
+`/health/` é liveness leve e `/health/ready/` verifica banco e diretórios sem revelar exceções. `diagnose_deployment` inspeciona settings, banco, roots, migrations, X-Accel e expectativa HTTPS sem imprimir segredos. Web executa sem root, perde capabilities em produção, usa `no-new-privileges` e tmpfs; nenhum serviço recebe socket Docker. Logs têm limite de 10 MiB e cinco arquivos.
+
+## 34.5. Makefile, deploy e migrations
+
+O Makefile centraliza build, ciclo de vida, shells, checks, testes, seed apenas dev, superusuário explícito, banco, diagnóstico, backups e produção. `deploy.sh` recusa alterações locais, usa `git pull --ff-only`, valida Compose, constrói antes da troca, executa dry-run e geração exigida de migrations, migrate e collectstatic. Migrations geradas na VPS ficam visíveis para revisão/versionamento, sem commit/push. Somente web é recriado e Nginx garantido; db é preservado. `deploy-safe` precede o mesmo fluxo com backup. `DRY_RUN=1` permite simulação não destrutiva.
+
+## 34.6. Backups, boot e operação
+
+Os scripts gravam dump PostgreSQL custom e tar de mídia diretamente em `BACKUP_DIR` do host, aplicam retenção e exigem arquivo mais `CONFIRM_RESTORE=yes` para restauração sem limpeza silenciosa. Exemplos systemd iniciam Compose opcionalmente e agendam backup diário. `OPERATIONS.md` documenta estrutura da VPS, todas as variáveis, SSL, logs, health, deploy, restauração, rollback e troubleshooting.
+
+## 34.7. Limitações e decisões
+
+Não foi implantada CSP porque templates atuais dependem de bibliotecas CDN e comportamentos inline; uma política não testada quebraria HTMX/player. Não há blue-green nem rollback automático de banco. O template padrão entrega HTTP; certificados variam por domínio e a configuração TLS deve ser concluída na VPS antes de HSTS. O healthcheck do Nginx foi omitido para não instalar ferramenta exclusivamente para isso; o smoke externo cobre Nginx. Não foram adicionados IA, Celery, Redis, WebSockets, API, Kubernetes ou regras de domínio.
+
+A verificação inicial encontrou drift entre models e migrations legado. Foram geradas migrations `0002` para accounts, characters, history, inventory, maps e ships, compostas por alinhamento de metadados/campos e renome de índices; nenhuma nova funcionalidade de domínio foi introduzida. Elas foram aplicadas e a verificação posterior retornou `No changes detected`.

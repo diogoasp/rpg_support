@@ -1,0 +1,72 @@
+name: ${COMPOSE_PROJECT_NAME:-onepiece-rpg}
+x-logging: &default-logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "5"}
+services:
+  db:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rpg_support}
+      POSTGRES_USER: ${POSTGRES_USER:-rpg_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-development-only}
+      TZ: ${TZ:-UTC}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [app_network]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+  web:
+    build:
+      context: .
+      dockerfile: docker/django/Dockerfile
+      target: development
+    image: ${APP_IMAGE_NAME:-onepiece-rpg}:${APP_IMAGE_TAG:-development}
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-development-only-change-me}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,web,nginx}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rpg_user}:${POSTGRES_PASSWORD:-development-only}@db:5432/${POSTGRES_DB:-rpg_support}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-development-only}
+      STATIC_ROOT: /app/staticfiles
+      MEDIA_ROOT: /app/media
+      PROTECTED_MEDIA_ROOT: /app/protected_media
+      PROTECTED_MEDIA_MODE: ${PROTECTED_MEDIA_MODE:-django}
+      PROTECTED_MEDIA_ACCEL_PREFIX: ${X_ACCEL_REDIRECT_PREFIX:-/_protected_media/}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+      - protected_media_data:/app/protected_media
+    depends_on: {db: {condition: service_healthy}}
+    networks: [app_network]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging: *default-logging
+  nginx:
+    image: nginx:1.27.1-alpine
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:-localhost}
+      NGINX_CLIENT_MAX_BODY_SIZE: ${NGINX_CLIENT_MAX_BODY_SIZE:-110m}
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/templates:/etc/nginx/templates:ro
+      - static_data:/srv/static:ro
+      - media_data:/srv/media:ro
+      - protected_media_data:/srv/protected_media:ro
+    depends_on: {web: {condition: service_healthy}}
+    networks: [app_network]
+    logging: *default-logging
+volumes: {postgres_data: {}, static_data: {}, media_data: {}, protected_media_data: {}}
+networks: {app_network: {driver: bridge}}

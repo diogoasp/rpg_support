@@ -1,0 +1,14 @@
+services:
+  db:
+    ports: ["127.0.0.1:${POSTGRES_DEV_PORT:-5432}:5432"]
+  web:
+    build: {target: development}
+    command: /app/docker/django/start-development.sh
+    volumes:
+      - .:/app
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+      - protected_media_data:/app/protected_media
+    ports: ["127.0.0.1:${WEB_DEV_PORT:-8000}:8000"]
+  nginx:
+    ports: ["127.0.0.1:${NGINX_DEV_PORT:-8080}:80"]
