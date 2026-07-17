@@ -1,0 +1,7 @@
+from django.db import migrations,models
+import django.core.validators
+import django.db.models.deletion
+import characters.validators
+class Migration(migrations.Migration):
+ initial=True; dependencies=[('characters','0001_initial')]
+ operations=[migrations.CreateModel(name='InventoryItem',fields=[('id',models.BigAutoField(primary_key=True,serialize=False)),('name',models.CharField(max_length=150)),('description',models.TextField(blank=True)),('image',models.ImageField(blank=True,upload_to=characters.validators.inventory_image_upload,validators=[characters.validators.validate_image])),('file',models.FileField(blank=True,upload_to=characters.validators.inventory_file_upload,validators=[characters.validators.validate_document])),('quantity',models.PositiveIntegerField(blank=True,null=True,validators=[django.core.validators.MinValueValidator(0)])),('master_note',models.TextField(blank=True)),('is_visible',models.BooleanField(db_index=True,default=True)),('is_active',models.BooleanField(db_index=True,default=True)),('created_at',models.DateTimeField(auto_now_add=True)),('updated_at',models.DateTimeField(auto_now=True)),('character',models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,related_name='inventory_items',to='characters.character'))],options={'ordering':('-created_at',),'indexes':[models.Index(fields=['character','is_active','is_visible'],name='inventory_i_charact_8f5b83_idx')]})]

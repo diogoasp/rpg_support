@@ -1,0 +1,1 @@
+<div class="modal-header"><h2 class="modal-title h5">Adicionar condição a {{character.name}}</h2><button class="btn-close" data-bs-dismiss="modal"></button></div><form hx-post="{% url 'characters:condition_add' character.pk %}" hx-target="#modal-content" class="modal-body">{% csrf_token %}{{form.as_p}}<button class="btn btn-primary">Adicionar</button></form>
