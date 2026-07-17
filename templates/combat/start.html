@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<h1>Iniciar confronto</h1><p>{{ encounter.name }}</p><form method="post" class="card card-body col-lg-6">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Iniciar e abrir painel</button></form>{% endblock %}

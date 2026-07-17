@@ -10,6 +10,7 @@ from ships.models import Ship
 from maps.models import CampaignMap
 from history.models import SessionRecord
 from encounters.models import Encounter
+from combat.models import Combat
 
 
 class DashboardRedirectView(LoginRequiredMixin, View):
@@ -32,6 +33,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
+            Prefetch("combats", Combat.objects.filter(status__in=("active", "paused")).prefetch_related("combatants"), to_attr="dashboard_combats"),
         )
         return context
 

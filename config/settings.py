@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "history",
     "enemies",
     "encounters",
+    "combat",
 ]
 
 MIDDLEWARE = [
@@ -93,6 +94,7 @@ ENCOUNTER_BALANCE = {
     "action_economy_warning_ratio": 2,
     "operational_load_warning": 12,
 }
+COMBAT_NARRATIVE_HP_THRESHOLDS = {"normal": 50, "wounded": 25}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"

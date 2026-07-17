@@ -1,4 +1,4 @@
-# Grand Line Companion — Fase 4
+# Grand Line Companion — Fase 5
 
 Fundação de um sistema Django para apoio presencial a campanhas de RPG. Esta fase inclui autenticação, usuários com papéis de mestre e jogador, campanhas, autorização no backend e dashboards separados.
 
@@ -66,3 +66,8 @@ Para criar/atualizar os dados fictícios idempotentes das Fases 1–4:
 ```bash
 python manage.py seed_rpg
 ```
+
+
+## Fase 5 — painel narrativo de combate
+
+Encontros preparados agora podem ser iniciados no modo Livre (padrão), Ordem simples ou Iniciativa completa. O painel exclusivo do mestre individualiza inimigos, oferece dano, cura, estados narrativos, notas, ficha rápida, desfazer PV, pausa, retomada e encerramento com atualizações HTMX compactas. Ele é um apoio presencial e não executa ataques, rolagens ou movimentação tática.
