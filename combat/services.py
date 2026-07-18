@@ -44,8 +44,19 @@ def start_combat_from_encounter(*, encounter, user=None, mode="free", track_play
     return combat
 
 
+def _sync_character_hp(combatant):
+    if not combatant.character_id:
+        return
+    character = combatant.character
+    current_hp = max(0, min(character.max_hp, combatant.current_hp))
+    if character.current_hp == current_hp:
+        return
+    character.current_hp = current_hp
+    character.save(update_fields=["current_hp", "updated_at"])
+
+
 def _hp_change(combatant, new_hp):
-    old=combatant.current_hp; combatant.current_hp=max(0, min(combatant.max_hp, new_hp)); combatant.save(update_fields=["current_hp", "updated_at"]); HPChange.objects.create(combatant=combatant, previous_hp=old, new_hp=combatant.current_hp); return combatant
+    old=combatant.current_hp; combatant.current_hp=max(0, min(combatant.max_hp, new_hp)); combatant.save(update_fields=["current_hp", "updated_at"]); HPChange.objects.create(combatant=combatant, previous_hp=old, new_hp=combatant.current_hp); _sync_character_hp(combatant); return combatant
 
 @transaction.atomic
 def apply_damage_to_combatant(*, combatant, raw_damage=None, reduction=0, final_damage=None, mark_defeated_at_zero=True):
@@ -96,4 +107,4 @@ def reopen_combat(*, combat): combat.status="active"; combat.finished_at=None; c
 def undo_last_hp_change(*, combatant):
     event=combatant.hp_changes.filter(is_reverted=False).first()
     if not event: raise CombatDomainError("Não há ajuste de PV para desfazer.")
-    combatant.current_hp=event.previous_hp; combatant.save(update_fields=["current_hp", "updated_at"]); event.is_reverted=True; event.save(update_fields=["is_reverted"]); return combatant
+    combatant.current_hp=event.previous_hp; combatant.save(update_fields=["current_hp", "updated_at"]); event.is_reverted=True; event.save(update_fields=["is_reverted"]); _sync_character_hp(combatant); return combatant
