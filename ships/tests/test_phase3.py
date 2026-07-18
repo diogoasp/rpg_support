@@ -65,4 +65,4 @@ class ShipTests(TestCase):
   self.client.force_login(self.outsider)
   self.assertEqual(self.client.get('/navio/?campaign=c').status_code,403)
  def test_htmx_damage_fragment(self):
-  self.client.force_login(self.master); response=self.client.post('/mestre/c/navio/dano/',{'raw_damage':10,'resistance_reduction':0},HTTP_HX_REQUEST='true'); self.assertEqual(response.status_code,200); self.assertContains(response,'ship-card')
+  self.client.force_login(self.master); response=self.client.post('/mestre/c/navio/dano/',{'raw_damage':10,'resistance_reduction':0},HTTP_HX_REQUEST='true'); self.assertEqual(response.status_code,200); self.assertContains(response,'ship-card'); self.assertContains(response,'style="width:90.0%"')
