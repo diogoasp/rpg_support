@@ -12,50 +12,73 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.6"></script>
 </head>
-<body class="grand-line-body{% if user.is_master %} master-with-audio-panel{% endif %}">
+<body class="grand-line-body{% if user.is_authenticated %} app-body{% endif %}{% if user.is_master %} master-with-audio-panel{% endif %}">
   <div class="site-shell">
-    <nav class="navbar navbar-expand-lg navbar-dark pirate-navbar">
-      <div class="container-fluid px-3 px-lg-4">
-        <a class="navbar-brand pirate-brand" href="{% url 'dashboard:home' %}">
-          <span class="brand-mark">☠</span>
-          <span><strong>Grand Line</strong><small>RPG</small></span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Alternar navegação"><span class="navbar-toggler-icon"></span></button>
-        <div class="collapse navbar-collapse" id="mainNav">
-          {% if user.is_authenticated %}
-            <ul class="navbar-nav parchment-nav mx-lg-auto my-3 my-lg-0">
-              <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:home' %}">Início</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'ships:detail' %}">Navio</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'maps:list' %}">Mapas</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'history:list' %}">História</a></li>
-              {% if user.is_master %}<li class="nav-item"><a class="nav-link" href="{% url 'enemies:list' %}">Inimigos</a></li><li class="nav-item"><a class="nav-link" href="{% url 'audio_panel:library' %}">Áudio</a></li>{% endif %}
-            </ul>
-            <div class="d-flex align-items-center gap-3 user-ribbon">
-              <span>{{ user.get_full_name|default:user.username }} · {{ user.get_role_display }}</span>
-              <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-pirate-red" type="submit">Sair</button></form>
-            </div>
-          {% else %}
+    {% if user.is_authenticated %}
+      <div class="app-layout">
+        <aside class="app-sidebar">
+          <a class="pirate-brand sidebar-brand" href="{% url 'dashboard:home' %}">
+            <span class="brand-mark">☠</span>
+            <span><strong>Grand Line</strong><small>RPG</small></span>
+          </a>
+          <nav class="sidebar-nav" aria-label="Navegação principal">
+            <a href="{% url 'dashboard:home' %}"><span>⌂</span>Painel</a>
+            <a href="{% url 'ships:detail' %}"><span>⚓</span>Navio</a>
+            <a href="{% url 'maps:list' %}"><span>☸</span>Mapas</a>
+            <a href="{% url 'history:list' %}"><span>▣</span>História</a>
+            {% if user.is_player %}<a href="{% url 'characters:legacy_dashboard' %}"><span>☠</span>Personagem</a>{% endif %}
+            {% if user.is_master %}
+              <a href="{% url 'characters:master_list' %}"><span>♟</span>Personagens</a>
+              <a href="{% url 'enemies:list' %}"><span>⚔</span>Inimigos</a>
+              <a href="{% url 'audio_panel:library' %}"><span>♪</span>Áudio</a>
+            {% endif %}
+          </nav>
+          <div class="sidebar-user">
+            <span class="sidebar-avatar">☠</span>
+            <div><strong>{{ user.get_full_name|default:user.username }}</strong><small>{{ user.get_role_display }}</small></div>
+          </div>
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-pirate-red w-100" type="submit">Sair</button></form>
+        </aside>
+        <div class="app-content">
+          <header class="app-topbar">
+            <div><span class="text-uppercase text-sand fw-bold">Grand Line RPG</span><h1 class="h4 mb-0">{% block page_heading %}Diário de bordo{% endblock %}</h1></div>
+          </header>
+          <main class="pirate-main p-3 p-lg-4">
+    {% else %}
+      <nav class="navbar navbar-expand-lg navbar-dark pirate-navbar">
+        <div class="container-fluid px-3 px-lg-4">
+          <a class="navbar-brand pirate-brand" href="{% url 'dashboard:home' %}">
+            <span class="brand-mark">☠</span>
+            <span><strong>Grand Line</strong><small>RPG</small></span>
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Alternar navegação"><span class="navbar-toggler-icon"></span></button>
+          <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav parchment-nav mx-lg-auto my-3 my-lg-0">
               <li class="nav-item"><a class="nav-link" href="#conceito">Conceito</a></li>
               <li class="nav-item"><a class="nav-link" href="#aventuras">Aventuras</a></li>
               <li class="nav-item"><a class="nav-link" href="#mundo">Mundo</a></li>
             </ul>
             <a class="btn btn-pirate-red" href="{% url 'accounts:login' %}">Entrar</a>
-          {% endif %}
+          </div>
+        </div>
+      </nav>
+      <main class="container-fluid pirate-main py-4 px-3 px-lg-4">
+    {% endif %}
+        {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} parchment-card">{{ message }}</div>{% endfor %}{% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    {% if user.is_authenticated %}
         </div>
       </div>
-    </nav>
-    <main class="container-fluid pirate-main py-4 px-3 px-lg-4">
-      {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} parchment-card">{{ message }}</div>{% endfor %}{% endif %}
-      {% block content %}{% endblock %}
-    </main>
-    <footer class="pirate-footer px-4 py-4">
-      <div class="row g-4 align-items-center">
-        <div class="col-md-4"><div class="pirate-brand footer-brand"><span class="brand-mark">☠</span><span><strong>Grand Line</strong><small>RPG</small></span></div></div>
-        <div class="col-md-4"><p class="quote mb-0">“Não é sobre o destino,<br>é sobre a jornada.”</p></div>
-        <div class="col-md-4 text-md-end small text-sand">© 2024 Grand Line RPG. Todos os direitos reservados.</div>
-      </div>
-    </footer>
+    {% else %}
+      <footer class="pirate-footer px-4 py-4">
+        <div class="row g-4 align-items-center">
+          <div class="col-md-4"><div class="pirate-brand footer-brand"><span class="brand-mark">☠</span><span><strong>Grand Line</strong><small>RPG</small></span></div></div>
+          <div class="col-md-4"><p class="quote mb-0">“Não é sobre o destino,<br>é sobre a jornada.”</p></div>
+          <div class="col-md-4 text-md-end small text-sand">© 2024 Grand Line RPG. Todos os direitos reservados.</div>
+        </div>
+      </footer>
+    {% endif %}
   </div>
   <div class="modal fade" id="quickModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content" id="modal-content"></div></div></div>
   {% if user.is_master %}{% include "audio_panel/partials/persistent_panel.html" %}{% endif %}
