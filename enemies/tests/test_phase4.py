@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.test import TestCase
+from django.urls import reverse
 from io import StringIO
 from accounts.models import User
 from enemies.models import Enemy,EnemyAction,EnemyFaction,EnemyFeature
@@ -33,3 +34,15 @@ class EnemyTests(TestCase):
   self.assertEqual(Enemy.objects.filter(slug__startswith='manual-inimigos-').count(),len(ENEMIES))
   self.assertEqual(EnemyAction.objects.count(),action_count)
   self.assertEqual(EnemyFeature.objects.count(),feature_count)
+ def test_enemy_list_renders_pagination_for_imported_manual(self):
+  master=User.objects.create_user('m',role='master')
+  call_command('import_enemy_manual',stdout=StringIO())
+  self.client.force_login(master)
+  response=self.client.get(reverse('enemies:list'))
+  self.assertContains(response,'74 inimigos encontrados.')
+  self.assertContains(response,'Página 1 de 4')
+  self.assertContains(response,'?page=2')
+  self.assertEqual(len(response.context['enemies']),20)
+  response=self.client.get(reverse('enemies:list'),{'category':'creature','page':2})
+  self.assertContains(response,'Página 2 de')
+  self.assertContains(response,'?category=creature&page=1')

@@ -13,7 +13,8 @@ def enemy_list(request):
  if request.GET.get('q'):q=q.filter(name__icontains=request.GET['q'])
  for key,field in mapping.items():
   if request.GET.get(key)!='' and request.GET.get(key) is not None:q=q.filter(**{field:request.GET[key]})
- return render(request,'enemies/list.html',{'enemies':Paginator(q,20).get_page(request.GET.get('page')),'factions':EnemyFaction.objects.filter(is_active=True),'categories':ENEMY_CATEGORIES,'environments':ENEMY_ENVIRONMENTS,'complexities':OPERATIONAL_COMPLEXITY,'modes':ENCOUNTER_MODES})
+ params=request.GET.copy(); params.pop('page',None)
+ return render(request,'enemies/list.html',{'enemies':Paginator(q,20).get_page(request.GET.get('page')),'page_query':params.urlencode(),'factions':EnemyFaction.objects.filter(is_active=True),'categories':ENEMY_CATEGORIES,'environments':ENEMY_ENVIRONMENTS,'complexities':OPERATIONAL_COMPLEXITY,'modes':ENCOUNTER_MODES})
 @login_required
 def detail(request,pk): master(request); return render(request,'enemies/detail.html',{'enemy':get_object_or_404(Enemy.objects.select_related('faction').prefetch_related('actions','features'),pk=pk)})
 @login_required

@@ -1,1 +1,88 @@
-{% extends 'base.html' %}{% block title %}Catálogo de inimigos{% endblock %}{% block content %}<div class="d-flex justify-content-between"><h1>Catálogo de inimigos</h1><a class="btn btn-primary" href="{% url 'enemies:create' %}">Cadastrar inimigo</a></div><form class="card card-body my-3"><div class="row g-2"><div class="col-md-3"><input class="form-control" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome"></div><div class="col"><select class="form-select" name="category"><option value="">Categorias</option>{% for value,label in categories %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div><div class="col"><select class="form-select" name="faction"><option value="">Facções</option>{% for x in factions %}<option value="{{ x.pk }}">{{ x }}</option>{% endfor %}</select></div><div class="col"><select class="form-select" name="environment"><option value="">Ambientes</option>{% for value,label in environments %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div><div class="col"><button class="btn btn-outline-primary">Filtrar</button></div></div></form><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Imagem</th><th>Nome</th><th>Categoria</th><th>Facção</th><th>Nível</th><th>PV</th><th>CR</th><th>Complexidade</th><th>Modo</th><th>Gerador</th></tr></thead><tbody>{% for enemy in enemies %}<tr><td>{% if enemy.image %}<img src="{{ enemy.image.url }}" width="48" alt="">{% endif %}</td><td><a href="{% url 'enemies:detail' enemy.pk %}">{{ enemy.name }}</a></td><td>{{ enemy.get_category_display }}</td><td>{{ enemy.faction|default:'—' }}</td><td>{{ enemy.recommended_min_level }}–{{ enemy.recommended_max_level }}</td><td>{{ enemy.max_hp }}</td><td>{{ enemy.armor_class }}</td><td>{{ enemy.get_operational_complexity_display }}</td><td>{{ enemy.get_encounter_mode_display }}</td><td>{{ enemy.is_available_for_generator|yesno:'Sim,Não' }}</td></tr>{% empty %}<tr><td colspan="10">Nenhum inimigo encontrado.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Catálogo de inimigos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start gap-3">
+  <div>
+    <h1>Catálogo de inimigos</h1>
+    <p class="text-muted mb-0">{{ enemies.paginator.count }} inimigo{{ enemies.paginator.count|pluralize }} encontrado{{ enemies.paginator.count|pluralize }}.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'enemies:create' %}">Cadastrar inimigo</a>
+</div>
+<form class="card card-body my-3">
+  <div class="row g-2">
+    <div class="col-md-3"><input class="form-control" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome"></div>
+    <div class="col">
+      <select class="form-select" name="category">
+        <option value="">Categorias</option>
+        {% for value,label in categories %}<option value="{{ value }}"{% if request.GET.category == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <select class="form-select" name="faction">
+        <option value="">Facções</option>
+        {% for x in factions %}<option value="{{ x.pk }}"{% if request.GET.faction == x.pk|stringformat:'s' %} selected{% endif %}>{{ x }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <select class="form-select" name="environment">
+        <option value="">Ambientes</option>
+        {% for value,label in environments %}<option value="{{ value }}"{% if request.GET.environment == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col"><button class="btn btn-outline-primary">Filtrar</button></div>
+  </div>
+</form>
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>Imagem</th><th>Nome</th><th>Categoria</th><th>Facção</th><th>Nível</th><th>PV</th><th>CR</th><th>Complexidade</th><th>Modo</th><th>Gerador</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for enemy in enemies %}
+        <tr>
+          <td>{% if enemy.image %}<img src="{{ enemy.image.url }}" width="48" alt="">{% endif %}</td>
+          <td><a href="{% url 'enemies:detail' enemy.pk %}">{{ enemy.name }}</a></td>
+          <td>{{ enemy.get_category_display }}</td>
+          <td>{{ enemy.faction|default:'—' }}</td>
+          <td>{{ enemy.recommended_min_level }}–{{ enemy.recommended_max_level }}</td>
+          <td>{{ enemy.max_hp }}</td>
+          <td>{{ enemy.armor_class }}</td>
+          <td>{{ enemy.get_operational_complexity_display }}</td>
+          <td>{{ enemy.get_encounter_mode_display }}</td>
+          <td>{{ enemy.is_available_for_generator|yesno:'Sim,Não' }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10">Nenhum inimigo encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if enemies.has_other_pages %}
+  <nav class="d-flex justify-content-between align-items-center mt-3" aria-label="Paginação de inimigos">
+    <span class="text-muted">Página {{ enemies.number }} de {{ enemies.paginator.num_pages }}</span>
+    <ul class="pagination mb-0">
+      <li class="page-item{% if not enemies.has_previous %} disabled{% endif %}">
+        {% if enemies.has_previous %}
+          <a class="page-link" href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ enemies.previous_page_number }}">Anterior</a>
+        {% else %}
+          <span class="page-link">Anterior</span>
+        {% endif %}
+      </li>
+      {% for number in enemies.paginator.page_range %}
+        <li class="page-item{% if enemies.number == number %} active{% endif %}">
+          <a class="page-link" href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ number }}">{{ number }}</a>
+        </li>
+      {% endfor %}
+      <li class="page-item{% if not enemies.has_next %} disabled{% endif %}">
+        {% if enemies.has_next %}
+          <a class="page-link" href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ enemies.next_page_number }}">Próxima</a>
+        {% else %}
+          <span class="page-link">Próxima</span>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}
