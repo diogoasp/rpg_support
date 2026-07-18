@@ -281,6 +281,24 @@ class CharacterCreationRulesTests(TestCase):
         self.assertGreater(character.rule_proficiencies.count(), 0)
         self.assertTrue(character.inventory_items.filter(name__icontains="mochila").exists())
 
+    def test_species_variant_effects_are_applied_to_final_sheet(self):
+        human_user = User.objects.create_user("humanozarrao", role=User.Role.PLAYER)
+        self.campaign.players.add(human_user)
+        human_creation = fill_creation(get_or_create_draft(self.campaign, human_user), species="humano", variant="humanozarrao")
+        human = confirm_creation(human_creation)
+        self.assertEqual(human.species, "Humano (Humanozarrão)")
+        self.assertTrue(human.features.filter(source="Variante: Humanozarrão", name="size: Grande").exists())
+        self.assertTrue(human.features.filter(source="Variante: Humanozarrão", description__icontains="salvaguardas de strength").exists())
+
+        mink_user = User.objects.create_user("mink-robusto", role=User.Role.PLAYER)
+        self.campaign.players.add(mink_user)
+        mink_creation = fill_creation(get_or_create_draft(self.campaign, mink_user), species="mink", variant="robusto")
+        mink = confirm_creation(mink_creation)
+        self.assertEqual(mink.species, "Mink (Robusto)")
+        self.assertEqual(mink.movement, 12)
+        self.assertTrue(mink.features.filter(source="Variante: Robusto", description__icontains="terreno difícil").exists())
+        self.assertTrue(mink.features.filter(source__startswith="Ancestralidade:", name="Ancestralidade").exists())
+
     def test_overlapping_skill_choices_do_not_block_confirmation_or_stack_bonus(self):
         user = User.objects.create_user("overlap", role=User.Role.PLAYER)
         self.campaign.players.add(user)
