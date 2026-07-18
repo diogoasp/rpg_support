@@ -1555,7 +1555,7 @@ Há formulários separados para navio, dano, reparo, recursos, mapa, visibilidad
 
 Os dashboards fazem prefetch do navio ativo, mapas autorizados/recentes e sessões relevantes, evitando queries em loops. O jogador recebe cards compactos; o mestre recebe ações operacionais de navio, mapas e histórico. Os três modelos foram registrados no admin com busca, filtros, relações antecipadas e datas somente leitura.
 
-`seed_rpg` permanece idempotente e agora cria um navio, três mapas (público, privado e específico) e três sessões (duas publicadas e um rascunho), sem arquivos protegidos por direitos autorais.
+`seed_rpg` permanece idempotente e cria a campanha de desenvolvimento `Tambores da Libertação`, o navio `Caravela revolucionária de apoio`, três mapas (público, privado e específico) e três sessões (duas publicadas e um rascunho), sem arquivos protegidos por direitos autorais.
 
 ## 30.7. Divergências, limitações e pendências
 

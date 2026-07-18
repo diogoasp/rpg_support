@@ -45,7 +45,7 @@ python manage.py test
 
 ## Fase 3 — navio, mapas e história
 
-A aplicação inclui ficha operacional do navio, biblioteca de mapas com visibilidade global ou específica e histórico publicável das sessões. Execute `python manage.py seed_rpg` para criar dados demonstrativos idempotentes.
+A aplicação inclui ficha operacional do navio, biblioteca de mapas com visibilidade global ou específica e histórico publicável das sessões. Execute `python manage.py seed_rpg` para criar dados idempotentes de desenvolvimento, incluindo a campanha `Tambores da Libertação` e a `Caravela revolucionária de apoio`.
 
 Uploads são armazenados em `media/ships`, `media/maps` e `media/history`. Mapas e áudios são entregues por views autenticadas; em produção, mantenha `MEDIA_ROOT` fora da raiz pública e use Nginx interno/X-Accel conforme descrito em `documentação.md`.
 
