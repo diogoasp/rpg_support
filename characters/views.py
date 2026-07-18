@@ -8,6 +8,7 @@ from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
+from ships.models import Ship
 from .character_calculation_service import preview_derived_values
 from .character_creation_service import confirm_creation, get_or_create_draft, update_validation_state
 from .choice_dependency_service import adaptive_options
@@ -47,7 +48,13 @@ class PlayerCharacterEntryView(PlayerRequiredMixin,View):
         return render(request,self.template_name,{'campaigns':campaigns})
 class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
     template_name='characters/dashboard.html'
-    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request,self.kwargs.get('slug')); return c
+    def get_context_data(self,**kw):
+        c=super().get_context_data(**kw)
+        character=own_character(self.request,self.kwargs.get('slug'))
+        c['character']=character
+        c['campaign']=character.campaign
+        c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True).first()
+        return c
 class CharacterSheetView(PlayerCharacterView): template_name='characters/sheet.html'
 class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'
 CREATION_FORMS={

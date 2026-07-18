@@ -1,37 +1,115 @@
 {% extends 'base.html' %}
-{% block title %}
-  Meu personagem
-{% endblock %}
+{% block title %}Personagem · {{ character.name }}{% endblock %}
+{% block page_heading %}Personagem{% endblock %}
 {% block content %}
-  {% include 'characters/partials/character_card.html' %}
-  <div class="row mt-3">
-    <section class="col-md-6">
-      <h2 class="h4">Condições</h2>{% include 'characters/partials/condition_list.html' %}
-    </section>
-    <section class="col-md-6">
-      <h2 class="h4">Técnicas principais</h2>{% for t in character.techniques.all %}
-        {% if t.is_featured %}
-          <div class="card mb-2">
-            <div class="card-body">
-              <strong>{{ t.name }}</strong>{% if not t.is_available %}
-                <span class="badge bg-secondary">Bloqueada</span>
-              {% endif %}
-              <p>{{ t.description }}</p>
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-primary fw-bold mb-1">{{ campaign.name }}</p>
+      <h2 class="h1 mb-1">{{ character.name }}</h2>
+      <p class="mb-0 text-muted">Nv. {{ character.level }} · {{ character.species }} · {{ character.profession }} · {{ character.combat_style }}</p>
+    </div>
+    <div class="d-flex align-items-start gap-2">
+      <a class="btn btn-pirate-red" href="{% url 'characters:sheet' campaign.slug %}">Abrir ficha completa</a>
+    </div>
+  </div>
+
+  <div class="d-grid gap-3">
+    <details class="parchment-card border-0 shadow-sm p-3" open>
+      <summary class="h4 mb-0 d-flex justify-content-between align-items-center">
+        <span>Ficha de jogo</span>
+        <span class="small text-muted">Resumo</span>
+      </summary>
+      <div class="pt-3">
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="d-flex gap-3">
+              {% if character.portrait %}<img class="portrait" src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}">{% endif %}
+              <div>
+                <h3 class="h5 mb-1">{{ character.name }}</h3>
+                <p class="mb-2">{{ character.background|default:"Sem antecedente" }}</p>
+                {% if character.haki_declared and not character.haki_trained %}<span class="badge bg-warning text-dark">Haki não treinado</span>{% elif character.haki_trained %}<span class="badge bg-primary">Haki treinado</span>{% endif %}
+                {% if character.devil_fruit_available %}<span class="badge bg-success">Akuma no Mi disponível{% if character.devil_fruit_name %}: {{ character.devil_fruit_name }}{% endif %}</span>{% else %}<span class="badge bg-secondary">Sem Akuma no Mi</span>{% endif %}
+              </div>
             </div>
           </div>
+          <div class="col-lg-8">
+            <div class="row g-2">
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">PV</small><strong class="d-block h5 mb-0">{{ character.current_hp }}/{{ character.max_hp }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">PP</small><strong class="d-block h5 mb-0">{{ character.current_power_points }}/{{ character.max_power_points }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">CR</small><strong class="d-block h5 mb-0">{{ character.armor_class }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">Iniciativa</small><strong class="d-block h5 mb-0">{{ character.initiative|stringformat:'+d' }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">Deslocamento</small><strong class="d-block h5 mb-0">{{ character.movement }} m</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">Proficiência</small><strong class="d-block h5 mb-0">{{ character.proficiency_bonus|stringformat:'+d' }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">Recompensa</small><strong class="d-block h5 mb-0">{{ character.bounty }}</strong></div></div>
+              <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><small class="text-muted">Estilo</small><strong class="d-block h6 mb-0">{{ character.combat_style|default:"-" }}</strong></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+          <section class="col-lg-4">
+            <h3 class="h5">Atributos</h3>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-light border p-2">FOR {{ character.strength }} ({{ character.strength_modifier|stringformat:'+d' }})</span>
+              <span class="badge text-bg-light border p-2">DES {{ character.dexterity }} ({{ character.dexterity_modifier|stringformat:'+d' }})</span>
+              <span class="badge text-bg-light border p-2">CON {{ character.constitution }} ({{ character.constitution_modifier|stringformat:'+d' }})</span>
+              <span class="badge text-bg-light border p-2">SAB {{ character.wisdom }} ({{ character.wisdom_modifier|stringformat:'+d' }})</span>
+              <span class="badge text-bg-light border p-2">VON {{ character.willpower }} ({{ character.willpower_modifier|stringformat:'+d' }})</span>
+              <span class="badge text-bg-light border p-2">PRE {{ character.presence }} ({{ character.presence_modifier|stringformat:'+d' }})</span>
+            </div>
+          </section>
+          <section class="col-lg-4">
+            <h3 class="h5">Condições</h3>
+            {% include 'characters/partials/condition_list.html' %}
+          </section>
+          <section class="col-lg-4">
+            <h3 class="h5">Técnicas em destaque</h3>
+            {% for t in character.techniques.all %}
+              {% if t.is_featured %}
+                <article class="border rounded p-2 mb-2">
+                  <strong>{{ t.name }}</strong>{% if not t.is_available %} <span class="badge bg-secondary">Bloqueada</span>{% endif %}
+                  <p class="mb-0 small">{{ t.description }} {{ t.damage_text }} {{ t.cost }}</p>
+                </article>
+              {% endif %}
+            {% empty %}
+              <p class="text-muted mb-0">Nenhuma técnica em destaque.</p>
+            {% endfor %}
+          </section>
+        </div>
+
+        <div class="mt-3">
+          <a class="btn btn-outline-primary" href="{% url 'characters:sheet' campaign.slug %}">Ver ficha completa</a>
+        </div>
+      </div>
+    </details>
+
+    <details class="parchment-card border-0 shadow-sm p-3" open>
+      <summary class="h4 mb-0 d-flex justify-content-between align-items-center">
+        <span>Inventário</span>
+        <span class="small text-muted">{{ character.inventory_items.all|length }} itens visíveis</span>
+      </summary>
+      <div class="pt-3">
+        {% include 'inventory/partials/item_list.html' %}
+      </div>
+    </details>
+
+    <details class="parchment-card border-0 shadow-sm p-3" open>
+      <summary class="h4 mb-0 d-flex justify-content-between align-items-center">
+        <span>Navio</span>
+        {% if ship %}<span class="small text-muted">{{ ship.calculated_condition }}</span>{% endif %}
+      </summary>
+      <div class="pt-3">
+        {% include 'ships/partials/card.html' %}
+        {% if ship %}
+          <dl class="row mt-3 mb-0">
+            <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ ship.get_category_display }}</dd>
+            <dt class="col-sm-3">CR / resistência</dt><dd class="col-sm-9">{{ ship.resistance_class }} / {{ ship.resistance_bonus|stringformat:'+d' }}</dd>
+            <dt class="col-sm-3">Velocidade</dt><dd class="col-sm-9">{{ ship.speed|default:"-" }}</dd>
+            <dt class="col-sm-3">Canhões</dt><dd class="col-sm-9">{{ ship.cannons }}</dd>
+            <dt class="col-sm-3">Instalações</dt><dd class="col-sm-9">{{ ship.facilities|linebreaksbr|default:"-" }}</dd>
+          </dl>
         {% endif %}
-      {% empty %}
-        <p>Nenhuma técnica.</p>
-      {% endfor %}
-    </section>
-  </div><h2 class="h4 mt-3">Inventário recente</h2>{% for item in character.inventory_items.all|slice:':5' %}
-    <span class="badge text-bg-light border p-2">
-      {{ item.name }}{% if item.quantity != None %}
-        · {{ item.quantity }}
-      {% endif %}
-    </span>
-  {% endfor %}
-  <div class="mt-3">
-    <a class="btn btn-primary" href="{% url 'characters:sheet' character.campaign.slug %}">Ficha completa</a> <a class="btn btn-outline-primary" href="{% url 'inventory:player' character.campaign.slug %}">Inventário</a>
+      </div>
+    </details>
   </div>
 {% endblock %}

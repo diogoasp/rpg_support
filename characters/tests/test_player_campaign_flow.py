@@ -4,6 +4,8 @@ from django.urls import reverse
 from accounts.models import User
 from campaigns.models import Campaign
 from characters.models import Character, CharacterCreation
+from inventory.models import InventoryItem
+from ships.models import Ship
 
 
 def character_payload(name="Lina"):
@@ -100,3 +102,21 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Usopp")
         self.assertContains(response, "Atributos")
         self.assertContains(response, "Continuar criação")
+
+    def test_player_character_dashboard_has_collapsible_play_sections(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        InventoryItem.objects.create(character=character, name="Log Pose", description="Aponta para a próxima ilha.", quantity=1)
+        Ship.objects.create(campaign=self.c1, name="Going Merry", max_hp=100, current_hp=80, max_crew=8, current_crew=5, speed="8 nós", cannons=2, facilities="Cozinha")
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:dashboard", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<details", count=3)
+        self.assertContains(response, "Ficha de jogo")
+        self.assertContains(response, "Abrir ficha completa")
+        self.assertContains(response, reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+        self.assertContains(response, "Inventário")
+        self.assertContains(response, "Log Pose")
+        self.assertContains(response, "Navio")
+        self.assertContains(response, "Going Merry")
