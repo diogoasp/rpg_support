@@ -218,6 +218,25 @@ class CharacterCreationRulesTests(TestCase):
         self.assertGreater(character.rule_proficiencies.count(), 0)
         self.assertTrue(character.inventory_items.filter(name__icontains="mochila").exists())
 
+    def test_overlapping_skill_choices_do_not_block_confirmation_or_stack_bonus(self):
+        user = User.objects.create_user("overlap", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        creation = fill_creation(get_or_create_draft(self.campaign, user), style="lutador", profession="combatente", background="marinheiro")
+        atletismo = Skill.objects.get(name="Atletismo")
+        intimidacao = Skill.objects.get(name="Intimidação")
+        furtividade = Skill.objects.get(name="Furtividade")
+        investigacao = Skill.objects.get(name="Investigação")
+        creation.style_skills.set([atletismo, intimidacao])
+        creation.profession_skills.set([atletismo, furtividade])
+        creation.background_skills.set([atletismo, investigacao])
+
+        errors, _ = validate_creation(creation, final=True)
+        self.assertNotIn("duplicate_proficiency", errors)
+
+        character = confirm_creation(creation)
+        self.assertEqual(character.skills.filter(skill=atletismo).count(), 1)
+        self.assertEqual(character.rule_proficiencies.filter(proficiency__related_skill=atletismo).count(), 3)
+
     def test_review_post_confirms_character_and_redirects_to_sheet_dashboard(self):
         user = User.objects.create_user("review-ok", role=User.Role.PLAYER)
         self.campaign.players.add(user)

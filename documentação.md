@@ -1782,7 +1782,7 @@ HTMX atualiza opções e prévia, mas a confirmação depende sempre de validaç
 - Catálogo dos 10 estilos de combate de 1º nível.
 - Catálogo das 10 profissões principais, Timoneiro como subprofissão de Navegador e Sem Profissão com restrições.
 - Catálogo dos 12 antecedentes, incluindo Nobre com lista conferida no PDF.
-- Proficiências com origem e prevenção de duplicidade indevida.
+- Proficiências com origem e prevenção de soma duplicada. Sobreposição entre estilo, profissão e antecedente é permitida; a origem fica registrada, mas o bônus efetivo entra uma única vez.
 - PV inicial, CR, iniciativa, carga, bônus de perícia, salvaguarda, ataque e dano.
 - Regras de campanha preservadas: personagem não começa com Akuma no Mi e Haki declarado não libera uso intencional antes de treinamento.
 

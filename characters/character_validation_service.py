@@ -105,12 +105,6 @@ def validate_creation(creation, final=False):
         if raw_final > INITIAL_ATTRIBUTE_CAP:
             errors[f"attribute_{key}"] = "Atributo final acima do limite 20."
 
-    chosen_skill_ids = []
-    for qs in (creation.style_skills.all(), creation.profession_skills.all(), creation.background_skills.all(), creation.free_skills.all()):
-        chosen_skill_ids.extend(qs.values_list("id", flat=True))
-    if len(chosen_skill_ids) != len(set(chosen_skill_ids)):
-        errors["duplicate_proficiency"] = "Há proficiência repetida em escolhas que exigem nova perícia."
-
     if pending:
         errors["pending_choices"] = "Escolhas pendentes: " + ", ".join(pending)
 

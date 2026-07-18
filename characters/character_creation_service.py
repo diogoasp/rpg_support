@@ -34,10 +34,17 @@ def update_validation_state(creation):
 
 
 def apply_catalog_proficiencies(character, creation):
-    for skill in list(creation.style_skills.all()) + list(creation.profession_skills.all()) + list(creation.background_skills.all()) + list(creation.free_skills.all()):
-        proficiency = get_skill_proficiency(skill, creation.ruleset_version)
-        add_character_proficiency(character, proficiency, "creation_skill_choice", skill.pk, 1, True)
-        CharacterSkill.objects.update_or_create(character=character, skill=skill, defaults={"is_proficient": True, "is_expert": False})
+    skill_sources = (
+        ("estilo_de_combate", creation.combat_style_id, creation.style_skills.all()),
+        ("profissao", creation.profession_id, creation.profession_skills.all()),
+        ("antecedente", creation.background_id, creation.background_skills.all()),
+        ("sem_profissao", creation.profession_id, creation.free_skills.all()),
+    )
+    for source_type, source_object_id, skills in skill_sources:
+        for skill in skills:
+            proficiency = get_skill_proficiency(skill, creation.ruleset_version)
+            add_character_proficiency(character, proficiency, source_type, source_object_id, 1, True)
+            CharacterSkill.objects.update_or_create(character=character, skill=skill, defaults={"is_proficient": True, "is_expert": False})
 
     for save in creation.combat_style.saving_throws:
         proficiency = RuleProficiency.objects.get(ruleset_version=creation.ruleset_version, slug=f"salvaguarda-{save}")

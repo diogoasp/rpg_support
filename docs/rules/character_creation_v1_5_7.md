@@ -58,7 +58,7 @@ Este documento registra somente as regras necessárias para a implementação do
 | Páginas | Regra | Interpretação técnica | Responsável | Testes |
 | --- | --- | --- | --- | --- |
 | 226-234, 290-292 | Perícias mapeadas por atributo; Constituição não tem perícias gerais. | Seed atualiza `Skill` para os atributos canônicos. | `Skill`, `RuleProficiency` | `test_seed_catalog_is_idempotent_and_complete` |
-| 226-234 | Proficiência repetida não soma duas vezes. | `CharacterProficiency` preserva origem e `resolve_proficiency_sources` usa maior multiplicador. | `CharacterProficiency`, `proficiency_resolution_service` | `test_confirmation_creates_character_with_breakdowns_and_origins` |
+| 226-234 | Proficiência repetida não soma duas vezes. | Sobreposição entre estilo, profissão e antecedente não bloqueia a criação. `CharacterProficiency` preserva cada origem; `CharacterSkill` mantém uma única proficiência efetiva para cálculo. | `CharacterProficiency`, `proficiency_resolution_service`, `character_creation_service` | `test_confirmation_creates_character_with_breakdowns_and_origins`, `test_overlapping_skill_choices_do_not_block_confirmation_or_stack_bonus` |
 | 10-11, 31-104 | PV inicial: dado máximo do estilo + modificador de Constituição + PV base da espécie. | Cálculo centralizado e usado na confirmação. | `calculate_initial_hp`, `preview_derived_values` | `test_calculation_services`, `test_confirmation_creates_character_with_breakdowns_and_origins` |
 | 10-11 | CR padrão 10 + Destreza; iniciativa Destreza; carga Força x 10. | Funções puras usadas na prévia e confirmação. | `character_calculation_service` | `test_calculation_services` |
 
