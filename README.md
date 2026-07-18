@@ -45,7 +45,7 @@ python manage.py test
 
 ## Fase 3 — navio, mapas e história
 
-A aplicação inclui ficha operacional do navio, biblioteca de mapas com visibilidade global ou específica e histórico publicável das sessões. Execute `python manage.py seed_rpg` para criar apenas os dados idempotentes de desenvolvimento da mesa atual: a campanha `Tambores da Libertação` e a `Caravela revolucionária de apoio`.
+A aplicação inclui ficha operacional do navio, biblioteca de mapas com visibilidade global ou específica e histórico publicável das sessões. Execute `make seed` para importar o catálogo do Livro do Jogador e criar os dados idempotentes de desenvolvimento da mesa atual: a campanha `Tambores da Libertação` e a `Caravela revolucionária de apoio`.
 
 Uploads são armazenados em `media/ships`, `media/maps` e `media/history`. Mapas e áudios são entregues por views autenticadas; em produção, mantenha `MEDIA_ROOT` fora da raiz pública e use Nginx interno/X-Accel conforme descrito em `documentação.md`.
 
@@ -61,10 +61,10 @@ Uploads são armazenados em `media/ships`, `media/maps` e `media/history`. Mapas
 
 O mestre dispõe de catálogo global reutilizável em `/mestre/inimigos/` e, no card de cada campanha, do gerador de encontros. O gerador considera participantes, dificuldade, quantidade, chefe, facção, ambiente e inimigo obrigatório; sua proposta é editável por HTMX e só é persistida após confirmação como rascunho ou preparada. A estimativa é deliberadamente orientativa e não inicia combate.
 
-Para criar/atualizar a campanha e o navio de desenvolvimento:
+Para importar o catálogo completo e criar/atualizar a campanha e o navio de desenvolvimento:
 
 ```bash
-python manage.py seed_rpg
+make seed
 ```
 
 
@@ -104,7 +104,13 @@ Atualizações normais usam `make deploy`; a opção recomendada na VPS é `make
 
 ## Livro do Jogador 1.5.7 — criação assistida
 
-O catálogo oficial usado pelo assistente é versionado como `player-book-1.5.7`. Para cadastrar ou atualizar atributos, perícias, espécies, variantes, estilos, profissões, antecedentes, proficiências, características e equipamentos iniciais:
+O catálogo oficial usado pelo assistente é versionado como `player-book-1.5.7`. Para cadastrar ou atualizar atributos, perícias, espécies, variantes, ancestralidades, estilos, profissões, antecedentes, proficiências, características e equipamentos iniciais junto com os dados de desenvolvimento:
+
+```bash
+make seed
+```
+
+Para rodar apenas o catálogo do Livro do Jogador:
 
 ```bash
 make seed-player-book

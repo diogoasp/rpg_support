@@ -39,6 +39,7 @@ from characters.models import (
     Skill,
     Species,
     SpeciesVariant,
+    ZoanAncestryTrait,
 )
 
 
@@ -59,6 +60,22 @@ def fill_creation(creation, *, species="humano", variant="humano-comum", style="
     creation.background_attribute_bonuses = {"dexterity": 1, "constitution": 1}
     creation.favorite_weapon = creation.combat_style.favorite_weapon_options[0]
     creation.innate_ability = creation.combat_style.innate_ability_options[0]
+    creation.ancestry_choices = {}
+    if creation.species.slug == "celestial":
+        creation.ancestry_choices["dial"] = "Dial inicial"
+    if creation.species.slug in ("mink", "povo-do-mar"):
+        creation.ancestry_text = "ancestral coerente"
+        creation.ancestry_choices.update({"common_traits": ["visao-agucada"], "specific_traits": []})
+    if creation.species_variant:
+        required = creation.species_variant.required_choices or []
+        if "expert_skill" in required:
+            creation.ancestry_choices["expert_skill"] = Skill.objects.filter(is_active=True).first().slug
+        if "snake_name" in required:
+            creation.ancestry_choices["snake_name"] = "Hebi"
+        if "restricted_skill" in required:
+            creation.ancestry_choices["restricted_skill"] = "Haki"
+        if "marine_ancestry" in required:
+            creation.ancestry_choices["marine_ancestry"] = "tubarão"
     creation.save()
     creation.background_skills.set(list(creation.background.allowed_skills.all())[: creation.background.skill_choice_count])
     used = list(creation.background_skills.values_list("id", flat=True))
@@ -93,6 +110,10 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(Background.objects.count(), 12)
         self.assertEqual(Skill.objects.filter(related_attribute="presence").count(), 5)
         self.assertEqual(Skill.objects.filter(related_attribute="willpower").count(), 5)
+        self.assertEqual(
+            set(ZoanAncestryTrait.objects.values_list("name", flat=True)),
+            {"Visão Aguçada", "Faro Aguçado", "Garras", "Presas", "Casco ou Carapaça", "Veneno", "Asas", "Predador"},
+        )
 
     def test_each_species_and_variant_is_available(self):
         self.assertEqual(set(Species.objects.values_list("name", flat=True)), {"Anão", "Celestial", "Gigante", "Humano", "Lunariano", "Mestiço", "Mink", "Povo do Mar"})
@@ -167,6 +188,14 @@ class CharacterCreationRulesTests(TestCase):
                 "species": humano.pk,
                 "species_variant": comum.pk,
                 "ancestry_text": "",
+                "mixed_species_origins": [],
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": Skill.objects.first().pk,
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
                 "species_bonus_mode": "plus1_plus1",
                 "species_bonus_primary": "strength",
                 "species_bonus_secondary": "dexterity",
@@ -176,6 +205,32 @@ class CharacterCreationRulesTests(TestCase):
         self.assertTrue(species_form.is_valid(), species_form.errors)
         species_form.save()
         self.assertEqual(creation.species_attribute_bonuses, {"strength": 1, "dexterity": 1})
+        self.assertTrue(creation.ancestry_choices["expert_skill"])
+
+        mestico = Species.objects.get(slug="mestico")
+        gigante = Species.objects.get(slug="gigante")
+        species_form = CharacterCreationSpeciesForm(
+            {
+                "species": mestico.pk,
+                "species_variant": "",
+                "ancestry_text": "",
+                "mixed_species_origins": [humano.pk, gigante.pk],
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": "",
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
+                "species_bonus_mode": "plus2",
+                "species_bonus_primary": "constitution",
+                "species_bonus_secondary": "",
+            },
+            instance=creation,
+        )
+        self.assertTrue(species_form.is_valid(), species_form.errors)
+        species_form.save()
+        self.assertEqual(set(creation.mixed_species_origins.values_list("slug", flat=True)), {"humano", "gigante"})
 
         marinheiro = Background.objects.get(slug="marinheiro")
         background_form = CharacterCreationBackgroundForm(

@@ -38,12 +38,27 @@ def validate_creation(creation, final=False):
         common_traits = creation.ancestry_choices.get("common_traits", [])
         specific_traits = creation.ancestry_choices.get("specific_traits", [])
         predator = creation.ancestry_choices.get("predator")
+        marine_ancestry = creation.ancestry_choices.get("marine_ancestry")
+        if not (common_traits or specific_traits or predator or marine_ancestry):
+            errors["ancestry_choices"] = "Escolha os traços ou informe a ancestralidade específica."
         if predator and (common_traits or specific_traits):
             errors["ancestry_choices"] = "Predador substitui os demais traços de ancestralidade."
         if len(common_traits) > 2 or len(specific_traits) > 1:
             errors["ancestry_choices"] = "Traços Zoan acima do limite permitido."
         if predator and not (creation.ancestry_choices.get("carnivore_hunter") or creation.approved_by_master):
             errors["ancestry_choices"] = "Predador exige ancestral carnívoro caçador ou autorização do mestre."
+    if creation.species and "dial" in creation.species.required_choices and not creation.ancestry_choices.get("dial"):
+        errors["dial"] = "Informe o dial inicial."
+    if creation.species_variant:
+        required = creation.species_variant.required_choices or []
+        if "expert_skill" in required and not creation.ancestry_choices.get("expert_skill"):
+            errors["expert_skill"] = "Escolha a perícia com especialização."
+        if "snake_name" in required and not creation.ancestry_choices.get("snake_name"):
+            errors["snake_name"] = "Informe o nome da Cobra Bélica."
+        if "restricted_skill" in required and not creation.ancestry_choices.get("restricted_skill"):
+            errors["restricted_skill"] = "Escolha Haki, Sobrenatural ou Sorte."
+        if "marine_ancestry" in required and not creation.ancestry_choices.get("marine_ancestry"):
+            errors["marine_ancestry"] = "Informe a ancestralidade marinha."
 
     if not creation.combat_style:
         errors["combat_style"] = "Escolha um estilo de combate."
