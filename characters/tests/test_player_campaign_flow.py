@@ -120,3 +120,21 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Log Pose")
         self.assertContains(response, "Navio")
         self.assertContains(response, "Going Merry")
+
+    def test_character_sheet_uses_final_visual_layout_with_character_data(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        InventoryItem.objects.create(character=character, name="Clima-Tact", description="Bastão climático.", quantity=1)
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "op-sheet")
+        self.assertContains(response, "Ficha de Personagem")
+        self.assertContains(response, "Nami")
+        self.assertContains(response, "Atributos e Status Vitais")
+        self.assertContains(response, "Vontade (VON)")
+        self.assertContains(response, "Presença (PRE)")
+        self.assertContains(response, "Clima-Tact")
+        self.assertNotContains(response, "Inteligência")
+        self.assertNotContains(response, "Carisma")

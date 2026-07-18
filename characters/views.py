@@ -25,11 +25,11 @@ from .forms import (
     ConditionForm,
     ResourceForm,
 )
-from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterRuleException, CharacterTechnique
+from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique
 from .services import add_character_condition, deactivate_character_condition, update_character_resources
 
 def rich_queryset():
-    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)), 'skills__skill', Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
+    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
 def own_character(request,slug=None):
     q=rich_queryset().filter(user=request.user,campaign__players=request.user)
     if slug:q=q.filter(campaign__slug=slug)
@@ -55,7 +55,15 @@ class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
         c['campaign']=character.campaign
         c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True,belongs_to_crew=True).first()
         return c
-class CharacterSheetView(PlayerCharacterView): template_name='characters/sheet.html'
+class CharacterSheetView(PlayerCharacterView):
+    template_name='characters/sheet.html'
+    def get_context_data(self,**kw):
+        c=super().get_context_data(**kw)
+        character=c['character']
+        c['carrying_capacity']=character.strength*10
+        c['featured_item']=next(iter(character.inventory_items.all()),None)
+        c['featured_techniques']=[tech for tech in character.techniques.all() if tech.is_featured]
+        return c
 class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'
 CREATION_FORMS={
     'concept':CharacterCreationConceptForm,
