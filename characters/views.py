@@ -53,7 +53,7 @@ class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
         character=own_character(self.request,self.kwargs.get('slug'))
         c['character']=character
         c['campaign']=character.campaign
-        c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True).first()
+        c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True,belongs_to_crew=True).first()
         return c
 class CharacterSheetView(PlayerCharacterView): template_name='characters/sheet.html'
 class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'

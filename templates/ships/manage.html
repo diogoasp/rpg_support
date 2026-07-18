@@ -1,1 +1,42 @@
-{% extends 'base.html' %}{% block content %}<div class="d-flex justify-content-between"><h1>Gestão do navio · {{ campaign.name }}</h1><a class="btn btn-primary" href="{% url 'ships:edit' campaign.slug %}">{% if ship %}Editar{% else %}Criar navio{% endif %}</a></div>{% include 'ships/partials/card.html' with is_master=True %}{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+    <div>
+      <h1>Gestão de navios · {{ campaign.name }}</h1>
+      <p class="text-muted mb-0">Cadastre navios da campanha e defina qual pertence à tripulação.</p>
+    </div>
+    <a class="btn btn-primary align-self-md-start" href="{% url 'ships:create' campaign.slug %}">Cadastrar navio</a>
+  </div>
+
+  <h2 class="h4">Navio da tripulação</h2>
+  {% include 'ships/partials/card.html' with is_master=True %}
+
+  <h2 class="h4 mt-4">Navios cadastrados</h2>
+  <div class="list-group">
+    {% for listed_ship in ships %}
+      <div class="list-group-item">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+          <div>
+            <h3 class="h5 mb-1">{{ listed_ship.name }}</h3>
+            <p class="mb-1">
+              {{ listed_ship.get_category_display }} · PV {{ listed_ship.current_hp }}/{{ listed_ship.max_hp }} · {{ listed_ship.calculated_condition }}
+              {% if listed_ship.belongs_to_crew %}<span class="badge bg-success ms-1">Pertence à tripulação</span>{% endif %}
+            </p>
+            <small class="text-muted">Tripulação {{ listed_ship.current_crew }}/{{ listed_ship.max_crew }} · Recursos: {{ listed_ship.get_navigation_resources_display }}</small>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-start">
+            {% if not listed_ship.belongs_to_crew %}
+              <form method="post" action="{% url 'ships:assign' campaign.slug listed_ship.pk %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-pirate-red" type="submit">Definir para a tripulação</button>
+              </form>
+            {% endif %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'ships:edit_item' campaign.slug listed_ship.pk %}">Editar</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="list-group-item text-muted">Nenhum navio cadastrado nesta campanha.</div>
+    {% endfor %}
+  </div>
+{% endblock %}

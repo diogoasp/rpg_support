@@ -106,7 +106,7 @@ class PlayerCampaignFlowTests(TestCase):
     def test_player_character_dashboard_has_collapsible_play_sections(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         InventoryItem.objects.create(character=character, name="Log Pose", description="Aponta para a próxima ilha.", quantity=1)
-        Ship.objects.create(campaign=self.c1, name="Going Merry", max_hp=100, current_hp=80, max_crew=8, current_crew=5, speed="8 nós", cannons=2, facilities="Cozinha")
+        Ship.objects.create(campaign=self.c1, name="Going Merry", max_hp=100, current_hp=80, max_crew=8, current_crew=5, speed="8 nós", cannons=2, facilities="Cozinha", belongs_to_crew=True)
 
         self.client.force_login(self.player)
         response = self.client.get(reverse("characters:dashboard", kwargs={"slug": self.c1.slug}))

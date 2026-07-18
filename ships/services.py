@@ -9,10 +9,16 @@ def _authorize(user,campaign,ship=None):
 @transaction.atomic
 def create_or_update_ship(*,user,campaign:Campaign,ship:Ship|None=None,**data)->Ship:
     _authorize(user,campaign,ship)
-    if data.get('is_active',ship.is_active if ship else True): Ship.objects.select_for_update().filter(campaign=campaign,is_active=True).exclude(pk=getattr(ship,'pk',None)).update(is_active=False)
     ship=ship or Ship(campaign=campaign)
     for key,value in data.items(): setattr(ship,key,value)
     ship.full_clean(); ship.save(); return ship
+@transaction.atomic
+def assign_ship_to_crew(*,user,campaign:Campaign,ship:Ship)->Ship:
+    _authorize(user,campaign,ship)
+    if not ship.is_active: raise ValidationError('Somente navios ativos podem pertencer à tripulação.')
+    Ship.objects.select_for_update().filter(campaign=campaign,belongs_to_crew=True).exclude(pk=ship.pk).update(belongs_to_crew=False)
+    ship.belongs_to_crew=True
+    ship.full_clean(); ship.save(update_fields=['belongs_to_crew','updated_at']); return ship
 @transaction.atomic
 def damage_ship(*,user,campaign,ship,raw_damage:int,resistance_reduction:int=0,final_damage:int|None=None)->Ship:
     _authorize(user,campaign,ship); locked=Ship.objects.select_for_update().get(pk=ship.pk)

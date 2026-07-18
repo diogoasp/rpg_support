@@ -4,7 +4,10 @@ from django.shortcuts import get_object_or_404,redirect,render
 from campaigns.models import Campaign
 from .forms import *
 from .models import Ship
-from .services import create_or_update_ship,damage_ship,repair_ship,update_navigation_resources
+from .services import assign_ship_to_crew,create_or_update_ship,damage_ship,repair_ship,update_navigation_resources
+
+def crew_ship(campaign):
+ return Ship.objects.filter(campaign=campaign,is_active=True,belongs_to_crew=True).first()
 
 def _campaign(request,slug=None):
  if request.user.is_master:
@@ -16,23 +19,32 @@ def _campaign(request,slug=None):
  return c
 @login_required
 def detail(request):
- c=_campaign(request,request.GET.get('campaign')); return render(request,'ships/detail.html',{'campaign':c,'ship':Ship.objects.filter(campaign=c,is_active=True).first()})
+ c=_campaign(request,request.GET.get('campaign')); return render(request,'ships/detail.html',{'campaign':c,'ship':crew_ship(c)})
 @login_required
 def manage(request,slug):
  c=_campaign(request,slug)
  if not request.user.is_master: raise PermissionDenied
- return render(request,'ships/manage.html',{'campaign':c,'ship':Ship.objects.filter(campaign=c,is_active=True).first()})
+ return render(request,'ships/manage.html',{'campaign':c,'ship':crew_ship(c),'ships':Ship.objects.filter(campaign=c,is_active=True)})
 @login_required
-def edit(request,slug):
+def edit(request,slug,pk=None):
  c=_campaign(request,slug)
  if not request.user.is_master: raise PermissionDenied
- ship=Ship.objects.filter(campaign=c,is_active=True).first(); form=ShipForm(request.POST or None,request.FILES or None,instance=ship)
+ ship=get_object_or_404(Ship,campaign=c,pk=pk) if pk else None
+ form=ShipForm(request.POST or None,request.FILES or None,instance=ship)
  if request.method=='POST' and form.is_valid(): create_or_update_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data); return redirect('ships:manage',slug=slug)
  return render(request,'ships/form.html',{'form':form,'campaign':c,'ship':ship})
+@login_required
+def assign(request,slug,pk):
+ c=_campaign(request,slug)
+ if not request.user.is_master: raise PermissionDenied
+ ship=get_object_or_404(Ship,campaign=c,pk=pk)
+ if request.method!='POST': raise PermissionDenied
+ assign_ship_to_crew(user=request.user,campaign=c,ship=ship)
+ return redirect('ships:manage',slug=slug)
 def _action(request,slug,kind):
  c=_campaign(request,slug)
  if not request.user.is_master: raise PermissionDenied
- ship=get_object_or_404(Ship,campaign=c,is_active=True); forms={'damage':DamageShipForm,'repair':RepairShipForm,'resources':NavigationResourcesForm}; form=forms[kind](request.POST or None,**({'instance':ship} if kind=='resources' else {}))
+ ship=get_object_or_404(Ship,campaign=c,is_active=True,belongs_to_crew=True); forms={'damage':DamageShipForm,'repair':RepairShipForm,'resources':NavigationResourcesForm}; form=forms[kind](request.POST or None,**({'instance':ship} if kind=='resources' else {}))
  if request.method=='POST' and form.is_valid():
   if kind=='damage': ship=damage_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data)
   elif kind=='repair': ship=repair_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data)

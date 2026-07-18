@@ -31,7 +31,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["campaigns"] = Campaign.objects.filter(master=self.request.user).prefetch_related(
-            "players", Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
+            "players", Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
@@ -50,7 +50,7 @@ class PlayerDashboardView(PlayerRequiredMixin, TemplateView):
         context["campaigns"] = self.request.user.campaigns.select_related("master").prefetch_related(
             Prefetch("characters", Character.objects.filter(user=self.request.user), to_attr="player_characters"),
             Prefetch("character_creations", CharacterCreation.objects.filter(user=self.request.user, status__in=(CharacterCreation.Status.DRAFT, CharacterCreation.Status.READY, CharacterCreation.Status.REOPENED)), to_attr="player_character_creations"),
-            Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
+            Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
             Prefetch("maps", visible_maps, to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.filter(is_published=True), to_attr="dashboard_sessions"),
         )
