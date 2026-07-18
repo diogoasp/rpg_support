@@ -1,17 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Entrar · Grand Line Companion{% endblock %}
+{% block title %}Entrar · Grand Line RPG{% endblock %}
 {% block content %}
-<div class="row justify-content-center py-5"><div class="col-md-6 col-lg-4">
-  <div class="card border-0 shadow-sm"><div class="card-body p-4">
-    <h1 class="h3 mb-4">Entrar na campanha</h1>
-    {% if form.errors %}<div class="alert alert-danger">Usuário ou senha inválidos.</div>{% endif %}
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3"><label class="form-label" for="id_username">Usuário</label><input class="form-control" id="id_username" name="username" required autofocus></div>
-      <div class="mb-4"><label class="form-label" for="id_password">Senha</label><input class="form-control" type="password" id="id_password" name="password" required></div>
-      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-      <button class="btn btn-primary w-100" type="submit">Entrar</button>
-    </form>
-  </div></div>
-</div></div>
+<section class="hero-panel" id="conceito">
+  <div class="row g-4 align-items-center w-100">
+    <div class="col-lg-7 hero-copy">
+      <p class="text-uppercase text-primary fw-bold mb-2">Grand Line RPG</p>
+      <h1>Viva sua própria <span>aventura</span></h1>
+      <p>Um RPG de mesa online inspirado em aventuras de piratas, tesouros perdidos, mapas antigos e jornadas lendárias.</p>
+      <div class="d-flex flex-wrap gap-3"><a class="btn btn-primary btn-lg" href="#login">Entrar agora</a><a class="btn btn-outline-primary btn-lg" href="#aventuras">Saber mais</a></div>
+    </div>
+    <div class="col-lg-5" id="login">
+      <div class="login-card parchment-card p-4 p-md-5">
+        <p class="text-uppercase text-primary fw-bold mb-2">Bem-vindo ao bando</p>
+        <h2 class="display-6 mb-3">Entrar na campanha</h2>
+        <p class="mb-4">Acesse seu diário, mapas, navio, encontros e recompensas do Grand Line.</p>
+        {% if form.errors %}<div class="alert alert-danger">Usuário ou senha inválidos.</div>{% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3"><label class="form-label" for="id_username">Usuário</label><input class="form-control form-control-lg" id="id_username" name="username" required autofocus></div>
+          <div class="mb-4"><label class="form-label" for="id_password">Senha</label><input class="form-control form-control-lg" type="password" id="id_password" name="password" required></div>
+          {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+          <button class="btn btn-primary btn-lg w-100" type="submit">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="action-strip" id="aventuras">
+  <h2 class="section-title text-center mb-4">O que você pode fazer</h2>
+  <div class="row g-4">
+    <div class="col-md-3"><article class="card feature-card"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Crie seu personagem</h3><p>Origem, classe, técnicas, condições e inventário em uma ficha única.</p></div></article></div>
+    <div class="col-md-3"><article class="card feature-card"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Monte sua tripulação</h3><p>Campanhas, jogadores, navio e atalhos para a sessão presencial.</p></div></article></div>
+    <div class="col-md-3"><article class="card feature-card"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Explore e descubra</h3><p>Mapas, tesouros, registros de sessão e pistas liberadas pelo mestre.</p></div></article></div>
+    <div class="col-md-3"><article class="card feature-card"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Participe da história</h3><p>Encontros, áudio ambiente e confrontos narrativos guiados pelo destino.</p></div></article></div>
+  </div>
+</section>
+<section class="map-section" id="mundo">
+  <div class="row g-4 align-items-center">
+    <div class="col-lg-4"><h2 class="display-6">Um mundo sem limites</h2><p>Do East Blue ao Novo Mundo, cada decisão muda o rumo da tripulação.</p><a class="btn btn-outline-light" href="#login">Explorar o mundo</a></div>
+    <div class="col-lg-8"><div class="map-board rounded"></div></div>
+  </div>
+</section>
 {% endblock %}
