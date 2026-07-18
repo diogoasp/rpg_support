@@ -1714,3 +1714,100 @@ Os scripts gravam dump PostgreSQL custom e tar de mídia diretamente em `BACKUP_
 Não foi implantada CSP porque templates atuais dependem de bibliotecas CDN e comportamentos inline; uma política não testada quebraria HTMX/player. Não há blue-green nem rollback automático de banco. O template padrão entrega HTTP; certificados variam por domínio e a configuração TLS deve ser concluída na VPS antes de HSTS. O healthcheck do Nginx foi omitido para não instalar ferramenta exclusivamente para isso; o smoke externo cobre Nginx. Não foram adicionados IA, Celery, Redis, WebSockets, API, Kubernetes ou regras de domínio.
 
 A verificação inicial encontrou drift entre models e migrations legado. Foram geradas migrations `0002` para accounts, characters, history, inventory, maps e ships, compostas por alinhamento de metadados/campos e renome de índices; nenhuma nova funcionalidade de domínio foi introduzida. Elas foram aplicadas e a verificação posterior retornou `No changes detected`.
+## Criação Assistida de Personagens — Livro do Jogador 1.5.7
+
+### Fonte normativa
+
+A criação assistida usa exclusivamente `OP RPG - Livro do Jogador 1.5.7.pdf`, versionado internamente como `player-book-1.5.7`. As decisões de implementação estão registradas em `docs/rules/character_creation_v1_5_7.md`.
+
+### Arquitetura do catálogo
+
+O catálogo é versionado e idempotente. O comando `python manage.py seed_player_book_rules_1_5_7` cadastra atributos, perícias, espécies, variantes, referências de traços Zoan, estilos de combate, profissões, Timoneiro, Sem Profissão, antecedentes, proficiências e dados estruturados de escolhas/equipamentos iniciais.
+
+Models principais:
+
+- `RuleAttribute`: atributos canônicos do OP RPG.
+- `Skill`: perícias gerais com atributos canônicos; campos legados continuam para compatibilidade.
+- `RuleProficiency`: proficiências versionadas de perícia, salvaguarda, arma, kit, ferramenta e característica.
+- `Species` e `SpeciesVariant`: PV base, tamanho, deslocamento, nado, benefícios, dificuldades, traços culturais e escolhas obrigatórias.
+- `ZoanAncestryTrait`: referências reutilizáveis para ancestralidades de Mink e Povo do Mar.
+- `CombatStyle`: dado de vida, salvaguardas, perícias permitidas, proficiências, atributos primários, arma favorita, habilidade inata, equipamento, dinheiro e características de 1º nível.
+- `Profession`: profissões principais, `Sem Profissão` e subprofissão `Timoneiro`.
+- `Background`: antecedentes, perícias, atributo recomendado e característica especial.
+- `CharacterCreation`: rascunho, etapa atual, pendências, erros, avisos, aprovação do mestre e escolhas estruturadas.
+- `CharacterAttribute`: decomposição por base, bônus de espécie, bônus de antecedente, outros bônus e valor final.
+- `CharacterProficiency`: preserva origem de cada proficiência e evita duplicidade silenciosa.
+- `CharacterRuleException`: registra usuário, data, regra ignorada e justificativa.
+
+### Services
+
+- `creation_catalog_service`: consulta opções válidas por versão.
+- `character_calculation_service`: funções puras para modificadores, proficiência, PV, CR, iniciativa, carga, perícias, salvaguardas, ataque, dano, pontos raciais e mestiços.
+- `character_validation_service`: valida dependências, quantidades de escolhas, limites, variantes, ancestralidade, Timoneiro, Sem Profissão, duplicidade e pendências.
+- `choice_dependency_service`: descreve dependências quando uma escolha anterior muda e fornece opções adaptativas.
+- `proficiency_resolution_service`: registra proficiências com origem e resolve sobreposição pelo maior multiplicador.
+- `equipment_resolution_service`: materializa equipamentos iniciais no inventário.
+- `character_creation_service`: cria/atualiza rascunho e confirma a ficha reconstruindo `Character` a partir das escolhas.
+
+### Fluxo e rotas
+
+Jogador:
+
+- `/personagem/<slug>/criar/`: assistente em etapas.
+- `/personagem/<slug>/criar/preview/`: prévia HTMX de PV, CR, iniciativa, carga e atributos.
+- `/personagem/<slug>/criar/opcoes/`: opções adaptativas HTMX.
+
+Mestre:
+
+- `/mestre/personagens/`: lista/revisão.
+- `/mestre/criacoes/<pk>/excecao/`: registra aprovação de exceção.
+- `/mestre/criacoes/<pk>/reabrir/`: reabre criação concluída.
+
+Templates:
+
+- `templates/characters/creation/wizard.html`
+- `templates/characters/creation/partials/preview.html`
+- `templates/characters/creation/partials/options.html`
+- `templates/characters/creation/partials/review.html`
+
+HTMX atualiza opções e prévia, mas a confirmação depende sempre de validação no backend.
+
+### Regras implementadas
+
+- Atributos canônicos: Força, Destreza, Constituição, Sabedoria, Vontade e Presença.
+- Métodos de atributo: conjunto padrão e geração 4d6 descarta menor.
+- Bônus de espécie/antecedente armazenados separadamente.
+- Catálogo das 8 espécies, variantes obrigatórias e derivação de mestiço por duas origens.
+- Referências de traços Zoan para ancestralidade sem copiar poderes de Akuma no Mi para a ficha.
+- Catálogo dos 10 estilos de combate de 1º nível.
+- Catálogo das 10 profissões principais, Timoneiro como subprofissão de Navegador e Sem Profissão com restrições.
+- Catálogo dos 12 antecedentes, incluindo Nobre com lista conferida no PDF.
+- Proficiências com origem e prevenção de duplicidade indevida.
+- PV inicial, CR, iniciativa, carga, bônus de perícia, salvaguarda, ataque e dano.
+- Regras de campanha preservadas: personagem não começa com Akuma no Mi e Haki declarado não libera uso intencional antes de treinamento.
+
+### Ambiguidades e decisões
+
+- Pontos de Treinamento racial por Sabedoria: quando o modificador não é positivo, o serviço retorna 0 e a escolha pode ser aberta após recalcular com Sabedoria positiva.
+- Coerência de ancestralidade Zoan: é decisão narrativa do mestre; o sistema exige aprovação para traços específicos/predador quando necessário.
+- Requisitos raciais de alguns estilos: ficam representados em JSON e podem ser ignorados por exceção registrada.
+- Equipamento de Gigante: a necessidade de adaptação por tamanho é registrada; a materialização detalhada por tamanho fica para evolução do resolvedor de equipamentos, sem progressão pós-1º nível.
+
+### Seeds e testes
+
+Comandos:
+
+```bash
+make makemigrations
+make migrate
+make seed-player-book
+make check
+make test
+```
+
+Testes principais:
+
+- `characters/tests/test_character_creation_rules.py`
+- `characters/tests/test_player_campaign_flow.py`
+
+Eles cobrem catálogo, atributos, geração aleatória, mestiços, estilos, profissões, Timoneiro, Sem Profissão, antecedentes, proficiências, derivados, HTMX, permissões, exceção do mestre, isolamento entre campanhas e fluxos completos.

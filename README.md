@@ -101,3 +101,21 @@ make prod-smoke
 ```
 
 Atualizações normais usam `make deploy`; a opção recomendada na VPS é `make deploy-safe`, que cria backups antes. Consulte [OPERATIONS.md](OPERATIONS.md) para SSL, volumes, restauração, rollback e troubleshooting. O banco e o Gunicorn não possuem portas públicas em produção; somente o Nginx é publicado.
+
+## Livro do Jogador 1.5.7 — criação assistida
+
+O catálogo oficial usado pelo assistente é versionado como `player-book-1.5.7`. Para cadastrar ou atualizar atributos, perícias, espécies, variantes, estilos, profissões, antecedentes, proficiências, características e equipamentos iniciais:
+
+```bash
+make seed-player-book
+```
+
+O jogador inicia a criação pela seleção de campanha no painel e acessa:
+
+```text
+/personagem/<slug-da-campanha>/criar/
+```
+
+O assistente salva rascunho por etapas: conceito, espécie, estilo, profissão, atributos, antecedente, personalidade, pendências, equipamentos e revisão. A ficha final só é criada na confirmação.
+
+O mestre revisa personagens em `/mestre/personagens/`. Exceções de regra ficam registradas com usuário, data, regra ignorada e justificativa em `CharacterRuleException`.

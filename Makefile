@@ -7,7 +7,7 @@ NGINX_SERVICE ?= nginx
 SERVICE ?=
 CMD ?=
 TEST_ARGS ?=
-.PHONY: help dev-env dev-bootstrap dev dev-rebuild dev-stop dev-logs dev-manage dev-test dev-check dev-db-shell build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-createsuperuser prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
+.PHONY: help dev-env dev-bootstrap dev dev-rebuild dev-stop dev-logs dev-manage dev-test dev-check dev-db-shell build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed seed-player-book createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-createsuperuser prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
 help: ## Lista comandos operacionais
 	@awk 'BEGIN {FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-28s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 dev-env: ## Cria .env local a partir do exemplo, se ausente
@@ -58,6 +58,8 @@ check-deploy: ## Executa check de deploy
 	$(COMPOSE_DEV) run --rm -e DJANGO_DEBUG=False $(WEB_SERVICE) python manage.py check --deploy
 seed: ## Seed idempotente somente no desenvolvimento
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_rpg
+seed-player-book: ## Seed idempotente do Livro do Jogador 1.5.7
+	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_player_book_rules_1_5_7
 createsuperuser: ## Cria superusuário no desenvolvimento
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py createsuperuser
 migrations-check: ## Verifica migrations de desenvolvimento

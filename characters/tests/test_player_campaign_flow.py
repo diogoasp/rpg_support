@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from accounts.models import User
 from campaigns.models import Campaign
-from characters.models import Character
+from characters.models import Character, CharacterCreation
 
 
 def character_payload(name="Lina"):
@@ -66,10 +66,11 @@ class PlayerCampaignFlowTests(TestCase):
         self.client.force_login(self.player)
         response = self.client.post(
             reverse("characters:create", kwargs={"slug": self.c2.slug}),
-            character_payload("Usopp"),
+            {"step": "concept", "name": "Usopp", "concept": "Atirador curioso"},
         )
-        self.assertRedirects(response, reverse("characters:dashboard", kwargs={"slug": self.c2.slug}))
-        self.assertTrue(Character.objects.filter(campaign=self.c2, user=self.player, name="Usopp").exists())
+        self.assertRedirects(response, f'{reverse("characters:create", kwargs={"slug": self.c2.slug})}?step=species')
+        self.assertFalse(Character.objects.filter(campaign=self.c2, user=self.player, name="Usopp").exists())
+        self.assertTrue(CharacterCreation.objects.filter(campaign=self.c2, user=self.player, name="Usopp").exists())
 
     def test_player_cannot_create_character_for_unrelated_campaign(self):
         self.client.force_login(self.player)
