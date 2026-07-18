@@ -1,0 +1,26 @@
+<div class="paper-panel">
+  <h3 class="h5">Revisão final</h3>
+  <div class="row g-3">
+    <div class="col-md-6"><strong>Nome</strong><br>{{ creation.name|default:"pendente" }}</div>
+    <div class="col-md-6"><strong>Espécie</strong><br>{{ creation.species.name|default:"pendente" }}{% if creation.species_variant %} · {{ creation.species_variant.name }}{% endif %}</div>
+    <div class="col-md-6"><strong>Estilo</strong><br>{{ creation.combat_style.name|default:"pendente" }}</div>
+    <div class="col-md-6"><strong>Profissão</strong><br>{{ creation.profession.name|default:"pendente" }}{% if creation.subprofession %} · {{ creation.subprofession.name }}{% endif %}</div>
+    <div class="col-md-6"><strong>Antecedente</strong><br>{{ creation.background.name|default:"pendente" }}</div>
+    <div class="col-md-6"><strong>Arma favorita</strong><br>{{ creation.favorite_weapon|default:"pendente" }}</div>
+  </div>
+  <hr>
+  <h4 class="h6">Perícias selecionadas</h4>
+  <p class="small">
+    {% for skill in creation.style_skills.all %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    {% for skill in creation.profession_skills.all %}{% if forloop.first %} · {% endif %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    {% for skill in creation.background_skills.all %}{% if forloop.first %} · {% endif %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    {% for skill in creation.free_skills.all %}{% if forloop.first %} · {% endif %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="review">
+    <input type="hidden" name="confirm" value="1">
+    <button class="btn btn-pirate-red" type="submit">Confirmar ficha</button>
+    <a class="btn btn-parchment" href="?step=concept">Voltar ao início</a>
+  </form>
+</div>

@@ -1,0 +1,15 @@
+<aside class="paper-panel">
+  <h3 class="h5">Prévia</h3>
+  <div class="creation-stat-grid">
+    <span>PV <strong>{{ preview.max_hp }}</strong></span>
+    <span>CR <strong>{{ preview.resistance_class }}</strong></span>
+    <span>Iniciativa <strong>{{ preview.initiative }}</strong></span>
+    <span>Carga <strong>{{ preview.carrying_capacity }}</strong></span>
+  </div>
+  <hr>
+  <dl class="row small mb-0">
+    {% for key,values in preview.attributes.items %}
+      <dt class="col-6">{{ key }}</dt><dd class="col-6 text-end">{{ values.final_value }}</dd>
+    {% endfor %}
+  </dl>
+</aside>

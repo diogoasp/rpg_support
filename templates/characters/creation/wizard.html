@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Criar personagem{% endblock %}
+{% block page_heading %}Criação de personagem{% endblock %}
+{% block content %}
+<section class="parchment-card creation-shell">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-muted fw-bold mb-1">Campanha: {{ campaign.name }}</p>
+      <h2 class="display-title h3 mb-1">Assistente de ficha</h2>
+      <p class="mb-0">Livro do Jogador 1.5.7 · nível 1 · regras da campanha aplicadas na confirmação.</p>
+    </div>
+    <span class="badge text-bg-dark align-self-start">Rascunho salvo</span>
+  </div>
+
+  <nav class="creation-steps mb-4" aria-label="Etapas da criação">
+    {% for item in steps %}
+      <a class="{% if item == step %}active{% endif %} {% if item in creation.completed_steps %}done{% endif %}" href="?step={{ item }}">{{ forloop.counter }}. {{ item|title }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if creation.validation_errors %}
+    <div class="alert alert-warning">
+      <strong>Escolhas pendentes ou inválidas.</strong>
+      <ul class="mb-0">
+        {% for field,error in creation.validation_errors.items %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      {% if step == "pending" %}
+        <div class="paper-panel">
+          <h3 class="h5">Escolhas pendentes</h3>
+          {% if creation.pending_choices %}
+            <ul>{% for choice in creation.pending_choices %}<li>{{ choice }}</li>{% endfor %}</ul>
+          {% else %}
+            <p>Nenhuma escolha pendente encontrada. Revise a ficha antes de confirmar.</p>
+          {% endif %}
+          <a class="btn btn-pirate-red" href="?step=equipment">Continuar</a>
+        </div>
+      {% elif step == "review" %}
+        {% include "characters/creation/partials/review.html" %}
+      {% else %}
+        <form method="post" class="paper-panel" hx-post="{{ request.path }}?step={{ step }}" hx-target="body" hx-swap="outerHTML">
+          {% csrf_token %}
+          <input type="hidden" name="step" value="{{ step }}">
+          {{ form.as_p }}
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-pirate-red" type="submit">Salvar e continuar</button>
+            <button class="btn btn-parchment" type="submit" name="next_step" value="{{ step }}">Salvar rascunho</button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+    <div class="col-lg-4">
+      <div id="creation-preview" hx-get="{% url 'characters:creation_preview' campaign.slug %}" hx-trigger="load, change from:form delay:400ms" hx-swap="innerHTML">
+        {% include "characters/creation/partials/preview.html" %}
+      </div>
+      <div id="creation-options" class="mt-3" hx-get="{% url 'characters:creation_options' campaign.slug %}" hx-trigger="load" hx-swap="innerHTML">
+        {% include "characters/creation/partials/options.html" %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

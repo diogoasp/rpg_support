@@ -1,0 +1,7 @@
+<aside class="paper-panel">
+  <h3 class="h6 text-uppercase">Opções válidas</h3>
+  <p class="small mb-2"><strong>Variantes:</strong> {% for variant in options.variants %}{{ variant.name }}{% if not forloop.last %}, {% endif %}{% empty %}não aplicável{% endfor %}</p>
+  <p class="small mb-2"><strong>Perícias do estilo:</strong> {% for skill in options.style_skills %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% empty %}escolha um estilo{% endfor %}</p>
+  <p class="small mb-2"><strong>Perícias da profissão:</strong> {% for skill in options.profession_skills %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% empty %}escolha uma profissão{% endfor %}</p>
+  <p class="small mb-0"><strong>Subprofissão:</strong> {% for profession in options.subprofessions %}{{ profession.name }}{% if not forloop.last %}, {% endif %}{% empty %}não aplicável{% endfor %}</p>
+</aside>
