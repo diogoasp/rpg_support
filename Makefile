@@ -5,9 +5,28 @@ WEB_SERVICE ?= web
 DB_SERVICE ?= db
 NGINX_SERVICE ?= nginx
 SERVICE ?=
-.PHONY: help build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-createsuperuser prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
+CMD ?=
+TEST_ARGS ?=
+.PHONY: help dev-env dev-bootstrap dev dev-rebuild dev-stop dev-logs dev-manage dev-test dev-check dev-db-shell build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-createsuperuser prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
 help: ## Lista comandos operacionais
 	@awk 'BEGIN {FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-28s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+dev-env: ## Cria .env local a partir do exemplo, se ausente
+	@test -f .env || cp .env.example .env
+dev-bootstrap: dev-env build migrate seed ## Prepara ambiente de desenvolvimento
+dev: up logs ## Sobe desenvolvimento e segue logs
+dev-rebuild: ## Reconstrói web e recria container de desenvolvimento
+	$(COMPOSE_DEV) up -d --build --force-recreate $(WEB_SERVICE)
+dev-stop: down ## Para ambiente de desenvolvimento
+dev-logs: ## Segue logs do web de desenvolvimento
+	$(COMPOSE_DEV) logs -f $(WEB_SERVICE)
+dev-manage: ## Executa manage.py CMD="comando" no desenvolvimento
+	@test -n "$(CMD)" || (echo 'Use CMD="check" ou CMD="app comando"'; exit 2)
+	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py $(CMD)
+dev-test: ## Executa testes em desenvolvimento (TEST_ARGS opcional)
+	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py test $(TEST_ARGS)
+dev-check: check migrations-check compose-config ## Verifica Django, migrations e Compose de desenvolvimento
+dev-db-shell: ## Abre psql no banco de desenvolvimento
+	$(COMPOSE_DEV) exec $(DB_SERVICE) psql -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
 build: ## Constrói imagem de desenvolvimento
 	$(COMPOSE_DEV) build $(WEB_SERVICE)
 up: ## Sobe desenvolvimento
