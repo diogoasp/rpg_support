@@ -21,6 +21,10 @@
     <div class="col-md-6"><strong>Profissão</strong><br>{{ creation.profession.name|default:"pendente" }}{% if creation.subprofession %} · {{ creation.subprofession.name }}{% endif %}</div>
     <div class="col-md-6"><strong>Antecedente</strong><br>{{ creation.background.name|default:"pendente" }}</div>
     <div class="col-md-6"><strong>Arma favorita</strong><br>{{ creation.favorite_weapon|default:"pendente" }}</div>
+    <div class="col-md-4"><strong>Idade</strong><br>{{ creation.age|default:"não informada" }}</div>
+    <div class="col-md-4"><strong>Altura</strong><br>{{ creation.height|default:"não informada" }}</div>
+    <div class="col-md-4"><strong>Peso</strong><br>{{ creation.weight|default:"não informado" }}</div>
+    <div class="col-md-12"><strong>Caminho</strong><br>{{ creation.get_dream_path_display|default:"não informado" }}</div>
   </div>
   <hr>
   <h4 class="h6">Perícias selecionadas</h4>

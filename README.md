@@ -116,6 +116,6 @@ O jogador inicia a criação pela seleção de campanha no painel e acessa:
 /personagem/<slug-da-campanha>/criar/
 ```
 
-O assistente salva rascunho por etapas: conceito, espécie, estilo, profissão, atributos, antecedente, personalidade, pendências, equipamentos e revisão. A etapa de atributos distribui 72 pontos, com mínimo 8 e máximo 15 antes dos bônus; bônus raciais e de antecedente são definidos nas etapas correspondentes e aparecem automaticamente na prévia. A ficha final só é criada na confirmação.
+O assistente salva rascunho por etapas: conceito, espécie, estilo, profissão, atributos, antecedente, personalidade, pendências, equipamentos e revisão. A etapa Conceito registra nome, conceito, idade, altura, peso e Caminho. A etapa de atributos distribui 72 pontos, com mínimo 8 e máximo 15 antes dos bônus; bônus raciais e de antecedente são definidos nas etapas correspondentes e aparecem automaticamente na prévia. A ficha final só é criada na confirmação.
 
 O mestre revisa personagens em `/mestre/personagens/`. Exceções de regra ficam registradas com usuário, data, regra ignorada e justificativa em `CharacterRuleException`.

@@ -1,83 +1,125 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Ficha de {{ character.name }}{% endblock %}
-{% block page_heading %}Ficha completa{% endblock %}
+{% block title %}
+  Ficha de {{ character.name }}
+{% endblock %}
+{% block page_heading %}
+  Ficha completa
+{% endblock %}
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/character-sheet.css' %}">
+  <link rel="stylesheet" href="{% static 'css/character-sheet.css' %}" />
 
   <div class="op-sheet-page">
     <div id="sheet" class="op-sheet">
-      <svg class="op-corner op-corner-tl" viewBox="0 0 120 120"><use href="#op-ornament-corner"/></svg>
-      <svg class="op-corner op-corner-tr" viewBox="0 0 120 120"><use href="#op-ornament-corner"/></svg>
-      <svg class="op-corner op-corner-bl" viewBox="0 0 120 120"><use href="#op-ornament-corner"/></svg>
-      <svg class="op-corner op-corner-br" viewBox="0 0 120 120"><use href="#op-ornament-corner"/></svg>
+      <svg class="op-corner op-corner-tl" viewBox="0 0 120 120">
+        <use href="#op-ornament-corner" />
+      </svg>
+      <svg class="op-corner op-corner-tr" viewBox="0 0 120 120">
+        <use href="#op-ornament-corner" />
+      </svg>
+      <svg class="op-corner op-corner-bl" viewBox="0 0 120 120">
+        <use href="#op-ornament-corner" />
+      </svg>
+      <svg class="op-corner op-corner-br" viewBox="0 0 120 120">
+        <use href="#op-ornament-corner" />
+      </svg>
 
       <header class="op-sheet-header">
         <div class="op-header-left">
           <div class="op-portrait-frame">
             {% if character.portrait %}
-              <img src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}">
+              <img src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}" />
             {% else %}
               <div class="op-portrait-placeholder">
-                <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-10a4 4 0 110 8 4 4 0 010-8z"/></svg>
+                <svg viewBox="0 0 24 24" width="34" height="34">
+                  <path fill="currentColor" d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-10a4 4 0 110 8 4 4 0 010-8z" />
+                </svg>
                 <span>Retrato</span>
               </div>
             {% endif %}
           </div>
-          <div class="op-symbols"><span>⚓</span><span>✦</span><span>☠</span></div>
+          <div class="op-symbols">
+            <span>⚓</span><span>✦</span><span>☠</span>
+          </div>
         </div>
 
         <div class="op-header-center">
           <p class="op-eyebrow">Ficha de Personagem</p>
           <h1 class="op-char-name">{{ character.name }}</h1>
-          <p class="op-char-species">({{ character.species|default:"Espécie não definida" }})</p>
-          <p class="op-char-motto">"{% if character.dream %}{{ character.dream }}{% else %}O sonho deste personagem ainda não foi registrado.{% endif %}"</p>
+          <p class="op-char-species">({{ character.species|default:'Espécie não definida' }})</p>
+          <p class="op-char-motto">
+            "{% if character.dream %}
+              {{ character.dream }}
+            {% else %}
+              O sonho deste personagem ainda não foi registrado.
+            {% endif %}"
+          </p>
         </div>
 
         <div class="op-header-right">
           <ul class="op-stat-list">
             <li class="op-stat-row">
-              <svg class="op-stat-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>
+              <svg class="op-stat-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
+              </svg>
               <span class="op-stat-label">Nível:</span><span class="op-stat-value">{{ character.level }}</span>
             </li>
             <li class="op-stat-row">
-              <svg class="op-stat-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a5 5 0 015 5c0 2.2-1.4 4-3 4.7v1.3l6 2v5H4v-5l6-2v-1.3C8.4 11 7 9.2 7 7a5 5 0 015-5z"/></svg>
-              <span class="op-stat-label">Profissão:</span><span class="op-stat-value">{{ character.profession|default:"-" }}</span>
+              <svg class="op-stat-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2a5 5 0 015 5c0 2.2-1.4 4-3 4.7v1.3l6 2v5H4v-5l6-2v-1.3C8.4 11 7 9.2 7 7a5 5 0 015-5z" />
+              </svg>
+              <span class="op-stat-label">Profissão:</span><span class="op-stat-value">{{ character.profession|default:'-' }}</span>
             </li>
             <li class="op-stat-row">
-              <svg class="op-stat-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M6.9 3.5L3.5 6.9l12 12a2.5 2.5 0 003.5-3.5l-12-12zM15 3l1.5 3L20 7.5 16.5 9 15 12l-1.5-3L10 7.5 13.5 6z"/></svg>
-              <span class="op-stat-label">Estilo de Combate:</span><span class="op-stat-value">{{ character.combat_style|default:"-" }}</span>
+              <svg class="op-stat-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M6.9 3.5L3.5 6.9l12 12a2.5 2.5 0 003.5-3.5l-12-12zM15 3l1.5 3L20 7.5 16.5 9 15 12l-1.5-3L10 7.5 13.5 6z" />
+              </svg>
+              <span class="op-stat-label">Estilo de Combate:</span><span class="op-stat-value">{{ character.combat_style|default:'-' }}</span>
             </li>
             <li class="op-stat-row">
-              <svg class="op-stat-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-              <span class="op-stat-label">Antecedente:</span><span class="op-stat-value">{{ character.background|default:"-" }}</span>
+              <svg class="op-stat-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+              <span class="op-stat-label">Antecedente:</span><span class="op-stat-value">{{ character.background|default:'-' }}</span>
             </li>
             <li class="op-stat-row">
-              <svg class="op-stat-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C8 6 5 9.5 5 13.5A7 7 0 0019 13.5C19 9.5 16 6 12 2z"/></svg>
-              <span class="op-stat-label">Haki:</span><span class="op-stat-value">{% if character.haki_trained %}Treinado{% elif character.haki_declared %}Declarado, não treinado{% else %}Não declarado{% endif %}</span>
+              <svg class="op-stat-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2C8 6 5 9.5 5 13.5A7 7 0 0019 13.5C19 9.5 16 6 12 2z" />
+              </svg>
+              <span class="op-stat-label">Haki:</span><span class="op-stat-value">
+                {% if character.haki_trained %}
+                  Treinado
+                {% elif character.haki_declared %}
+                  Declarado, não treinado
+                {% else %}
+                  Não declarado
+                {% endif %}
+              </span>
             </li>
           </ul>
 
           <div class="op-misc-box">
-            <span>CR: <strong>{{ character.armor_class }}</strong></span>
-            <span>Iniciativa: <strong>{{ character.initiative|stringformat:'+d' }}</strong></span>
+            <span>Idade: <strong>{{ character.age|default:'-' }}</strong></span>
+            <span>Altura: <strong>{{ character.height|default:'-' }}</strong></span>
+            <span>Peso: <strong>{{ character.weight|default:'-' }}</strong></span>
           </div>
-
-          <div class="op-flag-frame">
-            <strong>{{ character.campaign.name|truncatechars:18 }}</strong>
-            <span>Tripulação</span>
-          </div>
+        </div>
+        <div class="op-flag-frame w-100">
+          <strong>{{ character.campaign.name }}</strong>
+          <span>Tripulação</span>
         </div>
       </header>
 
       <div class="op-illustration-strip">
         <div class="op-illustration-frame">
           {% if character.portrait %}
-            <img src="{{ character.portrait.url }}" alt="Ilustração de {{ character.name }}">
+            <img src="{{ character.portrait.url }}" alt="Ilustração de {{ character.name }}" />
           {% else %}
             <div class="op-illustration-placeholder">
-              <svg viewBox="0 0 24 24" width="46" height="46"><path fill="currentColor" d="M4 4h16v16H4V4zm2 2v9.6l3.3-3.3 2.4 2.4L15 11l3 3V6H6zm2.5 2A1.5 1.5 0 118.5 6a1.5 1.5 0 010 3z"/></svg>
-              <span>{{ character.appearance|default:"Aparência ainda não registrada." }}</span>
+              <svg viewBox="0 0 24 24" width="46" height="46">
+                <path fill="currentColor" d="M4 4h16v16H4V4zm2 2v9.6l3.3-3.3 2.4 2.4L15 11l3 3V6H6zm2.5 2A1.5 1.5 0 118.5 6a1.5 1.5 0 010 3z" />
+              </svg>
+              <span>{{ character.appearance|default:'Aparência ainda não registrada.' }}</span>
             </div>
           {% endif %}
         </div>
@@ -89,33 +131,71 @@
             <h2 class="op-block-title"><span class="op-chapter-num">2</span> Atributos e Status Vitais</h2>
             <div class="op-attr-status-wrap">
               <table class="op-attr-table">
-                <thead><tr><th>Atributo</th><th>Valor</th><th>Mod.</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Atributo</th>
+                    <th>Valor</th>
+                    <th>Mod.</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  <tr><td class="op-attr-name">Força (FOR)</td><td>{{ character.strength }}</td><td>{{ character.strength_modifier|stringformat:'+d' }}</td></tr>
-                  <tr><td class="op-attr-name">Destreza (DES)</td><td>{{ character.dexterity }}</td><td>{{ character.dexterity_modifier|stringformat:'+d' }}</td></tr>
-                  <tr><td class="op-attr-name">Constituição (CON)</td><td>{{ character.constitution }}</td><td>{{ character.constitution_modifier|stringformat:'+d' }}</td></tr>
-                  <tr><td class="op-attr-name">Sabedoria (SAB)</td><td>{{ character.wisdom }}</td><td>{{ character.wisdom_modifier|stringformat:'+d' }}</td></tr>
-                  <tr><td class="op-attr-name">Vontade (VON)</td><td>{{ character.willpower }}</td><td>{{ character.willpower_modifier|stringformat:'+d' }}</td></tr>
-                  <tr><td class="op-attr-name">Presença (PRE)</td><td>{{ character.presence }}</td><td>{{ character.presence_modifier|stringformat:'+d' }}</td></tr>
+                  <tr>
+                    <td class="op-attr-name">Força (FOR)</td>
+                    <td>{{ character.strength }}</td>
+                    <td>{{ character.strength_modifier|stringformat:'+d' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="op-attr-name">Destreza (DES)</td>
+                    <td>{{ character.dexterity }}</td>
+                    <td>{{ character.dexterity_modifier|stringformat:'+d' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="op-attr-name">Constituição (CON)</td>
+                    <td>{{ character.constitution }}</td>
+                    <td>{{ character.constitution_modifier|stringformat:'+d' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="op-attr-name">Sabedoria (SAB)</td>
+                    <td>{{ character.wisdom }}</td>
+                    <td>{{ character.wisdom_modifier|stringformat:'+d' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="op-attr-name">Vontade (VON)</td>
+                    <td>{{ character.willpower }}</td>
+                    <td>{{ character.willpower_modifier|stringformat:'+d' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="op-attr-name">Presença (PRE)</td>
+                    <td>{{ character.presence }}</td>
+                    <td>{{ character.presence_modifier|stringformat:'+d' }}</td>
+                  </tr>
                 </tbody>
               </table>
 
               <div class="op-survival-box">
                 <p class="op-box-title">Status de Sobrevivência</p>
                 <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.1C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.5C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.9 19.5 16.4 12 21 12 21z"/></svg>
+                  <svg class="op-surv-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 21s-7.5-4.6-10-9.1C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.5C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.9 19.5 16.4 12 21 12 21z" />
+                  </svg>
                   <span class="op-surv-label">PV:</span><span class="op-surv-value">{{ character.current_hp }} / {{ character.max_hp }}</span><span class="op-surv-note">Pontos de vida atuais e máximos.</span>
                 </div>
                 <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L3 14h7l-1 8 11-14h-8l1-6z"/></svg>
+                  <svg class="op-surv-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M13 2L3 14h7l-1 8 11-14h-8l1-6z" />
+                  </svg>
                   <span class="op-surv-label">PP:</span><span class="op-surv-value">{{ character.current_power_points }} / {{ character.max_power_points }}</span><span class="op-surv-note">Pontos de poder disponíveis.</span>
                 </div>
                 <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z"/></svg>
+                  <svg class="op-surv-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z" />
+                  </svg>
                   <span class="op-surv-label">CR / Defesa:</span><span class="op-surv-value">{{ character.armor_class }}</span><span class="op-surv-note">Classe de resistência atual.</span>
                 </div>
                 <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M4 18l5-9 4 6 3-4 4 7H4z"/></svg>
+                  <svg class="op-surv-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M4 18l5-9 4 6 3-4 4 7H4z" />
+                  </svg>
                   <span class="op-surv-label">Deslocamento:</span><span class="op-surv-value">{{ character.movement }} m</span><span class="op-surv-note">Carga: {{ carrying_capacity }} unidades.</span>
                 </div>
               </div>
@@ -131,10 +211,19 @@
                   {% for feature in character.features.all %}
                     <div class="op-trait-card">
                       <div class="op-trait-icon">✦</div>
-                      <div><p class="op-trait-name">{{ feature.name }}</p><p class="op-trait-desc">{{ feature.description|default:feature.source }}</p></div>
+                      <div>
+                        <p class="op-trait-name">{{ feature.name }}</p>
+                        <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
+                      </div>
                     </div>
                   {% empty %}
-                    <div class="op-trait-card"><div class="op-trait-icon">✦</div><div><p class="op-trait-name">Sem traços registrados</p><p class="op-trait-desc">Traços de espécie, antecedente e estilo aparecerão aqui quando cadastrados.</p></div></div>
+                    <div class="op-trait-card">
+                      <div class="op-trait-icon">✦</div>
+                      <div>
+                        <p class="op-trait-name">Sem traços registrados</p>
+                        <p class="op-trait-desc">Traços de espécie, antecedente e estilo aparecerão aqui quando cadastrados.</p>
+                      </div>
+                    </div>
                   {% endfor %}
                 </div>
               </div>
@@ -145,10 +234,19 @@
                   {% for condition in character.conditions.all %}
                     <div class="op-trait-card">
                       <div class="op-trait-icon">✕</div>
-                      <div><p class="op-trait-name">{{ condition.name }}</p><p class="op-trait-desc">{{ condition.description|default:"Condição ativa." }}</p></div>
+                      <div>
+                        <p class="op-trait-name">{{ condition.name }}</p>
+                        <p class="op-trait-desc">{{ condition.description|default:'Condição ativa.' }}</p>
+                      </div>
                     </div>
                   {% empty %}
-                    <div class="op-trait-card"><div class="op-trait-icon">✓</div><div><p class="op-trait-name">Nenhuma condição ativa</p><p class="op-trait-desc">O personagem não possui limitações temporárias registradas.</p></div></div>
+                    <div class="op-trait-card">
+                      <div class="op-trait-icon">✓</div>
+                      <div>
+                        <p class="op-trait-name">Nenhuma condição ativa</p>
+                        <p class="op-trait-desc">O personagem não possui limitações temporárias registradas.</p>
+                      </div>
+                    </div>
                   {% endfor %}
                 </div>
               </div>
@@ -160,7 +258,7 @@
             <div class="op-combat-cards-row">
               <div class="op-combat-card op-combat-card-blue">
                 <p class="op-combat-card-title">Estilo de Combate</p>
-                <p class="op-field-name">{{ character.combat_style|default:"Não definido" }}</p>
+                <p class="op-field-name">{{ character.combat_style|default:'Não definido' }}</p>
                 <p class="op-field-desc">Ataque: mod. adequado + proficiência quando aplicável. Proficiência atual: {{ character.proficiency_bonus|stringformat:'+d' }}.</p>
               </div>
               <div class="op-combat-card op-combat-card-green">
@@ -170,26 +268,47 @@
               </div>
             </div>
 
-            <p class="op-subsection-title"><span class="op-chapter-num-sub">5.2</span> Técnicas</p>
+            <p class="op-subsection-title">
+              <span class="op-chapter-num-sub">5.2</span> Técnicas
+            </p>
             <div class="op-combat-cards-row">
               {% for technique in character.techniques.all %}
                 <div class="op-combat-card {% cycle 'op-combat-card-red' 'op-combat-card-teal' %}">
-                  <p class="op-combat-card-title">{{ technique.get_action_type_display }}: <span>{{ technique.name }}</span>{% if not technique.is_available %} · Bloqueada{% endif %}</p>
-                  {% if technique.cost %}<p class="op-field-line"><span>Custo:</span> <span>{{ technique.cost }}</span></p>{% endif %}
-                  {% if technique.range_text %}<p class="op-field-line"><span>Alcance:</span> <span>{{ technique.range_text }}</span></p>{% endif %}
-                  <p class="op-field-desc"><span>Efeito:</span> <span>{{ technique.description }} {{ technique.damage_text }}</span></p>
+                  <p class="op-combat-card-title">
+                    {{ technique.get_action_type_display }}: <span>{{ technique.name }}</span>{% if not technique.is_available %} · Bloqueada{% endif %}
+                  </p>
+                  {% if technique.cost %}
+                    <p class="op-field-line">
+                      <span>Custo:</span> <span>{{ technique.cost }}</span>
+                    </p>
+                  {% endif %}
+                  {% if technique.range_text %}
+                    <p class="op-field-line">
+                      <span>Alcance:</span> <span>{{ technique.range_text }}</span>
+                    </p>
+                  {% endif %}
+                  <p class="op-field-desc">
+                    <span>Efeito:</span> <span>{{ technique.description }} {{ technique.damage_text }}</span>
+                  </p>
                 </div>
               {% empty %}
-                <div class="op-combat-card op-combat-card-red"><p class="op-combat-card-title">Nenhuma técnica cadastrada</p><p class="op-field-desc">As técnicas do personagem aparecerão nesta área.</p></div>
+                <div class="op-combat-card op-combat-card-red">
+                  <p class="op-combat-card-title">Nenhuma técnica cadastrada</p>
+                  <p class="op-field-desc">As técnicas do personagem aparecerão nesta área.</p>
+                </div>
               {% endfor %}
             </div>
 
             <div class="op-conditions-strip">
               <p class="op-conditions-title">Condições Rápidas</p>
               {% for condition in character.conditions.all %}
-                <div class="op-condition-chip"><span>⛓</span><span><strong>{{ condition.name }}:</strong> {{ condition.description|default:"Condição ativa." }}</span></div>
+                <div class="op-condition-chip">
+                  <span>⛓</span><span><strong>{{ condition.name }}:</strong> {{ condition.description|default:'Condição ativa.' }}</span>
+                </div>
               {% empty %}
-                <div class="op-condition-chip"><span>✓</span><span><strong>Sem condições:</strong> nenhuma condição ativa no momento.</span></div>
+                <div class="op-condition-chip">
+                  <span>✓</span><span><strong>Sem condições:</strong> nenhuma condição ativa no momento.</span>
+                </div>
               {% endfor %}
             </div>
           </section>
@@ -202,10 +321,23 @@
               {% for feature in character.features.all %}
                 <div class="op-racial-card">
                   <div class="op-racial-icon">★</div>
-                  <div><p class="op-racial-name">{{ feature.name }}</p><p class="op-racial-desc">{{ feature.source }}{% if feature.description %}: {{ feature.description }}{% endif %}</p></div>
+                  <div>
+                    <p class="op-racial-name">{{ feature.name }}</p>
+                    <p class="op-racial-desc">
+                      {{ feature.source }}{% if feature.description %}
+                        : {{ feature.description }}
+                      {% endif %}
+                    </p>
+                  </div>
                 </div>
               {% empty %}
-                <div class="op-racial-card"><div class="op-racial-icon">★</div><div><p class="op-racial-name">{{ character.species|default:"Espécie" }}</p><p class="op-racial-desc">Traços raciais ainda não cadastrados para esta ficha.</p></div></div>
+                <div class="op-racial-card">
+                  <div class="op-racial-icon">★</div>
+                  <div>
+                    <p class="op-racial-name">{{ character.species|default:'Espécie' }}</p>
+                    <p class="op-racial-desc">Traços raciais ainda não cadastrados para esta ficha.</p>
+                  </div>
+                </div>
               {% endfor %}
             </div>
           </section>
@@ -213,17 +345,34 @@
           <section class="op-block">
             <h2 class="op-block-title"><span class="op-chapter-num">4</span> Perícias</h2>
             <table class="op-skill-table">
-              <thead><tr><th>Perícia</th><th>Atributo</th><th>Bônus</th><th>Treino</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Perícia</th>
+                  <th>Atributo</th>
+                  <th>Bônus</th>
+                  <th>Treino</th>
+                </tr>
+              </thead>
               <tbody>
                 {% for cs in character.skills.all %}
                   <tr>
                     <td>{{ cs.skill.name }}</td>
                     <td>{{ cs.skill.get_related_attribute_display }}</td>
                     <td>{{ cs.final_bonus|stringformat:'+d' }}</td>
-                    <td>{% if cs.is_expert %}Especialista{% elif cs.is_proficient %}Proficiente{% else %}-{% endif %}</td>
+                    <td>
+                      {% if cs.is_expert %}
+                        Especialista
+                      {% elif cs.is_proficient %}
+                        Proficiente
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
                   </tr>
                 {% empty %}
-                  <tr><td colspan="4">Nenhuma perícia cadastrada.</td></tr>
+                  <tr>
+                    <td colspan="4">Nenhuma perícia cadastrada.</td>
+                  </tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -235,24 +384,54 @@
               <p class="op-box-title">Item em Destaque</p>
               <div class="op-weapon-content">
                 <svg class="op-weapon-illustration" viewBox="0 0 200 40">
-                  <line x1="5" y1="20" x2="150" y2="20" stroke="currentColor" stroke-width="2"/>
-                  <polygon points="150,14 190,20 150,26" fill="currentColor"/>
-                  <rect x="0" y="16" width="10" height="8" fill="currentColor"/>
+                  <line x1="5" y1="20" x2="150" y2="20" stroke="currentColor" stroke-width="2" />
+                  <polygon points="150,14 190,20 150,26" fill="currentColor" />
+                  <rect x="0" y="16" width="10" height="8" fill="currentColor" />
                 </svg>
                 <div>
-                  <p class="op-field-line"><span>Nome:</span> <span>{% if featured_item %}{{ featured_item.name }}{% else %}Nenhum item em destaque{% endif %}</span></p>
-                  <p class="op-field-line"><span>Descrição:</span> <span>{% if featured_item %}{{ featured_item.description|default:"Sem descrição." }}{% else %}Adicione itens pelo inventário do personagem.{% endif %}</span></p>
+                  <p class="op-field-line">
+                    <span>Nome:</span>
+                    <span>
+                      {% if featured_item %}
+                        {{ featured_item.name }}
+                      {% else %}
+                        Nenhum item em destaque
+                      {% endif %}
+                    </span>
+                  </p>
+                  <p class="op-field-line">
+                    <span>Descrição:</span>
+                    <span>
+                      {% if featured_item %}
+                        {{ featured_item.description|default:'Sem descrição.' }}
+                      {% else %}
+                        Adicione itens pelo inventário do personagem.
+                      {% endif %}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
 
             <table class="op-inventory-table">
-              <thead><tr><th>Item</th><th>Descrição</th><th>Qtd.</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Descrição</th>
+                  <th>Qtd.</th>
+                </tr>
+              </thead>
               <tbody>
                 {% for item in character.inventory_items.all %}
-                  <tr><td>{{ item.name }}</td><td>{{ item.description|default:"-" }}</td><td>{{ item.quantity|default:"-" }}</td></tr>
+                  <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.description|default:'-' }}</td>
+                    <td>{{ item.quantity|default:'-' }}</td>
+                  </tr>
                 {% empty %}
-                  <tr><td colspan="3">Inventário vazio.</td></tr>
+                  <tr>
+                    <td colspan="3">Inventário vazio.</td>
+                  </tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -267,7 +446,9 @@
                 <p class="op-box-title">Proficiências</p>
                 <ul class="op-kit-list">
                   {% for proficiency in character.rule_proficiencies.all %}
-                    <li>{{ proficiency.proficiency.name }} <small>({{ proficiency.source_type }})</small></li>
+                    <li>
+                      {{ proficiency.proficiency.name }} <small>({{ proficiency.source_type }})</small>
+                    </li>
                   {% empty %}
                     <li>Nenhuma proficiência estruturada registrada.</li>
                   {% endfor %}
@@ -286,11 +467,32 @@
       <section class="op-block">
         <h2 class="op-block-title"><span class="op-chapter-num">8</span> História e Sonho</h2>
         <div class="op-history-text">
-          {% if character.appearance %}<p><strong>Aparência:</strong> {{ character.appearance }}</p>{% endif %}
-          {% if character.personality %}<p><strong>Personalidade:</strong> {{ character.personality }}</p>{% endif %}
-          {% if character.dream %}<p><strong>Sonho:</strong> {{ character.dream }}</p>{% endif %}
-          {% if character.notes %}<p><strong>Notas:</strong> {{ character.notes }}</p>{% endif %}
-          {% if not character.appearance and not character.personality and not character.dream and not character.notes %}
+          {% if character.appearance %}
+            <p>
+              <strong>Aparência:</strong> {{ character.appearance }}
+            </p>
+          {% endif %}
+          {% if character.personality %}
+            <p>
+              <strong>Personalidade:</strong> {{ character.personality }}
+            </p>
+          {% endif %}
+          {% if character.dream %}
+            <p>
+              <strong>Sonho:</strong> {{ character.dream }}
+            </p>
+          {% endif %}
+          {% if character.dream_path %}
+            <p>
+              <strong>Caminho:</strong> {{ character.get_dream_path_display }}
+            </p>
+          {% endif %}
+          {% if character.notes %}
+            <p>
+              <strong>Notas:</strong> {{ character.notes }}
+            </p>
+          {% endif %}
+          {% if not character.appearance and not character.personality and not character.dream and not character.dream_path and not character.notes %}
             <p>História e sonho ainda não registrados.</p>
           {% endif %}
         </div>
@@ -300,32 +502,72 @@
         <h2 class="op-block-title"><span class="op-chapter-num">✎</span> Editar narrativa e imagem</h2>
         <form method="post" enctype="multipart/form-data" class="op-sheet-form">
           {% csrf_token %}
-          {% if sheet_form.non_field_errors %}<div class="op-form-errors">{{ sheet_form.non_field_errors }}</div>{% endif %}
+          {% if sheet_form.non_field_errors %}
+            <div class="op-form-errors">{{ sheet_form.non_field_errors }}</div>
+          {% endif %}
           <div class="op-form-grid">
             <label class="op-form-field op-form-field-file">
               <span>{{ sheet_form.portrait.label }}</span>
               {{ sheet_form.portrait }}
-              {% if sheet_form.portrait.errors %}<small class="op-form-errors">{{ sheet_form.portrait.errors }}</small>{% endif %}
+              {% if sheet_form.portrait.errors %}
+                <small class="op-form-errors">{{ sheet_form.portrait.errors }}</small>
+              {% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.age.label }}</span>
+              {{ sheet_form.age }}
+              {% if sheet_form.age.errors %}
+                <small class="op-form-errors">{{ sheet_form.age.errors }}</small>
+              {% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.height.label }}</span>
+              {{ sheet_form.height }}
+              {% if sheet_form.height.errors %}
+                <small class="op-form-errors">{{ sheet_form.height.errors }}</small>
+              {% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.weight.label }}</span>
+              {{ sheet_form.weight }}
+              {% if sheet_form.weight.errors %}
+                <small class="op-form-errors">{{ sheet_form.weight.errors }}</small>
+              {% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.dream_path.label }}</span>
+              {{ sheet_form.dream_path }}
+              {% if sheet_form.dream_path.errors %}
+                <small class="op-form-errors">{{ sheet_form.dream_path.errors }}</small>
+              {% endif %}
             </label>
             <label class="op-form-field">
               <span>{{ sheet_form.dream.label }}</span>
               {{ sheet_form.dream }}
-              {% if sheet_form.dream.errors %}<small class="op-form-errors">{{ sheet_form.dream.errors }}</small>{% endif %}
+              {% if sheet_form.dream.errors %}
+                <small class="op-form-errors">{{ sheet_form.dream.errors }}</small>
+              {% endif %}
             </label>
             <label class="op-form-field">
               <span>{{ sheet_form.appearance.label }}</span>
               {{ sheet_form.appearance }}
-              {% if sheet_form.appearance.errors %}<small class="op-form-errors">{{ sheet_form.appearance.errors }}</small>{% endif %}
+              {% if sheet_form.appearance.errors %}
+                <small class="op-form-errors">{{ sheet_form.appearance.errors }}</small>
+              {% endif %}
             </label>
             <label class="op-form-field">
               <span>{{ sheet_form.personality.label }}</span>
               {{ sheet_form.personality }}
-              {% if sheet_form.personality.errors %}<small class="op-form-errors">{{ sheet_form.personality.errors }}</small>{% endif %}
+              {% if sheet_form.personality.errors %}
+                <small class="op-form-errors">{{ sheet_form.personality.errors }}</small>
+              {% endif %}
             </label>
             <label class="op-form-field op-form-field-wide">
               <span>{{ sheet_form.notes.label }}</span>
               {{ sheet_form.notes }}
-              {% if sheet_form.notes.errors %}<small class="op-form-errors">{{ sheet_form.notes.errors }}</small>{% endif %}
+              {% if sheet_form.notes.errors %}
+                <small class="op-form-errors">{{ sheet_form.notes.errors }}</small>
+              {% endif %}
             </label>
           </div>
           <button class="op-sheet-action op-sheet-submit" type="submit">Salvar alterações</button>
@@ -352,12 +594,21 @@
             <p class="op-footer-panel-title">💠 Recursos</p>
             <p class="op-footer-formula">PV {{ character.current_hp }}/{{ character.max_hp }} e PP {{ character.current_power_points }}/{{ character.max_power_points }}.</p>
             <p class="op-footer-panel-sub">Haki</p>
-            <p class="op-footer-formula">{% if character.haki_trained %}Treinado.{% elif character.haki_declared %}Declarado, mas sem uso intencional antes de treinamento.{% else %}Não declarado.{% endif %}</p>
+            <p class="op-footer-formula">
+              {% if character.haki_trained %}
+                Treinado.
+              {% elif character.haki_declared %}
+                Declarado, mas sem uso intencional antes de treinamento.
+              {% else %}
+                Não declarado.
+              {% endif %}
+            </p>
           </div>
           <div class="op-footer-panel">
             <p class="op-footer-panel-title">🌀 Condições</p>
-            {% for condition in character.conditions.all|slice:":2" %}
-              <p class="op-footer-panel-sub">{{ condition.name }}</p><p class="op-footer-formula">{{ condition.description|default:"Condição ativa." }}</p>
+            {% for condition in character.conditions.all|slice:':2' %}
+              <p class="op-footer-panel-sub">{{ condition.name }}</p>
+              <p class="op-footer-formula">{{ condition.description|default:'Condição ativa.' }}</p>
             {% empty %}
               <p class="op-footer-formula">Nenhuma condição ativa.</p>
             {% endfor %}
@@ -375,12 +626,12 @@
   <svg width="0" height="0" style="position:absolute">
     <defs>
       <g id="op-ornament-corner">
-        <path d="M2 2 Q2 40 2 60 M2 2 Q40 2 60 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        <path d="M10 10 Q10 35 10 50 M10 10 Q35 10 50 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-        <circle cx="2" cy="2" r="5" fill="currentColor"/>
-        <path d="M20 20 L28 12 L36 20 L28 28 Z" fill="currentColor" opacity="0.85"/>
-        <path d="M5 45 Q15 45 15 55" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6"/>
-        <path d="M45 5 Q45 15 55 15" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6"/>
+        <path d="M2 2 Q2 40 2 60 M2 2 Q40 2 60 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M10 10 Q10 35 10 50 M10 10 Q35 10 50 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
+        <circle cx="2" cy="2" r="5" fill="currentColor" />
+        <path d="M20 20 L28 12 L36 20 L28 28 Z" fill="currentColor" opacity="0.85" />
+        <path d="M5 45 Q15 45 15 55" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6" />
+        <path d="M45 5 Q45 15 55 15" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6" />
       </g>
     </defs>
   </svg>

@@ -44,6 +44,10 @@ from characters.models import (
 
 def fill_creation(creation, *, species="humano", variant="humano-comum", style="lutador", profession="combatente", background="marinheiro"):
     creation.name = f"{species}-{style}"
+    creation.age = "19"
+    creation.height = "1,72 m"
+    creation.weight = "62 kg"
+    creation.dream_path = "freedom_companionship"
     creation.species = Species.objects.get(slug=species)
     if variant:
         creation.species_variant = SpeciesVariant.objects.get(slug=variant)
@@ -214,6 +218,10 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(character.willpower, 10)
         self.assertEqual(character.presence, 8)
         self.assertEqual(character.max_hp, 24)
+        self.assertEqual(character.age, "19")
+        self.assertEqual(character.height, "1,72 m")
+        self.assertEqual(character.weight, "62 kg")
+        self.assertEqual(character.dream_path, "freedom_companionship")
         self.assertEqual(character.attribute_breakdowns.count(), 6)
         self.assertGreater(character.rule_proficiencies.count(), 0)
         self.assertTrue(character.inventory_items.filter(name__icontains="mochila").exists())
@@ -284,6 +292,10 @@ class CharacterCreationRulesTests(TestCase):
         self.client.force_login(self.player)
         response = self.client.get(reverse("characters:create", kwargs={"slug": self.campaign.slug}))
         self.assertContains(response, "Conceito")
+        self.assertContains(response, "Idade")
+        self.assertContains(response, "Altura")
+        self.assertContains(response, "Peso")
+        self.assertContains(response, "Caminho")
         self.assertContains(response, "Espécie")
         self.assertContains(response, "Profissão")
         self.assertNotContains(response, ">concept<")

@@ -10,6 +10,8 @@ Este documento registra somente as regras necessárias para a implementação do
 | Páginas | Regra | Interpretação técnica | Responsável | Testes |
 | --- | --- | --- | --- | --- |
 | 8-12 | A criação passa por espécie, estilo, profissão, atributos, descrição, equipamento e derivados. | O fluxo da aplicação usa etapas operacionais: conceito, espécie, estilo, profissão, atributos, antecedente, personalidade, pendências, equipamentos e revisão. | `CharacterCreation`, `PlayerCharacterCreateView` | `test_player_can_create_character_for_selected_campaign` |
+| 11 | A descrição do personagem inclui dados narrativos como altura e peso, além de antecedente, sonho e caminho. | A etapa Conceito armazena idade, altura, peso e caminho no rascunho; a confirmação copia esses campos para a ficha final. | `CharacterCreationConceptForm`, `confirm_creation`, `Character` | `test_creation_wizard_renders_pt_br_labels`, `test_confirmation_creates_character_with_breakdowns_and_origins` |
+| 136-137 | Caminho é a combinação entre realização desejada e forma de trilhar o sonho, gerando nove caminhos. | `dream_path` usa enum fechado com os nove caminhos do livro e é exibido como "Caminho" na ficha. | `DREAM_PATH_CHOICES`, `PlayerCharacterSheetForm` | `test_character_sheet_uses_final_visual_layout_with_character_data`, `test_player_can_update_subjective_sheet_fields` |
 
 ## Atributos
 
@@ -66,6 +68,7 @@ Este documento registra somente as regras necessárias para a implementação do
 
 | Regra | Ambiguidade | Decisão técnica |
 | --- | --- | --- |
+| Origem | O livro usa antecedentes como tipo de origem, mas não há um sistema separado chamado "origem" no trecho normativo da criação. | Não foi criado um segundo eixo de origem. O sistema mantém `Background` como Antecedente e adiciona `Caminho`, que estava faltando no Passo V. |
 | Pontos de Treinamento racial por Sabedoria em Anões/Celestiais | O texto combina mínimo 1 com indisponibilidade quando o modificador é negativo. | Serviço retorna `0` para modificador não positivo e documenta que a liberação depende de recalcular quando Sabedoria ficar positiva. |
 | Distribuição por pontos | O PDF apresenta conjunto padrão/rolagem; o ajuste de produto exige distribuição por pontos. | Usar soma do conjunto padrão como total (`72`) e seus extremos como mínimo/máximo base (`8` a `15`) preserva a escala do livro sem introduzir valores fora da fonte. |
 | Coerência de traços Zoan | O livro exige coerência e aprovação do Narrador, mas isso é julgamento narrativo. | Traços específicos/predador exigem aprovação do mestre ou marcação explícita de ancestral carnívoro caçador. |

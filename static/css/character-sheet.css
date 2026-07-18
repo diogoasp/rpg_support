@@ -90,7 +90,7 @@
 .op-corner-br { bottom: 6px; right: 6px; transform: scale(-1, -1); }
 
 .op-sheet-header {
-  display: grid;
+  /* display: grid; */
   grid-template-columns: 230px 1fr 280px;
   gap: 24px;
   align-items: start;
@@ -787,6 +787,7 @@
 }
 
 .op-form-field input,
+.op-form-field select,
 .op-form-field textarea {
   width: 100%;
   border: 1px solid var(--sheet-wood);
@@ -807,6 +808,7 @@
 }
 
 .op-form-field input:focus,
+.op-form-field select:focus,
 .op-form-field textarea:focus {
   outline: 2px solid rgba(180, 134, 62, .55);
   outline-offset: 2px;

@@ -123,6 +123,11 @@ class PlayerCampaignFlowTests(TestCase):
 
     def test_character_sheet_uses_final_visual_layout_with_character_data(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.age = "20"
+        character.height = "1,70 m"
+        character.weight = "58 kg"
+        character.dream_path = "knowledge_companionship"
+        character.save()
         InventoryItem.objects.create(character=character, name="Clima-Tact", description="Bastão climático.", quantity=1)
 
         self.client.force_login(self.player)
@@ -135,6 +140,10 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Atributos e Status Vitais")
         self.assertContains(response, "Vontade (VON)")
         self.assertContains(response, "Presença (PRE)")
+        self.assertContains(response, "20")
+        self.assertContains(response, "1,70 m")
+        self.assertContains(response, "58 kg")
+        self.assertContains(response, "Conhecimento pelo Companheirismo")
         self.assertContains(response, "Clima-Tact")
         self.assertNotContains(response, "Inteligência")
         self.assertNotContains(response, "Carisma")
@@ -148,6 +157,10 @@ class PlayerCampaignFlowTests(TestCase):
         response = self.client.post(
             reverse("characters:sheet", kwargs={"slug": self.c1.slug}),
             {
+                "age": "21",
+                "height": "1,68 m",
+                "weight": "55 kg",
+                "dream_path": "freedom_strength",
                 "appearance": "Cabelos alaranjados e olhar atento.",
                 "personality": "Calculista e protetora.",
                 "dream": "Mapear todos os mares.",
@@ -158,6 +171,10 @@ class PlayerCampaignFlowTests(TestCase):
 
         self.assertContains(response, "Ficha narrativa atualizada.")
         character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.assertEqual(character.age, "21")
+        self.assertEqual(character.height, "1,68 m")
+        self.assertEqual(character.weight, "55 kg")
+        self.assertEqual(character.dream_path, "freedom_strength")
         self.assertEqual(character.dream, "Mapear todos os mares.")
         self.assertEqual(character.notes, "História atualizada pela ficha completa.")
         self.assertContains(response, "Mapear todos os mares.")

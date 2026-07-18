@@ -14,6 +14,17 @@ CANONICAL_ATTRIBUTES=(
     ('presence','Presença'),
 )
 RULESET_PLAYER_BOOK_1_5_7='player-book-1.5.7'
+DREAM_PATH_CHOICES=(
+    ('knowledge_companionship','Conhecimento pelo Companheirismo (C/C)'),
+    ('freedom_companionship','Liberdade pelo Companheirismo (L/C)'),
+    ('power_companionship','Poder pelo Companheirismo (P/C)'),
+    ('knowledge_strength','Conhecimento pela Força (C/F)'),
+    ('freedom_strength','Liberdade pela Força (L/F)'),
+    ('power_strength','Poder pela Força (P/F)'),
+    ('knowledge_deception','Conhecimento pela Enganação (C/E)'),
+    ('freedom_deception','Liberdade pela Enganação (L/E)'),
+    ('power_deception','Poder pela Enganação (P/E)'),
+)
 
 class Character(models.Model):
     campaign=models.ForeignKey('campaigns.Campaign',on_delete=models.CASCADE,related_name='characters',db_index=True)
@@ -34,6 +45,7 @@ class Character(models.Model):
     willpower=models.PositiveSmallIntegerField('vontade',default=10,validators=attribute_validators); presence=models.PositiveSmallIntegerField('presença',default=10,validators=attribute_validators)
     haki_declared=models.BooleanField('Haki declarado',default=False); haki_trained=models.BooleanField('Haki treinado',default=False)
     devil_fruit_name=models.CharField('Akuma no Mi',max_length=150,blank=True,default=''); devil_fruit_available=models.BooleanField('Akuma no Mi disponível',default=False)
+    age=models.CharField('idade',max_length=60,blank=True,default=''); height=models.CharField('altura',max_length=60,blank=True,default=''); weight=models.CharField('peso',max_length=60,blank=True,default=''); dream_path=models.CharField('caminho',max_length=40,choices=DREAM_PATH_CHOICES,blank=True,default='')
     appearance=models.TextField('aparência',blank=True); personality=models.TextField('personalidade',blank=True); dream=models.TextField('sonho',blank=True); notes=models.TextField('notas',blank=True)
     created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
     class Meta:
@@ -224,6 +236,10 @@ class CharacterCreation(models.Model):
     free_skills=models.ManyToManyField(Skill,blank=True,related_name='creation_free_choices')
     name=models.CharField(max_length=150,blank=True)
     concept=models.TextField(blank=True)
+    age=models.CharField(max_length=60,blank=True,default='')
+    height=models.CharField(max_length=60,blank=True,default='')
+    weight=models.CharField(max_length=60,blank=True,default='')
+    dream_path=models.CharField(max_length=40,choices=DREAM_PATH_CHOICES,blank=True,default='')
     appearance=models.TextField(blank=True)
     personality=models.TextField(blank=True)
     dream=models.TextField(blank=True)

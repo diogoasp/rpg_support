@@ -1734,7 +1734,7 @@ Models principais:
 - `CombatStyle`: dado de vida, salvaguardas, perícias permitidas, proficiências, atributos primários, arma favorita, habilidade inata, equipamento, dinheiro e características de 1º nível.
 - `Profession`: profissões principais, `Sem Profissão` e subprofissão `Timoneiro`.
 - `Background`: antecedentes, perícias, atributo recomendado e característica especial.
-- `CharacterCreation`: rascunho, etapa atual, pendências, erros, avisos, aprovação do mestre e escolhas estruturadas.
+- `CharacterCreation`: rascunho, etapa atual, pendências, erros, avisos, aprovação do mestre, conceito, idade, altura, peso, caminho e escolhas estruturadas.
 - `CharacterAttribute`: decomposição por base, bônus de espécie, bônus de antecedente, outros bônus e valor final.
 - `CharacterProficiency`: preserva origem de cada proficiência e evita duplicidade silenciosa.
 - `CharacterRuleException`: registra usuário, data, regra ignorada e justificativa.
@@ -1775,6 +1775,7 @@ HTMX atualiza opções e prévia, mas a confirmação depende sempre de validaç
 ### Regras implementadas
 
 - Atributos canônicos: Força, Destreza, Constituição, Sabedoria, Vontade e Presença.
+- Descrição inicial do personagem: idade, altura, peso e Caminho são preenchidos na etapa Conceito e copiados para a ficha final na confirmação.
 - Métodos de atributo: distribuição por pontos, conjunto padrão compatível e geração 4d6 descarta menor. A distribuição por pontos usa total 72, mínimo 8 e máximo 15 antes dos bônus.
 - Bônus de espécie/antecedente armazenados separadamente e preenchidos a partir das etapas de espécie e antecedente; a etapa de atributos só edita valores base e mostra os bônus automaticamente.
 - Catálogo das 8 espécies, variantes obrigatórias e derivação de mestiço por duas origens.
@@ -1792,6 +1793,7 @@ HTMX atualiza opções e prévia, mas a confirmação depende sempre de validaç
 - Coerência de ancestralidade Zoan: é decisão narrativa do mestre; o sistema exige aprovação para traços específicos/predador quando necessário.
 - Requisitos raciais de alguns estilos: ficam representados em JSON e podem ser ignorados por exceção registrada.
 - Equipamento de Gigante: a necessidade de adaptação por tamanho é registrada; a materialização detalhada por tamanho fica para evolução do resolvedor de equipamentos, sem progressão pós-1º nível.
+- Origem: não foi criado um sistema separado com esse nome. A leitura do livro mantém origem representada por Antecedente e adiciona Caminho como campo específico que faltava na ficha.
 
 ### Seeds e testes
 

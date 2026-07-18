@@ -9,8 +9,8 @@ class CharacterForm(forms.ModelForm):
 class PlayerCharacterSheetForm(forms.ModelForm):
     class Meta:
         model=Character
-        fields=("portrait","appearance","personality","dream","notes")
-        labels={"portrait":"Retrato/ilustração","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
+        fields=("portrait","age","height","weight","dream_path","appearance","personality","dream","notes")
+        labels={"portrait":"Retrato/ilustração","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
         widgets={
             "appearance":forms.Textarea(attrs={"rows":4}),
             "personality":forms.Textarea(attrs={"rows":4}),
@@ -25,8 +25,8 @@ class ConditionForm(forms.ModelForm):
 class CharacterCreationConceptForm(forms.ModelForm):
     class Meta:
         model=CharacterCreation
-        fields=("name","concept")
-        labels={"name":"Nome","concept":"Conceito"}
+        fields=("name","concept","age","height","weight","dream_path")
+        labels={"name":"Nome","concept":"Conceito","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho"}
         widgets={"concept":forms.Textarea(attrs={"rows":3})}
 
 class CharacterCreationSpeciesForm(forms.ModelForm):
