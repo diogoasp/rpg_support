@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
-from characters.models import Character
+from characters.models import Character, CharacterCreation
 from django.db.models import Prefetch, Q
 from ships.models import Ship
 from maps.models import CampaignMap
@@ -49,6 +49,7 @@ class PlayerDashboardView(PlayerRequiredMixin, TemplateView):
         visible_maps = CampaignMap.objects.filter(is_active=True, is_visible_to_players=True).filter(Q(visible_to_users=self.request.user) | Q(visible_to_users__isnull=True)).distinct()
         context["campaigns"] = self.request.user.campaigns.select_related("master").prefetch_related(
             Prefetch("characters", Character.objects.filter(user=self.request.user), to_attr="player_characters"),
+            Prefetch("character_creations", CharacterCreation.objects.filter(user=self.request.user, status__in=(CharacterCreation.Status.DRAFT, CharacterCreation.Status.READY, CharacterCreation.Status.REOPENED)), to_attr="player_character_creations"),
             Prefetch("ships", Ship.objects.filter(is_active=True), to_attr="active_ships"),
             Prefetch("maps", visible_maps, to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.filter(is_published=True), to_attr="dashboard_sessions"),

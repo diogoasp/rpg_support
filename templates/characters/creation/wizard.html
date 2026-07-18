@@ -12,6 +12,10 @@
     <span class="badge text-bg-dark align-self-start">Rascunho salvo</span>
   </div>
 
+  <div class="alert alert-info">
+    Salvar uma etapa mantém a criação como rascunho. O personagem só aparece no painel após clicar em <strong>Confirmar ficha</strong> na etapa Revisão.
+  </div>
+
   <nav class="creation-steps mb-4" aria-label="Etapas da criação">
     {% for item in step_items %}
       <a class="{% if item.key == step %}active{% endif %} {% if item.key in creation.completed_steps %}done{% endif %}" href="?step={{ item.key }}">{{ forloop.counter }}. {{ item.label }}</a>
@@ -58,7 +62,7 @@
           {% endif %}
           {{ form.as_p }}
           <div class="d-flex gap-2 mt-3">
-            <button class="btn btn-pirate-red" type="submit">Salvar e continuar</button>
+            <button class="btn btn-pirate-red" type="submit">{% if step == "equipment" %}Salvar e revisar{% else %}Salvar e continuar{% endif %}</button>
             <button class="btn btn-parchment" type="submit" name="next_step" value="{{ step }}">Salvar rascunho</button>
           </div>
         </form>

@@ -62,6 +62,13 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, reverse("characters:dashboard", kwargs={"slug": self.c1.slug}))
         self.assertContains(response, reverse("characters:create", kwargs={"slug": self.c2.slug}))
 
+    def test_player_dashboard_shows_continue_creation_for_draft(self):
+        CharacterCreation.objects.create(campaign=self.c2, user=self.player, name="Usopp", current_step="review")
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("dashboard:player"))
+        self.assertContains(response, "Continuar criação")
+        self.assertContains(response, f'{reverse("characters:create", kwargs={"slug": self.c2.slug})}?step=review')
+
     def test_player_can_create_character_for_selected_campaign(self):
         self.client.force_login(self.player)
         response = self.client.post(
@@ -82,9 +89,14 @@ class PlayerCampaignFlowTests(TestCase):
         response = self.client.get(reverse("characters:create", kwargs={"slug": self.c1.slug}))
         self.assertEqual(response.status_code, 403)
 
-    def test_legacy_character_entry_redirects_to_campaign_selection(self):
+    def test_character_menu_lists_existing_characters_and_drafts(self):
+        CharacterCreation.objects.create(campaign=self.c2, user=self.player, name="Usopp", current_step="attributes")
         self.client.force_login(self.player)
-        self.assertRedirects(
-            self.client.get(reverse("characters:legacy_dashboard")),
-            reverse("dashboard:player"),
-        )
+        response = self.client.get(reverse("characters:legacy_dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Personagens e criações")
+        self.assertContains(response, "Nami")
+        self.assertContains(response, "Ficha completa")
+        self.assertContains(response, "Usopp")
+        self.assertContains(response, "Atributos")
+        self.assertContains(response, "Continuar criação")

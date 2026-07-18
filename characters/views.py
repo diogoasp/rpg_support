@@ -34,7 +34,16 @@ def own_character(request,slug=None):
     return get_object_or_404(q)
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
 class PlayerCharacterEntryView(PlayerRequiredMixin,View):
-    def get(self,request): return redirect('dashboard:player')
+    template_name='characters/player_list.html'
+    def get(self,request):
+        campaigns=request.user.campaigns.select_related('master').prefetch_related(
+            Prefetch('characters',Character.objects.filter(user=request.user),to_attr='player_characters'),
+            Prefetch('character_creations',CharacterCreation.objects.filter(user=request.user,status__in=(CharacterCreation.Status.DRAFT,CharacterCreation.Status.READY,CharacterCreation.Status.REOPENED)),to_attr='player_character_creations'),
+        )
+        for campaign in campaigns:
+            for creation in getattr(campaign,'player_character_creations',[]):
+                creation.current_step_label=CREATION_STEP_LABELS.get(creation.current_step,creation.current_step)
+        return render(request,self.template_name,{'campaigns':campaigns})
 class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
     template_name='characters/dashboard.html'
     def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request,self.kwargs.get('slug')); return c

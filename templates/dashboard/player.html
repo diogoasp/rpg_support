@@ -17,7 +17,13 @@
               {% if character %}
                 <a class="btn btn-primary" href="{% url 'characters:dashboard' campaign.slug %}">Selecionar campanha</a>
               {% else %}
-                <a class="btn btn-primary" href="{% url 'characters:create' campaign.slug %}">Criar personagem</a>
+                {% with creation=campaign.player_character_creations.0 %}
+                  {% if creation %}
+                    <a class="btn btn-primary" href="{% url 'characters:create' campaign.slug %}?step={{ creation.current_step }}">Continuar criação</a>
+                  {% else %}
+                    <a class="btn btn-primary" href="{% url 'characters:create' campaign.slug %}">Criar personagem</a>
+                  {% endif %}
+                {% endwith %}
               {% endif %}
             {% endwith %}
           </div>

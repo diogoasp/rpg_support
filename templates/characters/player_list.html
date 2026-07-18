@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Meus personagens{% endblock %}
+{% block page_heading %}Meus personagens{% endblock %}
+{% block content %}
+<section class="parchment-card">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-muted fw-bold mb-1">Área do jogador</p>
+      <h2 class="h3 mb-1">Personagens e criações</h2>
+      <p class="mb-0">Acesse suas fichas completas ou continue uma criação em andamento.</p>
+    </div>
+    <a class="btn btn-parchment align-self-start" href="{% url 'dashboard:player' %}">Voltar ao painel</a>
+  </div>
+
+  <div class="row g-3">
+    {% for campaign in campaigns %}
+      <div class="col-12 col-xl-6">
+        <article class="paper-panel h-100">
+          <div class="d-flex justify-content-between gap-3 mb-3">
+            <div>
+              <h3 class="h5 mb-1">{{ campaign.name }}</h3>
+              <p class="small text-muted mb-0">Mestre: {{ campaign.master.get_full_name|default:campaign.master.username }}</p>
+            </div>
+          </div>
+
+          {% with character=campaign.player_characters.0 creation=campaign.player_character_creations.0 %}
+            {% if character %}
+              <div class="mb-3">
+                <strong>{{ character.name }}</strong>
+                <p class="small mb-2">{{ character.species|default:"Espécie pendente" }} · {{ character.combat_style|default:"Estilo pendente" }} · nível {{ character.level }}</p>
+                <a class="btn btn-pirate-red" href="{% url 'characters:sheet' campaign.slug %}">Ficha completa</a>
+                <a class="btn btn-parchment" href="{% url 'characters:dashboard' campaign.slug %}">Resumo</a>
+              </div>
+            {% elif creation %}
+              <div class="mb-3">
+                <strong>{{ creation.name|default:"Criação sem nome" }}</strong>
+                <p class="small mb-2">Rascunho salvo na etapa {{ creation.current_step_label }}. A ficha só aparece após a revisão final.</p>
+                <a class="btn btn-pirate-red" href="{% url 'characters:create' campaign.slug %}?step={{ creation.current_step }}">Continuar criação</a>
+                <a class="btn btn-parchment" href="{% url 'characters:create' campaign.slug %}?step=review">Ir para revisão</a>
+              </div>
+            {% else %}
+              <p class="mb-3">Você ainda não possui personagem nesta campanha.</p>
+              <a class="btn btn-pirate-red" href="{% url 'characters:create' campaign.slug %}">Criar personagem</a>
+            {% endif %}
+          {% endwith %}
+        </article>
+      </div>
+    {% empty %}
+      <div class="alert alert-info">Você ainda não participa de uma campanha.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
