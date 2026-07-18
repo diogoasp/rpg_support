@@ -4,7 +4,7 @@ from campaigns.models import Campaign
 from .models import Ship,NAVIGATION_RESOURCE_LEVELS
 
 def _authorize(user,campaign,ship=None):
-    if not user.is_authenticated or not user.is_master or campaign.master_id!=user.pk: raise PermissionDenied
+    if not user.is_authenticated or not user.is_master: raise PermissionDenied
     if ship and ship.campaign_id!=campaign.pk: raise ValidationError('O navio não pertence à campanha.')
 @transaction.atomic
 def create_or_update_ship(*,user,campaign:Campaign,ship:Ship|None=None,**data)->Ship:

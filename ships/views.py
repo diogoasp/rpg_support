@@ -7,7 +7,10 @@ from .models import Ship
 from .services import create_or_update_ship,damage_ship,repair_ship,update_navigation_resources
 
 def _campaign(request,slug=None):
- q=Campaign.objects.filter(slug=slug) if slug else (Campaign.objects.filter(master=request.user) if request.user.is_master else request.user.campaigns.all())
+ if request.user.is_master:
+  q=Campaign.objects.filter(slug=slug) if slug else Campaign.objects.all()
+ else:
+  q=request.user.campaigns.filter(slug=slug) if slug else request.user.campaigns.all()
  c=q.first()
  if not c: raise PermissionDenied
  return c
@@ -17,18 +20,18 @@ def detail(request):
 @login_required
 def manage(request,slug):
  c=_campaign(request,slug)
- if c.master_id!=request.user.pk: raise PermissionDenied
+ if not request.user.is_master: raise PermissionDenied
  return render(request,'ships/manage.html',{'campaign':c,'ship':Ship.objects.filter(campaign=c,is_active=True).first()})
 @login_required
 def edit(request,slug):
  c=_campaign(request,slug)
- if c.master_id!=request.user.pk: raise PermissionDenied
+ if not request.user.is_master: raise PermissionDenied
  ship=Ship.objects.filter(campaign=c,is_active=True).first(); form=ShipForm(request.POST or None,request.FILES or None,instance=ship)
  if request.method=='POST' and form.is_valid(): create_or_update_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data); return redirect('ships:manage',slug=slug)
  return render(request,'ships/form.html',{'form':form,'campaign':c,'ship':ship})
 def _action(request,slug,kind):
  c=_campaign(request,slug)
- if c.master_id!=request.user.pk: raise PermissionDenied
+ if not request.user.is_master: raise PermissionDenied
  ship=get_object_or_404(Ship,campaign=c,is_active=True); forms={'damage':DamageShipForm,'repair':RepairShipForm,'resources':NavigationResourcesForm}; form=forms[kind](request.POST or None,**({'instance':ship} if kind=='resources' else {}))
  if request.method=='POST' and form.is_valid():
   if kind=='damage': ship=damage_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data)

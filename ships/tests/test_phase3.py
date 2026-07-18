@@ -7,7 +7,7 @@ from ships.models import Ship
 from ships.services import damage_ship,repair_ship,update_navigation_resources
 class ShipTests(TestCase):
  def setUp(self):
-  self.master=User.objects.create_user('m',role='master'); self.player=User.objects.create_user('p',role='player'); self.c=Campaign.objects.create(name='C',slug='c',master=self.master); self.c.players.add(self.player); self.ship=Ship.objects.create(campaign=self.c,name='N',max_hp=100,current_hp=100,max_crew=10,current_crew=5)
+  self.master=User.objects.create_user('m',role='master'); self.other_master=User.objects.create_user('m2',role='master'); self.player=User.objects.create_user('p',role='player'); self.outsider=User.objects.create_user('o',role='player'); self.c=Campaign.objects.create(name='C',slug='c',master=self.master); self.c.players.add(self.player); self.ship=Ship.objects.create(campaign=self.c,name='N',max_hp=100,current_hp=100,max_crew=10,current_crew=5)
  def test_active_unique_and_validation(self):
   with self.assertRaises(IntegrityError): Ship.objects.create(campaign=self.c,name='X',max_hp=1,current_hp=1)
   self.ship.current_hp=101
@@ -22,5 +22,13 @@ class ShipTests(TestCase):
  def test_player_cannot_damage_and_can_view(self):
   with self.assertRaises(PermissionDenied): damage_ship(user=self.player,campaign=self.c,ship=self.ship,raw_damage=1)
   self.client.force_login(self.player); self.assertContains(self.client.get('/navio/?campaign=c'),'N')
+ def test_master_can_view_and_manage_any_ship(self):
+  self.client.force_login(self.other_master)
+  self.assertContains(self.client.get('/navio/?campaign=c'),'N')
+  self.assertContains(self.client.get('/mestre/c/navio/'),'N')
+  self.assertEqual(damage_ship(user=self.other_master,campaign=self.c,ship=self.ship,raw_damage=10).current_hp,90)
+ def test_player_from_other_campaign_cannot_view_ship_by_slug(self):
+  self.client.force_login(self.outsider)
+  self.assertEqual(self.client.get('/navio/?campaign=c').status_code,403)
  def test_htmx_damage_fragment(self):
   self.client.force_login(self.master); response=self.client.post('/mestre/c/navio/dano/',{'raw_damage':10,'resistance_reduction':0},HTTP_HX_REQUEST='true'); self.assertEqual(response.status_code,200); self.assertContains(response,'ship-card')
