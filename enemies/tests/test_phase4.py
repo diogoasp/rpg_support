@@ -1,7 +1,10 @@
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import TestCase
+from io import StringIO
 from accounts.models import User
-from enemies.models import Enemy,EnemyAction
+from enemies.models import Enemy,EnemyAction,EnemyFaction,EnemyFeature
+from enemies.seeds.op_enemy_manual import ENEMIES,FACTIONS
 class EnemyTests(TestCase):
  def test_validation_modifiers_and_action(self):
   enemy=Enemy(name='Teste',slug='teste',max_hp=0,strength=31)
@@ -11,3 +14,22 @@ class EnemyTests(TestCase):
   enemy=Enemy(name='X',slug='x',max_hp=1,is_active=False); enemy.full_clean(); self.assertFalse(enemy.is_available_for_generator)
  def test_player_denied_catalog(self):
   player=User.objects.create_user('p',role='player'); self.client.force_login(player); self.assertEqual(self.client.get('/mestre/inimigos/').status_code,403)
+ def test_import_enemy_manual_dry_run_does_not_persist(self):
+  call_command('import_enemy_manual','--dry-run',stdout=StringIO())
+  self.assertFalse(Enemy.objects.filter(slug__startswith='manual-inimigos-').exists())
+  self.assertFalse(EnemyFaction.objects.filter(slug__in=FACTIONS).exists())
+ def test_import_enemy_manual_is_idempotent(self):
+  call_command('import_enemy_manual',stdout=StringIO())
+  self.assertEqual(Enemy.objects.filter(slug__startswith='manual-inimigos-').count(),len(ENEMIES))
+  self.assertEqual(EnemyFaction.objects.filter(slug__in=FACTIONS).count(),len(FACTIONS))
+  sample=Enemy.objects.get(slug='manual-inimigos-soldado-recruta')
+  self.assertEqual(sample.name,'Soldado Recruta')
+  self.assertEqual(sample.max_hp,4)
+  self.assertEqual(sample.armor_class,10)
+  self.assertEqual(sample.actions.count(),1)
+  action_count=EnemyAction.objects.count()
+  feature_count=EnemyFeature.objects.count()
+  call_command('import_enemy_manual',stdout=StringIO())
+  self.assertEqual(Enemy.objects.filter(slug__startswith='manual-inimigos-').count(),len(ENEMIES))
+  self.assertEqual(EnemyAction.objects.count(),action_count)
+  self.assertEqual(EnemyFeature.objects.count(),feature_count)
