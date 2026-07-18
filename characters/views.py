@@ -4,21 +4,39 @@ from django.db.models import Prefetch
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.views.generic import TemplateView, UpdateView
+from django.views.generic import FormView, TemplateView, UpdateView
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
+from campaigns.models import Campaign
 from .forms import CharacterForm, ConditionForm, ResourceForm
 from .models import Character, CharacterCondition, CharacterFeature, CharacterTechnique
 from .services import add_character_condition, deactivate_character_condition, update_character_resources
 
 def rich_queryset():
     return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)), 'skills__skill', Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
-def own_character(request): return get_object_or_404(rich_queryset(),user=request.user,campaign__players=request.user)
+def own_character(request,slug=None):
+    q=rich_queryset().filter(user=request.user,campaign__players=request.user)
+    if slug:q=q.filter(campaign__slug=slug)
+    return get_object_or_404(q)
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
+class PlayerCharacterEntryView(PlayerRequiredMixin,View):
+    def get(self,request): return redirect('dashboard:player')
 class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
     template_name='characters/dashboard.html'
-    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request); return c
+    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request,self.kwargs.get('slug')); return c
 class CharacterSheetView(PlayerCharacterView): template_name='characters/sheet.html'
 class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'
+class PlayerCharacterCreateView(PlayerRequiredMixin,FormView):
+    form_class=CharacterForm; template_name='characters/form.html'
+    def dispatch(self,request,*args,**kwargs):
+        if not request.user.is_authenticated or not request.user.is_player:
+            return super().dispatch(request,*args,**kwargs)
+        self.campaign=get_object_or_404(Campaign.objects.filter(players=request.user),slug=kwargs['slug'])
+        existing=Character.objects.filter(campaign=self.campaign,user=request.user).first()
+        if existing:return redirect('characters:dashboard',slug=self.campaign.slug)
+        return super().dispatch(request,*args,**kwargs)
+    def form_valid(self,form):
+        self.object=form.save(commit=False); self.object.campaign=self.campaign; self.object.user=self.request.user; self.object.full_clean(); self.object.save(); return redirect('characters:dashboard',slug=self.campaign.slug)
+    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['campaign']=self.campaign; c['is_create']=True; return c
 class MasterCharacterListView(MasterRequiredMixin,TemplateView):
     template_name='characters/master_list.html'
     def get_context_data(self,**kw): c=super().get_context_data(**kw); c['characters']=rich_queryset().filter(campaign__master=self.request.user); return c

@@ -9,7 +9,7 @@ from .models import InventoryItem
 from .services import add_inventory_item,deactivate_inventory_item
 class PlayerInventoryView(PlayerRequiredMixin,TemplateView):
     template_name='inventory/player.html'
-    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request); return c
+    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request,self.kwargs.get('slug')); return c
 class MasterInventoryView(MasterRequiredMixin,TemplateView):
     template_name='inventory/master.html'
     def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=master_character(self.request,self.kwargs['pk']); return c

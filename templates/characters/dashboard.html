@@ -32,6 +32,6 @@
     </span>
   {% endfor %}
   <div class="mt-3">
-    <a class="btn btn-primary" href="{% url 'characters:sheet' %}">Ficha completa</a> <a class="btn btn-outline-primary" href="{% url 'inventory:player' %}">Inventário</a>
+    <a class="btn btn-primary" href="{% url 'characters:sheet' character.campaign.slug %}">Ficha completa</a> <a class="btn btn-outline-primary" href="{% url 'inventory:player' character.campaign.slug %}">Inventário</a>
   </div>
 {% endblock %}

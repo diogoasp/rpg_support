@@ -1,6 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Painel do jogador{% endblock %}
 {% block content %}
-<section class="dashboard-hero parchment-card p-4 p-lg-5 mb-4"><p class="text-uppercase text-sand fw-bold mb-1">Área do jogador</p><h1 class="display-4 mb-3">Minhas campanhas</h1><a class="btn btn-primary btn-lg" href="{% url 'characters:dashboard' %}">Meu personagem</a></section>
-<div class="row g-4">{% for campaign in campaigns %}<div class="col-12"><article class="card parchment-card border-0"><div class="card-body p-4"><h2 class="h1">{{ campaign.name }}</h2>{% with ship=campaign.active_ships.0 %}{% include 'ships/partials/card.html' %}{% endwith %}<h3 class="section-title h4 mt-4">Mapas recentes</h3><div class="row g-3">{% for map in campaign.dashboard_maps|slice:':3' %}<div class="col-md-4">{% include 'maps/partials/card.html' %}</div>{% empty %}<p>Nenhum mapa liberado.</p>{% endfor %}</div><h3 class="section-title h4 mt-4">Última sessão</h3>{% with record=campaign.dashboard_sessions.0 %}{% if record %}<div class="parchment-card p-3 mb-3"><p class="fw-bold mb-1">Sessão {{ record.session_number }} · {{ record.title }} · {{ record.session_date }}{% if record.audio_file %} · Áudio disponível{% endif %}</p><p class="mb-0">{{ record.summary|truncatewords:25 }}</p></div>{% else %}<p>Nenhuma sessão publicada.</p>{% endif %}{% endwith %}<div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-primary" href="{% url 'ships:detail' %}?campaign={{ campaign.slug }}">Ver navio</a><a class="btn btn-outline-primary" href="{% url 'maps:list' %}">Ver mapas</a><a class="btn btn-outline-primary" href="{% url 'history:list' %}">Ver histórico</a></div></div></article></div>{% empty %}<div class="alert alert-info parchment-card">Você ainda não participa de uma campanha.</div>{% endfor %}</div>
+<p class="text-uppercase text-primary fw-semibold mb-1">Área do jogador</p>
+<h1 class="h2 mb-4">Selecione uma campanha</h1>
+<div class="row g-3">
+  {% for campaign in campaigns %}
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <h2 class="h4">{{ campaign.name }}</h2>
+              <p class="text-muted mb-0">Mestre: {{ campaign.master.get_full_name|default:campaign.master.username }}</p>
+            </div>
+            {% with character=campaign.player_characters.0 %}
+              {% if character %}
+                <a class="btn btn-primary" href="{% url 'characters:dashboard' campaign.slug %}">Selecionar campanha</a>
+              {% else %}
+                <a class="btn btn-primary" href="{% url 'characters:create' campaign.slug %}">Criar personagem</a>
+              {% endif %}
+            {% endwith %}
+          </div>
+          {% with ship=campaign.active_ships.0 %}{% include 'ships/partials/card.html' %}{% endwith %}
+          <h3 class="h5 mt-3">Mapas recentes</h3>
+          <div class="row">{% for map in campaign.dashboard_maps|slice:':3' %}<div class="col-md-4">{% include 'maps/partials/card.html' %}</div>{% empty %}<p>Nenhum mapa liberado.</p>{% endfor %}</div>
+          <h3 class="h5 mt-3">Última sessão</h3>
+          {% with record=campaign.dashboard_sessions.0 %}
+            {% if record %}
+              <p>Sessão {{ record.session_number }} · {{ record.title }} · {{ record.session_date }}{% if record.audio_file %} · Áudio disponível{% endif %}</p>
+              <p>{{ record.summary|truncatewords:25 }}</p>
+            {% else %}
+              <p>Nenhuma sessão publicada.</p>
+            {% endif %}
+          {% endwith %}
+          <a class="btn btn-outline-primary" href="{% url 'ships:detail' %}?campaign={{ campaign.slug }}">Ver navio</a>
+          <a class="btn btn-outline-primary" href="{% url 'maps:list' %}">Ver mapas</a>
+          <a class="btn btn-outline-primary" href="{% url 'history:list' %}">Ver histórico</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-info">Você ainda não participa de uma campanha.</div>
+  {% endfor %}
+</div>
 {% endblock %}
