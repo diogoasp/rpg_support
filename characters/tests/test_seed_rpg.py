@@ -1,7 +1,9 @@
 from django.core.management import call_command
 from django.test import TestCase
 
+from accounts.models import User
 from campaigns.models import Campaign
+from characters.models import Character
 from ships.models import Ship
 
 
@@ -30,3 +32,5 @@ class SeedRpgTests(TestCase):
         self.assertEqual(ship.cannons, 1)
         self.assertTrue(ship.is_active)
         self.assertTrue(ship.belongs_to_crew)
+        self.assertFalse(Character.objects.exists())
+        self.assertFalse(User.objects.filter(username__in=("mestre_demo", "jogador1", "jogador2")).exists())

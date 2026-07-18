@@ -1555,7 +1555,7 @@ Há formulários separados para navio, dano, reparo, recursos, mapa, visibilidad
 
 Os dashboards fazem prefetch do navio ativo, mapas autorizados/recentes e sessões relevantes, evitando queries em loops. O jogador recebe cards compactos; o mestre recebe ações operacionais de navio, mapas e histórico. Os três modelos foram registrados no admin com busca, filtros, relações antecipadas e datas somente leitura.
 
-`seed_rpg` permanece idempotente e cria a campanha de desenvolvimento `Tambores da Libertação`, o navio `Caravela revolucionária de apoio`, três mapas (público, privado e específico) e três sessões (duas publicadas e um rascunho), sem arquivos protegidos por direitos autorais.
+`seed_rpg` permanece idempotente e cria somente a campanha de desenvolvimento `Tambores da Libertação` e o navio `Caravela revolucionária de apoio`. Ele não cria personagens, jogadores, mapas, sessões ou encontros demonstrativos.
 
 ## 30.7. Divergências, limitações e pendências
 
@@ -1601,7 +1601,7 @@ O dashboard do mestre oferece gerar encontro, abrir preparados, catálogo e cada
 
 ## 31.6. Admin, uploads, seed e testes
 
-Todos os modelos foram registrados no admin com busca, filtros, inlines, relações antecipadas, readonly e paginação. Imagens aceitam JPEG, PNG e WebP, validam extensão, MIME e limite configurável, usam nome UUID e não têm rota pública para jogadores. `seed_rpg` agora cria duas facções fictícias, quatro simples, dois moderados, elite, chefe, narrativo, não recomendado, ações, características e três encontros idempotentes.
+Todos os modelos foram registrados no admin com busca, filtros, inlines, relações antecipadas, readonly e paginação. Imagens aceitam JPEG, PNG e WebP, validam extensão, MIME e limite configurável, usam nome UUID e não têm rota pública para jogadores. Dados de inimigos devem ser importados pelo comando próprio do catálogo, não pelo `seed_rpg` geral.
 
 A suíte cobre o legado e os novos contratos de domínio, geração, recálculo, salvamento, duplicação, permissões e HTMX. A execução inicial revelou três fragilidades preexistentes: captura de `IntegrityError` dentro da transação implícita do `TestCase`, argumento `instance` indevido em `DamageShipForm` e expectativa de landing após login incompatível com o redirect normal. Foram aplicadas correções mínimas: validação antecipada das duas unicidades, construção correta do formulário e uma landing de uso único após autenticação; o comportamento público normal do dashboard permanece inalterado.
 
