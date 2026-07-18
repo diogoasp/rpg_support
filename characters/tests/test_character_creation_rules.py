@@ -218,6 +218,34 @@ class CharacterCreationRulesTests(TestCase):
         self.assertGreater(character.rule_proficiencies.count(), 0)
         self.assertTrue(character.inventory_items.filter(name__icontains="mochila").exists())
 
+    def test_review_post_confirms_character_and_redirects_to_sheet_dashboard(self):
+        user = User.objects.create_user("review-ok", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        creation = fill_creation(get_or_create_draft(self.campaign, user))
+        self.client.force_login(user)
+        response = self.client.post(
+            f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=review',
+            {"step": "review", "confirm": "1"},
+        )
+        self.assertRedirects(response, reverse("characters:dashboard", kwargs={"slug": self.campaign.slug}))
+        self.assertTrue(Character.objects.filter(campaign=self.campaign, user=user, name=creation.name).exists())
+
+    def test_review_post_preserves_final_validation_errors(self):
+        user = User.objects.create_user("review-error", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        creation = fill_creation(get_or_create_draft(self.campaign, user))
+        creation.attribute_bases = dict.fromkeys(ATTRIBUTE_KEYS, 8)
+        creation.save()
+        self.client.force_login(user)
+        response = self.client.post(
+            f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=review',
+            {"step": "review", "confirm": "1"},
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertContains(response, "Não foi possível confirmar a ficha", status_code=422)
+        self.assertContains(response, "Distribua 72 pontos", status_code=422)
+        self.assertFalse(Character.objects.filter(campaign=self.campaign, user=user).exists())
+
     def test_master_exception_allows_completion_and_is_recorded(self):
         creation = get_or_create_draft(self.campaign, self.player)
         fill_creation(creation)

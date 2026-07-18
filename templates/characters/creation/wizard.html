@@ -12,9 +12,11 @@
     <span class="badge text-bg-dark align-self-start">Rascunho salvo</span>
   </div>
 
-  <div class="alert alert-info">
-    Salvar uma etapa mantém a criação como rascunho. O personagem só aparece no painel após clicar em <strong>Confirmar ficha</strong> na etapa Revisão.
-  </div>
+  {% if step != "review" %}
+    <div class="alert alert-info">
+      Salvar uma etapa mantém a criação como rascunho. O personagem só aparece no painel após clicar em <strong>Confirmar ficha</strong> na etapa Revisão.
+    </div>
+  {% endif %}
 
   <nav class="creation-steps mb-4" aria-label="Etapas da criação">
     {% for item in step_items %}

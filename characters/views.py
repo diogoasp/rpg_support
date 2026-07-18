@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Prefetch
@@ -85,10 +86,11 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
     def step(self,creation):
         requested=self.request.GET.get('step') or self.request.POST.get('step') or creation.current_step
         return requested if requested in CharacterCreation.STEPS else 'concept'
-    def context(self,creation,form=None,step=None):
+    def context(self,creation,form=None,step=None,refresh_validation=True):
         step=step or self.step(creation)
         form=form or (CREATION_FORMS.get(step,CharacterCreationConceptForm))(instance=creation)
-        update_validation_state(creation)
+        if refresh_validation:
+            update_validation_state(creation)
         step_items=[{'key':key,'label':CREATION_STEP_LABELS[key]} for key in CharacterCreation.STEPS]
         return {'campaign':self.campaign,'creation':creation,'form':form,'step':step,'steps':CharacterCreation.STEPS,'step_items':step_items,'options':adaptive_options(creation),'preview':preview_derived_values(creation)}
     def get(self,request,*args,**kwargs):
@@ -101,9 +103,15 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
         if step=='review' and request.POST.get('confirm')=='1':
             try:
                 confirm_creation(creation,actor=request.user)
+                messages.success(request,'Ficha confirmada. O personagem foi criado.')
                 return redirect('characters:dashboard',slug=self.campaign.slug)
-            except ValidationError:
-                return render(request,self.template_name,self.context(creation,step='review'),status=422)
+            except ValidationError as exc:
+                errors=getattr(exc,'message_dict',None) or {'confirmação':exc.messages}
+                creation.validation_errors=errors
+                creation.pending_choices=errors.get('pending_choices',[])
+                creation.save(update_fields=('validation_errors','pending_choices','updated_at'))
+                messages.error(request,'Não foi possível confirmar a ficha. Resolva as pendências destacadas abaixo.')
+                return render(request,self.template_name,self.context(creation,step='review',refresh_validation=False),status=422)
         form_class=CREATION_FORMS.get(step,CharacterCreationConceptForm); form=form_class(request.POST,instance=creation)
         if form.is_valid():
             creation=form.save()

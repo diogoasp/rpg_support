@@ -1,5 +1,19 @@
 <div class="paper-panel">
   <h3 class="h5">Revisão final</h3>
+  {% if creation.validation_errors %}
+    <div class="alert alert-danger">
+      <strong>A ficha ainda não pode ser confirmada.</strong>
+      <ul class="mb-0">
+        {% for field,error in creation.validation_errors.items %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      Nenhuma pendência crítica encontrada. Clique em <strong>Confirmar ficha</strong> para finalizar a criação.
+    </div>
+  {% endif %}
   <div class="row g-3">
     <div class="col-md-6"><strong>Nome</strong><br>{{ creation.name|default:"pendente" }}</div>
     <div class="col-md-6"><strong>Espécie</strong><br>{{ creation.species.name|default:"pendente" }}{% if creation.species_variant %} · {{ creation.species_variant.name }}{% endif %}</div>
