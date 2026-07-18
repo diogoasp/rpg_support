@@ -21,13 +21,14 @@ from .forms import (
     CharacterCreationProfessionForm,
     CharacterCreationSpeciesForm,
     CharacterCreationStyleForm,
+    CharacterHpActionForm,
     CharacterForm,
     ConditionForm,
     PlayerCharacterSheetForm,
     ResourceForm,
 )
 from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique
-from .services import add_character_condition, deactivate_character_condition, update_character_resources
+from .services import add_character_condition, damage_character, deactivate_character_condition, heal_character, update_character_resources
 
 def rich_queryset():
     return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
@@ -36,6 +37,8 @@ def own_character(request,slug=None):
     if slug:q=q.filter(campaign__slug=slug)
     return get_object_or_404(q)
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
+def master_character_card(request,character):
+    return render(request,'characters/partials/master_dashboard_card.html',{'character':character})
 class PlayerCharacterEntryView(PlayerRequiredMixin,View):
     template_name='characters/player_list.html'
     def get(self,request):
@@ -203,6 +206,28 @@ class ResourceUpdateView(MasterRequiredMixin,View):
             try: character=update_character_resources(actor=request.user,character=character,**({self.resource:form.cleaned_data['value']})); form=ResourceForm()
             except ValidationError as e: form.add_error('value',e)
         return render(request,'characters/partials/resource_card.html',{'character':character,'form':form})
+class CharacterDamageView(MasterRequiredMixin,View):
+    def get(self,request,pk):
+        return render(request,'characters/partials/hp_action_form.html',{'form':CharacterHpActionForm(),'character':master_character(request,pk),'action':'damage','title':'Causar dano'})
+    def post(self,request,pk):
+        character=master_character(request,pk); form=CharacterHpActionForm(request.POST)
+        if form.is_valid():
+            try: character=damage_character(actor=request.user,character=character,amount=form.cleaned_data['amount'])
+            except ValidationError as e: form.add_error('amount',e)
+        if form.errors:
+            return render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'damage','title':'Causar dano'},status=422)
+        return master_character_card(request,master_character(request,pk))
+class CharacterHealView(MasterRequiredMixin,View):
+    def get(self,request,pk):
+        return render(request,'characters/partials/hp_action_form.html',{'form':CharacterHpActionForm(),'character':master_character(request,pk),'action':'heal','title':'Curar'})
+    def post(self,request,pk):
+        character=master_character(request,pk); form=CharacterHpActionForm(request.POST)
+        if form.is_valid():
+            try: character=heal_character(actor=request.user,character=character,amount=form.cleaned_data['amount'])
+            except ValidationError as e: form.add_error('amount',e)
+        if form.errors:
+            return render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'heal','title':'Curar'},status=422)
+        return master_character_card(request,master_character(request,pk))
 class ConditionAddView(MasterRequiredMixin,View):
     def get(self,r,pk): return render(r,'characters/partials/condition_form.html',{'form':ConditionForm(),'character':master_character(r,pk)})
     def post(self,r,pk):

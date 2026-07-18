@@ -32,6 +32,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["campaigns"] = Campaign.objects.filter(master=self.request.user).prefetch_related(
             "players", Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
+            Prefetch("characters", Character.objects.select_related("user").prefetch_related("inventory_items"), to_attr="dashboard_characters"),
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),

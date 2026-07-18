@@ -1,0 +1,49 @@
+<article id="master-character-card-{{ character.pk }}" class="card shadow-sm h-100">
+  <div class="card-body">
+    <div class="d-flex justify-content-between gap-2">
+      <div>
+        <h4 class="h5 mb-1">{{ character.name }}</h4>
+        <p class="small text-muted mb-2">
+          {{ character.user.get_full_name|default:character.user.username }} · Nv. {{ character.level }}
+        </p>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary align-self-start" href="{% url 'characters:master_detail' character.pk %}">Ficha</a>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="border rounded p-2 h-100">
+          <small class="text-muted">PV</small>
+          <strong class="d-block h5 mb-0">{{ character.current_hp }}/{{ character.max_hp }}</strong>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 h-100">
+          <small class="text-muted">PP</small>
+          <strong class="d-block h5 mb-0">{{ character.current_power_points }}/{{ character.max_power_points }}</strong>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 h-100">
+          <small class="text-muted">CR</small>
+          <strong class="d-block h5 mb-0">{{ character.armor_class }}</strong>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 h-100">
+          <small class="text-muted">Itens</small>
+          <strong class="d-block h5 mb-0">{{ character.inventory_items.all|length }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <p class="small mb-2">{{ character.species|default:"Espécie não definida" }} · {{ character.combat_style|default:"Sem estilo" }}</p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-sm btn-danger" hx-get="{% url 'characters:damage' character.pk %}" hx-target="#modal-content">Causar dano</button>
+      <button class="btn btn-sm btn-success" hx-get="{% url 'characters:heal' character.pk %}" hx-target="#modal-content">Curar</button>
+      <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'inventory:add' character.pk %}" hx-target="#modal-content">Alterar inventário</button>
+      <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'characters:condition_add' character.pk %}" hx-target="#modal-content">Condição</button>
+    </div>
+  </div>
+</article>

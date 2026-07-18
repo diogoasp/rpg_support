@@ -19,6 +19,8 @@ class PlayerCharacterSheetForm(forms.ModelForm):
         }
 class ResourceForm(forms.Form):
     value=forms.IntegerField(min_value=0,label='Novo valor')
+class CharacterHpActionForm(forms.Form):
+    amount=forms.IntegerField(min_value=1,label='Quantidade')
 class ConditionForm(forms.ModelForm):
     class Meta: model=CharacterCondition; fields=('name','description')
 

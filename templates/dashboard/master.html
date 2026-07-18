@@ -1,15 +1,108 @@
 {% extends "base.html" %}
 {% block title %}Painel do mestre{% endblock %}
 {% block content %}
-<section class="dashboard-hero parchment-card p-4 p-lg-5 mb-4">
-  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
-    <div><p class="text-uppercase text-sand fw-bold mb-1">Área do mestre</p><h1 class="display-4 mb-2">Suas campanhas</h1><p class="mb-0">Controle tripulações, mapas, encontros, áudio e registros de jornada.</p></div>
-    <div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary btn-lg" href="{% url 'campaigns:create' %}">Nova campanha</a><a class="btn btn-outline-light btn-lg" href="{% url 'characters:master_list' %}">Personagens</a></div>
+  <section class="dashboard-hero parchment-card p-4 p-lg-5 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+      <div>
+        <p class="text-uppercase text-sand fw-bold mb-1">Área do mestre</p>
+        <h1 class="display-4 mb-2">Suas campanhas</h1>
+        <p class="mb-0">Controle tripulações, mapas, encontros, áudio e registros de jornada.</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary btn-lg" href="{% url 'campaigns:create' %}">Nova campanha</a>
+        <a class="btn btn-outline-light btn-lg" href="{% url 'characters:master_list' %}">Personagens</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-4">
+    {% for campaign in campaigns %}
+      <div class="col-12">
+        <article class="card parchment-card border-0">
+          <div class="card-body p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+              <div>
+                <p class="text-uppercase text-primary fw-bold mb-1">{{ campaign.players.count }} jogadores</p>
+                <h2 class="h1 mb-3">{{ campaign.name }}</h2>
+              </div>
+            </div>
+
+            {% with active_combat=campaign.dashboard_combats.0 %}
+              {% if active_combat %}
+                <div class="alert alert-danger d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                  <div>
+                    <b>Confronto em andamento: {{ active_combat.encounter.name }}</b><br>
+                    <small>{{ active_combat.get_status_display }} · {{ active_combat.combatants.count }} combatentes</small>
+                  </div>
+                  <a class="btn btn-danger mt-2 mt-md-0" href="{% url 'combat:panel' active_combat.pk %}">Continuar confronto</a>
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <h3 class="section-title h4">Ações rápidas</h3>
+            <div class="quick-actions d-flex flex-wrap gap-2 mb-4">
+              <a class="btn btn-primary" href="{% url 'encounters:generator' campaign.slug %}">Gerar encontro</a>
+              <a class="btn btn-outline-primary" href="{% url 'characters:master_list' %}">Adicionar item</a>
+              <a class="btn btn-outline-primary" href="{% url 'ships:manage' campaign.slug %}">Navio: dano/reparo</a>
+              <a class="btn btn-outline-primary" href="{% url 'maps:master_list' campaign.slug %}">Abrir mapa</a>
+              <a class="btn btn-outline-primary" href="{% url 'audio_panel:library' %}">Tocar áudio</a>
+              <a class="btn btn-outline-primary" href="{% url 'history:create' campaign.slug %}">Nova sessão</a>
+            </div>
+
+            <div class="row g-4">
+              <div class="col-lg-7">
+                {% with ship=campaign.active_ships.0 %}
+                  {% include 'ships/partials/card.html' with is_master=True %}
+                {% endwith %}
+
+                <h3 class="section-title h4 mt-4">Personagens da campanha</h3>
+                <div class="row g-3">
+                  {% for character in campaign.dashboard_characters %}
+                    <div class="col-xl-6">
+                      {% include 'characters/partials/master_dashboard_card.html' %}
+                    </div>
+                  {% empty %}
+                    <div class="col-12">
+                      <span class="text-muted">Nenhum personagem confirmado nesta campanha.</span>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <h3 class="section-title h4 mt-4">Encontros preparados</h3>
+                <div class="list-group">
+                  {% for encounter in campaign.dashboard_encounters %}
+                    <a class="list-group-item list-group-item-action" href="{% url 'encounters:detail' campaign.slug encounter.pk %}">
+                      {{ encounter.name }} · {{ encounter.get_estimated_difficulty_display }} · {{ encounter.participants.count }} participantes
+                    </a>
+                  {% empty %}
+                    <span class="text-muted">Nenhum encontro preparado.</span>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="col-lg-5">
+                <h3 class="section-title h4">Áudios favoritos</h3>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                  {% for asset in campaign.dashboard_audio_favorites %}
+                    {% include 'audio_panel/partials/play_button.html' %}
+                  {% empty %}
+                    <span class="text-muted small">Nenhum favorito.</span>
+                  {% endfor %}
+                </div>
+
+                <h3 class="section-title h4 mt-3">Mapas rápidos</h3>
+                {% for map in campaign.dashboard_maps|slice:':3' %}
+                  {% include 'maps/partials/card.html' with is_master=True %}
+                {% empty %}
+                  <span class="text-muted small">Nenhum mapa.</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    {% empty %}
+      <div class="alert alert-info parchment-card">Você ainda não criou campanhas.</div>
+    {% endfor %}
   </div>
-</section>
-<div class="row g-4">
-{% for campaign in campaigns %}
-  <div class="col-12"><article class="card parchment-card border-0"><div class="card-body p-4"><div class="d-flex flex-column flex-md-row justify-content-between gap-2"><div><p class="text-uppercase text-primary fw-bold mb-1">{{ campaign.players.count }} jogadores</p><h2 class="h1 mb-3">{{ campaign.name }}</h2></div></div>{% with active_combat=campaign.dashboard_combats.0 %}{% if active_combat %}<div class="alert alert-danger d-flex flex-column flex-md-row justify-content-between align-items-md-center"><div><b>Confronto em andamento: {{ active_combat.encounter.name }}</b><br><small>{{ active_combat.get_status_display }} · {{ active_combat.combatants.count }} combatentes</small></div><a class="btn btn-danger mt-2 mt-md-0" href="{% url 'combat:panel' active_combat.pk %}">Continuar confronto</a></div>{% endif %}{% endwith %}<h3 class="section-title h4">Ações rápidas</h3><div class="quick-actions d-flex flex-wrap gap-2 mb-4"><a class="btn btn-primary" href="{% url 'encounters:generator' campaign.slug %}">Gerar encontro</a><a class="btn btn-outline-primary" href="{% url 'characters:master_list' %}">Adicionar item</a><a class="btn btn-outline-primary" href="{% url 'ships:manage' campaign.slug %}">Navio: dano/reparo</a><a class="btn btn-outline-primary" href="{% url 'maps:master_list' campaign.slug %}">Abrir mapa</a><a class="btn btn-outline-primary" href="{% url 'audio_panel:library' %}">Tocar áudio</a><a class="btn btn-outline-primary" href="{% url 'history:create' campaign.slug %}">Nova sessão</a></div><div class="row g-4"><div class="col-lg-7">{% with ship=campaign.active_ships.0 %}{% include 'ships/partials/card.html' with is_master=True %}{% endwith %}<h3 class="section-title h4 mt-4">Encontros preparados</h3><div class="list-group">{% for encounter in campaign.dashboard_encounters %}<a class="list-group-item list-group-item-action" href="{% url 'encounters:detail' campaign.slug encounter.pk %}">{{ encounter.name }} · {{ encounter.get_estimated_difficulty_display }} · {{ encounter.participants.count }} participantes</a>{% empty %}<span class="text-muted">Nenhum encontro preparado.</span>{% endfor %}</div></div><div class="col-lg-5"><h3 class="section-title h4">Áudios favoritos</h3><div class="d-flex flex-wrap gap-1 mb-3">{% for asset in campaign.dashboard_audio_favorites %}{% include 'audio_panel/partials/play_button.html' %}{% empty %}<span class="text-muted small">Nenhum favorito.</span>{% endfor %}</div><h3 class="section-title h4 mt-3">Mapas rápidos</h3>{% for map in campaign.dashboard_maps|slice:':3' %}{% include 'maps/partials/card.html' with is_master=True %}{% empty %}<span class="text-muted small">Nenhum mapa.</span>{% endfor %}</div></div></div></article></div>
-{% empty %}<div class="alert alert-info parchment-card">Você ainda não criou campanhas.</div>{% endfor %}
-</div>
 {% endblock %}

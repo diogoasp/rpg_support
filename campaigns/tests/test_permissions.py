@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from accounts.models import User
 from campaigns.models import Campaign
+from characters.models import Character
 
 
 class PermissionTests(TestCase):
@@ -93,3 +94,42 @@ class PermissionTests(TestCase):
         self.assertRedirects(response, campaign.get_absolute_url())
         self.assertEqual(campaign.master, self.master)
         self.assertQuerySetEqual(campaign.players.all(), [self.outsider])
+
+    def test_master_dashboard_shows_character_quick_actions(self) -> None:
+        character = Character.objects.create(
+            campaign=self.campaign,
+            user=self.player,
+            name="Lina",
+            max_hp=20,
+            current_hp=18,
+            max_power_points=6,
+            current_power_points=4,
+            armor_class=13,
+        )
+        self.client.force_login(self.master)
+
+        response = self.client.get(reverse("dashboard:master"))
+
+        self.assertContains(response, "Personagens da campanha")
+        self.assertContains(response, "Lina")
+        self.assertContains(response, "18/20")
+        self.assertContains(response, reverse("characters:damage", kwargs={"pk": character.pk}))
+        self.assertContains(response, reverse("characters:heal", kwargs={"pk": character.pk}))
+        self.assertContains(response, reverse("inventory:add", kwargs={"pk": character.pk}))
+
+    def test_master_dashboard_character_damage_and_heal_update_card(self) -> None:
+        character = Character.objects.create(campaign=self.campaign, user=self.player, name="Lina", max_hp=20, current_hp=18)
+        self.client.force_login(self.master)
+
+        response = self.client.post(reverse("characters:damage", kwargs={"pk": character.pk}), {"amount": 7})
+        self.assertContains(response, "11/20")
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 11)
+
+        response = self.client.post(reverse("characters:heal", kwargs={"pk": character.pk}), {"amount": 5})
+        self.assertContains(response, "16/20")
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 16)
+
+        self.client.force_login(self.other_master)
+        self.assertEqual(self.client.post(reverse("characters:damage", kwargs={"pk": character.pk}), {"amount": 1}).status_code, 404)

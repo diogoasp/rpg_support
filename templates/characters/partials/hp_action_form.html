@@ -1,0 +1,13 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ title }} · {{ character.name }}</h2>
+  <button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form class="modal-body"
+      hx-post="{% if action == 'damage' %}{% url 'characters:damage' character.pk %}{% else %}{% url 'characters:heal' character.pk %}{% endif %}"
+      hx-target="#master-character-card-{{ character.pk }}"
+      hx-swap="outerHTML">
+  {% csrf_token %}
+  <p class="text-muted">PV atual: <strong>{{ character.current_hp }}/{{ character.max_hp }}</strong></p>
+  {{ form.as_p }}
+  <button class="btn {% if action == 'damage' %}btn-danger{% else %}btn-success{% endif %}">Aplicar</button>
+</form>
