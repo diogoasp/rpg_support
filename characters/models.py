@@ -196,6 +196,7 @@ class CharacterCreation(models.Model):
         COMPLETED='completed','Concluído'
         REOPENED='reopened','Reaberto'
     class AttributeMethod(models.TextChoices):
+        POINT_DISTRIBUTION='point_distribution','Distribuição por pontos'
         STANDARD_ARRAY='standard_array','Conjunto padrão'
         RANDOM_4D6_DROP_LOWEST='random_4d6_drop_lowest','Aleatório 4d6'
     STEPS=('concept','species','style','profession','attributes','background','personality','pending','equipment','review')
@@ -231,7 +232,7 @@ class CharacterCreation(models.Model):
     favorite_weapon=models.CharField(max_length=120,blank=True)
     innate_ability=models.CharField(max_length=150,blank=True)
     equipment_choice=models.CharField(max_length=150,blank=True)
-    attribute_method=models.CharField(max_length=30,choices=AttributeMethod.choices,default=AttributeMethod.STANDARD_ARRAY)
+    attribute_method=models.CharField(max_length=30,choices=AttributeMethod.choices,default=AttributeMethod.POINT_DISTRIBUTION)
     attribute_bases=models.JSONField(default=dict,blank=True)
     species_attribute_bonuses=models.JSONField(default=dict,blank=True)
     background_attribute_bonuses=models.JSONField(default=dict,blank=True)

@@ -1775,8 +1775,8 @@ HTMX atualiza opções e prévia, mas a confirmação depende sempre de validaç
 ### Regras implementadas
 
 - Atributos canônicos: Força, Destreza, Constituição, Sabedoria, Vontade e Presença.
-- Métodos de atributo: conjunto padrão e geração 4d6 descarta menor.
-- Bônus de espécie/antecedente armazenados separadamente.
+- Métodos de atributo: distribuição por pontos, conjunto padrão compatível e geração 4d6 descarta menor. A distribuição por pontos usa total 72, mínimo 8 e máximo 15 antes dos bônus.
+- Bônus de espécie/antecedente armazenados separadamente e preenchidos a partir das etapas de espécie e antecedente; a etapa de atributos só edita valores base e mostra os bônus automaticamente.
 - Catálogo das 8 espécies, variantes obrigatórias e derivação de mestiço por duas origens.
 - Referências de traços Zoan para ancestralidade sem copiar poderes de Akuma no Mi para a ficha.
 - Catálogo dos 10 estilos de combate de 1º nível.

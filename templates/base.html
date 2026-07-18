@@ -85,5 +85,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% if user.is_master %}<script type="module" src="{% static 'audio_panel/js/audio-player.js' %}"></script>{% endif %}
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

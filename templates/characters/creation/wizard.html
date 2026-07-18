@@ -45,6 +45,17 @@
         <form method="post" class="paper-panel" hx-post="{{ request.path }}?step={{ step }}" hx-target="body" hx-swap="outerHTML">
           {% csrf_token %}
           <input type="hidden" name="step" value="{{ step }}">
+          {% if step == "attributes" %}
+            <div class="alert alert-info" id="attribute-budget" data-total="72">
+              Distribua 72 pontos entre os atributos. Cada valor base deve ficar entre 8 e 15 antes dos bônus.
+              <br><span id="attribute-budget-status">Saldo atual salvo: {{ form.remaining_points }} ponto(s).</span>
+            </div>
+            <div class="creation-stat-grid mb-3">
+              {% for key,values in preview.attributes.items %}
+                <span>{{ key }} <strong>{{ values.base_value }} + {{ values.species_bonus }} espécie + {{ values.background_bonus }} antecedente = {{ values.final_value }}</strong></span>
+              {% endfor %}
+            </div>
+          {% endif %}
           {{ form.as_p }}
           <div class="d-flex gap-2 mt-3">
             <button class="btn btn-pirate-red" type="submit">Salvar e continuar</button>
@@ -63,4 +74,28 @@
     </div>
   </div>
 </section>
+{% endblock %}
+{% block extra_scripts %}
+{% if step == "attributes" %}
+<script>
+  (() => {
+    const budget = document.querySelector("#attribute-budget");
+    const status = document.querySelector("#attribute-budget-status");
+    if (!budget || !status) return;
+    const total = Number(budget.dataset.total);
+    const inputs = [...document.querySelectorAll('input[name^="base_"]')];
+    const submitButtons = [...document.querySelectorAll('form button[type="submit"]')];
+    const update = () => {
+      const used = inputs.reduce((sum, input) => sum + Number(input.value || 0), 0);
+      const remaining = total - used;
+      status.textContent = remaining >= 0 ? `Saldo restante: ${remaining} ponto(s).` : `Limite ultrapassado em ${Math.abs(remaining)} ponto(s).`;
+      budget.classList.toggle("alert-danger", remaining < 0);
+      budget.classList.toggle("alert-info", remaining >= 0);
+      submitButtons.forEach((button) => { button.disabled = remaining < 0; });
+    };
+    inputs.forEach((input) => input.addEventListener("input", update));
+    update();
+  })();
+</script>
+{% endif %}
 {% endblock %}

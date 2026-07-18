@@ -6,6 +6,9 @@ from accounts.models import User
 from campaigns.models import Campaign
 from characters.character_calculation_service import (
     ATTRIBUTE_KEYS,
+    POINT_DISTRIBUTION_MAX,
+    POINT_DISTRIBUTION_MIN,
+    POINT_DISTRIBUTION_TOTAL,
     STANDARD_ARRAY,
     calculate_attribute_modifier,
     calculate_attack_bonus,
@@ -19,8 +22,11 @@ from characters.character_calculation_service import (
     calculate_species_training_points,
     derive_mixed_species_values,
     generate_random_attribute_values,
+    point_distribution_is_valid,
+    remaining_attribute_points,
     standard_array_is_valid,
 )
+from characters.forms import CharacterCreationAttributesForm, CharacterCreationBackgroundForm, CharacterCreationSpeciesForm
 from characters.character_creation_service import confirm_creation, get_or_create_draft
 from characters.character_validation_service import validate_creation
 from characters.models import (
@@ -96,6 +102,12 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(calculate_attribute_modifier(15), 2)
         self.assertTrue(standard_array_is_valid(dict(zip(ATTRIBUTE_KEYS, STANDARD_ARRAY))))
         self.assertFalse(standard_array_is_valid(dict(zip(ATTRIBUTE_KEYS, [15, 15, 13, 12, 10, 8]))))
+        self.assertEqual(POINT_DISTRIBUTION_TOTAL, 72)
+        self.assertEqual(POINT_DISTRIBUTION_MIN, 8)
+        self.assertEqual(POINT_DISTRIBUTION_MAX, 15)
+        self.assertTrue(point_distribution_is_valid(dict(zip(ATTRIBUTE_KEYS, STANDARD_ARRAY))))
+        self.assertFalse(point_distribution_is_valid(dict(zip(ATTRIBUTE_KEYS, [16, 14, 13, 12, 10, 8]))))
+        self.assertEqual(remaining_attribute_points(dict(zip(ATTRIBUTE_KEYS, STANDARD_ARRAY))), 0)
         values, rolls = generate_random_attribute_values()
         self.assertEqual(len(values), 6)
         self.assertEqual(len(rolls), 6)
@@ -125,6 +137,56 @@ class CharacterCreationRulesTests(TestCase):
         creation.save()
         errors, _ = validate_creation(creation, final=True)
         self.assertIn("species_variant", errors)
+
+    def test_validation_rejects_invalid_point_distribution(self):
+        creation = get_or_create_draft(self.campaign, self.player)
+        fill_creation(creation)
+        creation.attribute_bases = dict(zip(ATTRIBUTE_KEYS, [15, 14, 13, 12, 10, 9]))
+        creation.save()
+        errors, _ = validate_creation(creation, final=True)
+        self.assertIn("attribute_bases", errors)
+
+    def test_attribute_form_blocks_saving_more_than_72_points(self):
+        creation = get_or_create_draft(self.campaign, self.player)
+        payload = {"attribute_method": CharacterCreation.AttributeMethod.POINT_DISTRIBUTION}
+        payload.update({f"base_{key}": 15 for key in ATTRIBUTE_KEYS})
+        form = CharacterCreationAttributesForm(payload, instance=creation)
+        self.assertFalse(form.is_valid())
+        self.assertIn("72", str(form.errors))
+
+    def test_species_and_background_forms_store_attribute_bonuses_before_attribute_step(self):
+        creation = get_or_create_draft(self.campaign, self.player)
+        humano = Species.objects.get(slug="humano")
+        comum = SpeciesVariant.objects.get(slug="humano-comum")
+        species_form = CharacterCreationSpeciesForm(
+            {
+                "species": humano.pk,
+                "species_variant": comum.pk,
+                "ancestry_text": "",
+                "species_bonus_mode": "plus1_plus1",
+                "species_bonus_primary": "strength",
+                "species_bonus_secondary": "dexterity",
+            },
+            instance=creation,
+        )
+        self.assertTrue(species_form.is_valid(), species_form.errors)
+        species_form.save()
+        self.assertEqual(creation.species_attribute_bonuses, {"strength": 1, "dexterity": 1})
+
+        marinheiro = Background.objects.get(slug="marinheiro")
+        background_form = CharacterCreationBackgroundForm(
+            {
+                "background": marinheiro.pk,
+                "background_skills": [skill.pk for skill in marinheiro.allowed_skills.all()[:2]],
+                "background_bonus_mode": "plus2",
+                "background_bonus_primary": "constitution",
+                "background_bonus_secondary": "",
+            },
+            instance=creation,
+        )
+        self.assertTrue(background_form.is_valid(), background_form.errors)
+        background_form.save()
+        self.assertEqual(creation.background_attribute_bonuses, {"constitution": 2})
 
     def test_no_profession_blocks_subprofession_and_forbidden_skills(self):
         creation = get_or_create_draft(self.campaign, self.player)

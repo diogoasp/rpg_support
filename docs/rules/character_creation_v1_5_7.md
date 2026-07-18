@@ -16,10 +16,10 @@ Este documento registra somente as regras necessárias para a implementação do
 | Páginas | Regra | Interpretação técnica | Responsável | Testes |
 | --- | --- | --- | --- | --- |
 | 9-10, 14 | Usar Força, Destreza, Constituição, Sabedoria, Vontade e Presença. | `Character` mantém campos legados, mas o assistente grava os seis atributos canônicos e o detalhamento em `CharacterAttribute`. | `CANONICAL_ATTRIBUTES`, `CharacterAttribute` | `test_seed_catalog_is_idempotent_and_complete` |
-| 9-10 | Conjunto padrão 15, 14, 13, 12, 10, 8. | Cada valor só pode aparecer uma vez. | `standard_array_is_valid` | `test_calculation_services` |
+| 9-10 | Conjunto padrão 15, 14, 13, 12, 10, 8. | O assistente usa distribuição por pontos equivalente: 72 pontos totais, mínimo 8 e máximo 15 antes dos bônus. O conjunto padrão continua validável como caso compatível. | `point_distribution_is_valid`, `standard_array_is_valid` | `test_calculation_services` |
 | 9-10 | Aleatório: 4d6, descarta o menor, seis vezes. | Serviço puro gera valores e guarda rolagens. | `generate_random_attribute_values` | `test_calculation_services` |
 | 9-10 | Modificador `(atributo - 10) // 2`. | Função pura centralizada. | `calculate_attribute_modifier` | `test_calculation_services` |
-| 14 | Limite inicial 20. | Validação falha se bônus elevam atributo acima de 20. | `validate_creation` | `test_validation_rejects_invalid_dependencies` |
+| 14 | Limite inicial 20. | Validação falha se bônus elevam atributo acima de 20. Bônus raciais são escolhidos na etapa de espécie; bônus de antecedente na etapa de antecedente; a etapa de atributos exibe esses bônus automaticamente e só edita valores base. | `validate_creation`, forms de criação | `test_validation_rejects_invalid_dependencies`, `test_species_and_background_forms_store_attribute_bonuses_before_attribute_step` |
 
 ## Espécies e Variantes
 
@@ -67,6 +67,7 @@ Este documento registra somente as regras necessárias para a implementação do
 | Regra | Ambiguidade | Decisão técnica |
 | --- | --- | --- |
 | Pontos de Treinamento racial por Sabedoria em Anões/Celestiais | O texto combina mínimo 1 com indisponibilidade quando o modificador é negativo. | Serviço retorna `0` para modificador não positivo e documenta que a liberação depende de recalcular quando Sabedoria ficar positiva. |
+| Distribuição por pontos | O PDF apresenta conjunto padrão/rolagem; o ajuste de produto exige distribuição por pontos. | Usar soma do conjunto padrão como total (`72`) e seus extremos como mínimo/máximo base (`8` a `15`) preserva a escala do livro sem introduzir valores fora da fonte. |
 | Coerência de traços Zoan | O livro exige coerência e aprovação do Narrador, mas isso é julgamento narrativo. | Traços específicos/predador exigem aprovação do mestre ou marcação explícita de ancestral carnívoro caçador. |
 | Requisitos raciais de estilos específicos | Algumas restrições dependem de interpretação do texto completo. | Requisitos ficam em JSON estruturado e podem ser ignorados via `CharacterRuleException` registrada pelo mestre. |
 | Equipamento de Gigante | O livro exige adaptação de equipamento ao tamanho. | O catálogo registra a necessidade; a entrega inicial cria itens textuais e deixa compatibilidade detalhada para resolução de equipamento posterior, sem progressão pós-1º nível. |

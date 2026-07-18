@@ -4,6 +4,9 @@ from .models import CANONICAL_ATTRIBUTES, CharacterCreation
 
 ATTRIBUTE_KEYS = [key for key, _ in CANONICAL_ATTRIBUTES]
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
+POINT_DISTRIBUTION_TOTAL = sum(STANDARD_ARRAY)
+POINT_DISTRIBUTION_MIN = min(STANDARD_ARRAY)
+POINT_DISTRIBUTION_MAX = max(STANDARD_ARRAY)
 INITIAL_ATTRIBUTE_CAP = 20
 
 
@@ -130,3 +133,16 @@ def preview_derived_values(creation):
 def standard_array_is_valid(attribute_bases):
     values = [int(attribute_bases.get(key, 0)) for key in ATTRIBUTE_KEYS]
     return sorted(values) == sorted(STANDARD_ARRAY)
+
+
+def point_distribution_is_valid(attribute_bases):
+    values = [int(attribute_bases.get(key, 0)) for key in ATTRIBUTE_KEYS]
+    return (
+        len(values) == len(ATTRIBUTE_KEYS)
+        and all(POINT_DISTRIBUTION_MIN <= value <= POINT_DISTRIBUTION_MAX for value in values)
+        and sum(values) == POINT_DISTRIBUTION_TOTAL
+    )
+
+
+def remaining_attribute_points(attribute_bases):
+    return POINT_DISTRIBUTION_TOTAL - sum(int(attribute_bases.get(key, 0) or 0) for key in ATTRIBUTE_KEYS)

@@ -1,4 +1,4 @@
-from .character_calculation_service import ATTRIBUTE_KEYS, INITIAL_ATTRIBUTE_CAP, calculate_attribute_breakdowns, standard_array_is_valid
+from .character_calculation_service import ATTRIBUTE_KEYS, INITIAL_ATTRIBUTE_CAP, calculate_attribute_breakdowns, point_distribution_is_valid, standard_array_is_valid
 
 
 def _skill_names(qs):
@@ -88,9 +88,11 @@ def validate_creation(creation, final=False):
         if invalid:
             errors["background_skills_invalid"] = f"Perícias incompatíveis com o antecedente: {', '.join(invalid)}."
 
-    if creation.attribute_method == creation.AttributeMethod.STANDARD_ARRAY and creation.attribute_bases:
-        if not standard_array_is_valid(creation.attribute_bases):
+    if creation.attribute_bases:
+        if creation.attribute_method == creation.AttributeMethod.STANDARD_ARRAY and not standard_array_is_valid(creation.attribute_bases):
             errors["attribute_bases"] = "O conjunto padrão deve usar 15, 14, 13, 12, 10 e 8 sem repetir."
+        if creation.attribute_method == creation.AttributeMethod.POINT_DISTRIBUTION and not point_distribution_is_valid(creation.attribute_bases):
+            errors["attribute_bases"] = "Distribua 72 pontos entre os seis atributos, com mínimo 8 e máximo 15 antes dos bônus."
     elif final:
         errors["attribute_bases"] = "Distribua os atributos."
 
