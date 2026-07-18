@@ -296,6 +296,42 @@
         </div>
       </section>
 
+      <section class="op-block op-edit-block">
+        <h2 class="op-block-title"><span class="op-chapter-num">✎</span> Editar narrativa e imagem</h2>
+        <form method="post" enctype="multipart/form-data" class="op-sheet-form">
+          {% csrf_token %}
+          {% if sheet_form.non_field_errors %}<div class="op-form-errors">{{ sheet_form.non_field_errors }}</div>{% endif %}
+          <div class="op-form-grid">
+            <label class="op-form-field op-form-field-file">
+              <span>{{ sheet_form.portrait.label }}</span>
+              {{ sheet_form.portrait }}
+              {% if sheet_form.portrait.errors %}<small class="op-form-errors">{{ sheet_form.portrait.errors }}</small>{% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.dream.label }}</span>
+              {{ sheet_form.dream }}
+              {% if sheet_form.dream.errors %}<small class="op-form-errors">{{ sheet_form.dream.errors }}</small>{% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.appearance.label }}</span>
+              {{ sheet_form.appearance }}
+              {% if sheet_form.appearance.errors %}<small class="op-form-errors">{{ sheet_form.appearance.errors }}</small>{% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.personality.label }}</span>
+              {{ sheet_form.personality }}
+              {% if sheet_form.personality.errors %}<small class="op-form-errors">{{ sheet_form.personality.errors }}</small>{% endif %}
+            </label>
+            <label class="op-form-field op-form-field-wide">
+              <span>{{ sheet_form.notes.label }}</span>
+              {{ sheet_form.notes }}
+              {% if sheet_form.notes.errors %}<small class="op-form-errors">{{ sheet_form.notes.errors }}</small>{% endif %}
+            </label>
+          </div>
+          <button class="op-sheet-action op-sheet-submit" type="submit">Salvar alterações</button>
+        </form>
+      </section>
+
       <footer class="op-sheet-footer">
         <h2 class="op-block-title"><span class="op-chapter-num">9</span> Guia Prático de Rolagens</h2>
         <div class="op-footer-panels">

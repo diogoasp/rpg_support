@@ -138,3 +138,26 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Clima-Tact")
         self.assertNotContains(response, "Inteligência")
         self.assertNotContains(response, "Carisma")
+
+    def test_player_can_update_subjective_sheet_fields(self):
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+        self.assertContains(response, 'enctype="multipart/form-data"')
+        self.assertContains(response, "Retrato/ilustração")
+
+        response = self.client.post(
+            reverse("characters:sheet", kwargs={"slug": self.c1.slug}),
+            {
+                "appearance": "Cabelos alaranjados e olhar atento.",
+                "personality": "Calculista e protetora.",
+                "dream": "Mapear todos os mares.",
+                "notes": "História atualizada pela ficha completa.",
+            },
+            follow=True,
+        )
+
+        self.assertContains(response, "Ficha narrativa atualizada.")
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.assertEqual(character.dream, "Mapear todos os mares.")
+        self.assertEqual(character.notes, "História atualizada pela ficha completa.")
+        self.assertContains(response, "Mapear todos os mares.")

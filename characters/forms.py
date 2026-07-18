@@ -6,6 +6,17 @@ from .models import Background, CANONICAL_ATTRIBUTES, Character, CharacterCondit
 class CharacterForm(forms.ModelForm):
     class Meta:
         model=Character; exclude=('campaign','user','created_at','updated_at')
+class PlayerCharacterSheetForm(forms.ModelForm):
+    class Meta:
+        model=Character
+        fields=("portrait","appearance","personality","dream","notes")
+        labels={"portrait":"Retrato/ilustração","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
+        widgets={
+            "appearance":forms.Textarea(attrs={"rows":4}),
+            "personality":forms.Textarea(attrs={"rows":4}),
+            "dream":forms.Textarea(attrs={"rows":4}),
+            "notes":forms.Textarea(attrs={"rows":6}),
+        }
 class ResourceForm(forms.Form):
     value=forms.IntegerField(min_value=0,label='Novo valor')
 class ConditionForm(forms.ModelForm):

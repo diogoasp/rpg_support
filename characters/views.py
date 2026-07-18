@@ -23,6 +23,7 @@ from .forms import (
     CharacterCreationStyleForm,
     CharacterForm,
     ConditionForm,
+    PlayerCharacterSheetForm,
     ResourceForm,
 )
 from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique
@@ -63,7 +64,19 @@ class CharacterSheetView(PlayerCharacterView):
         c['carrying_capacity']=character.strength*10
         c['featured_item']=next(iter(character.inventory_items.all()),None)
         c['featured_techniques']=[tech for tech in character.techniques.all() if tech.is_featured]
+        c['sheet_form']=kw.get('sheet_form') or PlayerCharacterSheetForm(instance=character)
         return c
+    def post(self,request,*args,**kwargs):
+        character=own_character(request,self.kwargs.get('slug'))
+        form=PlayerCharacterSheetForm(request.POST,request.FILES,instance=character)
+        if form.is_valid():
+            form.save()
+            messages.success(request,'Ficha narrativa atualizada.')
+            return redirect('characters:sheet',slug=character.campaign.slug)
+        context=self.get_context_data(sheet_form=form)
+        context['character']=character
+        context['campaign']=character.campaign
+        return self.render_to_response(context,status=422)
 class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'
 CREATION_FORMS={
     'concept':CharacterCreationConceptForm,
