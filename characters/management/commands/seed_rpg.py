@@ -12,7 +12,8 @@ from encounters.models import Encounter,EncounterEnemy,EncounterParticipant
 from datetime import date
 class Command(BaseCommand):
  def handle(self,*a,**o):
-  call_command('seed_skills'); master,_=User.objects.update_or_create(username='mestre_demo',defaults={'role':'master','email':'mestre@example.test'}); master.set_password('demo-rpg-2026'); master.save()
+  call_command('seed_skills'); master,_=User.objects.update_or_create(username='diogo',defaults={'role':'master','email':'diogo@example.test'})
+  if not master.has_usable_password(): master.set_password('demo-rpg-2026'); master.save()
   campaign,_=Campaign.objects.update_or_create(slug='tambores_libertacao',defaults={'name':'Tambores da Libertação','master':master,'description':'','is_active':True})
   for i,name in enumerate(('Lina Maré','Caio Bruma'),1):
    player,_=User.objects.update_or_create(username=f'jogador{i}',defaults={'role':'player'}); player.set_password('demo-rpg-2026'); player.save(); campaign.players.add(player)

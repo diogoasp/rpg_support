@@ -12,6 +12,7 @@ class SeedRpgTests(TestCase):
 
         campaign = Campaign.objects.get(slug="tambores_libertacao")
         self.assertEqual(campaign.name, "Tambores da Libertação")
+        self.assertEqual(campaign.master.username, "diogo")
         self.assertTrue(campaign.is_active)
 
         ships = Ship.objects.filter(campaign=campaign, name="Caravela revolucionária de apoio")
