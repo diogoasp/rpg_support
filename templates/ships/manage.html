@@ -3,7 +3,7 @@
   <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
     <div>
       <h1>Gestão de navios · {{ campaign.name }}</h1>
-      <p class="text-muted mb-0">Cadastre navios da campanha e defina qual pertence à tripulação.</p>
+      <p class="text-muted mb-0">Campanha selecionada: {{ campaign.name }}. Cadastre navios e defina qual pertence à tripulação.</p>
     </div>
     <a class="btn btn-primary align-self-md-start" href="{% url 'ships:create' campaign.slug %}">Cadastrar navio</a>
   </div>
@@ -28,10 +28,14 @@
             {% if not listed_ship.belongs_to_crew %}
               <form method="post" action="{% url 'ships:assign' campaign.slug listed_ship.pk %}">
                 {% csrf_token %}
-                <button class="btn btn-sm btn-pirate-red" type="submit">Definir para a tripulação</button>
+                <button class="btn btn-sm btn-pirate-red" type="submit">Definir como navio da tripulação</button>
               </form>
             {% endif %}
             <a class="btn btn-sm btn-outline-primary" href="{% url 'ships:edit_item' campaign.slug listed_ship.pk %}">Editar</a>
+            <form method="post" action="{% url 'ships:delete' campaign.slug listed_ship.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+            </form>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404,redirect,render
 from campaigns.models import Campaign
 from .forms import *
 from .models import Ship
-from .services import assign_ship_to_crew,create_or_update_ship,damage_ship,repair_ship,update_navigation_resources
+from .services import assign_ship_to_crew,create_or_update_ship,deactivate_ship,damage_ship,repair_ship,update_navigation_resources
 
 def crew_ship(campaign):
  return Ship.objects.filter(campaign=campaign,is_active=True,belongs_to_crew=True).first()
@@ -19,7 +19,10 @@ def _campaign(request,slug=None):
  return c
 @login_required
 def detail(request):
- c=_campaign(request,request.GET.get('campaign')); return render(request,'ships/detail.html',{'campaign':c,'ship':crew_ship(c)})
+ c=_campaign(request,request.GET.get('campaign'))
+ if request.user.is_master:
+  return render(request,'ships/manage.html',{'campaign':c,'ship':crew_ship(c),'ships':Ship.objects.filter(campaign=c,is_active=True)})
+ return render(request,'ships/detail.html',{'campaign':c,'ship':crew_ship(c)})
 @login_required
 def manage(request,slug):
  c=_campaign(request,slug)
@@ -40,6 +43,14 @@ def assign(request,slug,pk):
  ship=get_object_or_404(Ship,campaign=c,pk=pk)
  if request.method!='POST': raise PermissionDenied
  assign_ship_to_crew(user=request.user,campaign=c,ship=ship)
+ return redirect('ships:manage',slug=slug)
+@login_required
+def delete(request,slug,pk):
+ c=_campaign(request,slug)
+ if not request.user.is_master: raise PermissionDenied
+ ship=get_object_or_404(Ship,campaign=c,pk=pk)
+ if request.method!='POST': raise PermissionDenied
+ deactivate_ship(user=request.user,campaign=c,ship=ship)
  return redirect('ships:manage',slug=slug)
 def _action(request,slug,kind):
  c=_campaign(request,slug)

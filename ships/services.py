@@ -20,6 +20,12 @@ def assign_ship_to_crew(*,user,campaign:Campaign,ship:Ship)->Ship:
     ship.belongs_to_crew=True
     ship.full_clean(); ship.save(update_fields=['belongs_to_crew','updated_at']); return ship
 @transaction.atomic
+def deactivate_ship(*,user,campaign:Campaign,ship:Ship)->Ship:
+    _authorize(user,campaign,ship)
+    ship.is_active=False
+    ship.belongs_to_crew=False
+    ship.full_clean(); ship.save(update_fields=['is_active','belongs_to_crew','updated_at']); return ship
+@transaction.atomic
 def damage_ship(*,user,campaign,ship,raw_damage:int,resistance_reduction:int=0,final_damage:int|None=None)->Ship:
     _authorize(user,campaign,ship); locked=Ship.objects.select_for_update().get(pk=ship.pk)
     damage=max(0,final_damage if final_damage is not None else raw_damage-resistance_reduction); locked.current_hp=max(0,locked.current_hp-damage); locked.save(update_fields=['current_hp','updated_at']); return locked
