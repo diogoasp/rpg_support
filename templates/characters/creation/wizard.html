@@ -13,8 +13,8 @@
   </div>
 
   <nav class="creation-steps mb-4" aria-label="Etapas da criação">
-    {% for item in steps %}
-      <a class="{% if item == step %}active{% endif %} {% if item in creation.completed_steps %}done{% endif %}" href="?step={{ item }}">{{ forloop.counter }}. {{ item|title }}</a>
+    {% for item in step_items %}
+      <a class="{% if item.key == step %}active{% endif %} {% if item.key in creation.completed_steps %}done{% endif %}" href="?step={{ item.key }}">{{ forloop.counter }}. {{ item.label }}</a>
     {% endfor %}
   </nav>
 
@@ -51,8 +51,8 @@
               <br><span id="attribute-budget-status">Saldo atual salvo: {{ form.remaining_points }} ponto(s).</span>
             </div>
             <div class="creation-stat-grid mb-3">
-              {% for key,values in preview.attributes.items %}
-                <span>{{ key }} <strong>{{ values.base_value }} + {{ values.species_bonus }} espécie + {{ values.background_bonus }} antecedente = {{ values.final_value }}</strong></span>
+              {% for row in preview.attribute_rows %}
+                <span>{{ row.label }} <strong>{{ row.base_value }} + {{ row.species_bonus }} espécie + {{ row.background_bonus }} antecedente = {{ row.final_value }}</strong></span>
               {% endfor %}
             </div>
           {% endif %}

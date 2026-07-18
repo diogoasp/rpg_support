@@ -233,6 +233,22 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(self.client.get(reverse("characters:creation_preview", kwargs={"slug": self.campaign.slug}), HTTP_HX_REQUEST="true").status_code, 200)
         self.assertEqual(self.client.get(reverse("characters:create", kwargs={"slug": self.other_campaign.slug})).status_code, 404)
 
+    def test_creation_wizard_renders_pt_br_labels(self):
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:create", kwargs={"slug": self.campaign.slug}))
+        self.assertContains(response, "Conceito")
+        self.assertContains(response, "Espécie")
+        self.assertContains(response, "Profissão")
+        self.assertNotContains(response, ">concept<")
+
+        response = self.client.get(f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=attributes')
+        self.assertContains(response, "Força")
+        self.assertContains(response, "Destreza")
+        self.assertContains(response, "Constituição")
+        self.assertContains(response, "Vontade")
+        self.assertContains(response, "Presença")
+        self.assertNotContains(response, ">strength<")
+
     def test_complete_creation_examples(self):
         examples = [
             ("humano", "humano-comum", "lutador", "combatente", "marinheiro"),

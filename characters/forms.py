@@ -1,5 +1,5 @@
 from django import forms
-from .character_calculation_service import ATTRIBUTE_KEYS, POINT_DISTRIBUTION_MAX, POINT_DISTRIBUTION_MIN, POINT_DISTRIBUTION_TOTAL, remaining_attribute_points
+from .character_calculation_service import ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, POINT_DISTRIBUTION_MAX, POINT_DISTRIBUTION_MIN, POINT_DISTRIBUTION_TOTAL, remaining_attribute_points
 from .creation_catalog_service import allowed_background_skills, allowed_profession_skills, allowed_style_skills
 from .models import Background, CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CombatStyle, Profession, Skill, Species, SpeciesVariant
 
@@ -15,15 +15,17 @@ class CharacterCreationConceptForm(forms.ModelForm):
     class Meta:
         model=CharacterCreation
         fields=("name","concept")
+        labels={"name":"Nome","concept":"Conceito"}
         widgets={"concept":forms.Textarea(attrs={"rows":3})}
 
 class CharacterCreationSpeciesForm(forms.ModelForm):
-    species_bonus_mode=forms.ChoiceField(choices=(("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=True)
-    species_bonus_primary=forms.ChoiceField(required=False)
-    species_bonus_secondary=forms.ChoiceField(required=False)
+    species_bonus_mode=forms.ChoiceField(label="Bônus de atributo da espécie",choices=(("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=True)
+    species_bonus_primary=forms.ChoiceField(label="Primeiro atributo",required=False)
+    species_bonus_secondary=forms.ChoiceField(label="Segundo atributo",required=False)
     class Meta:
         model=CharacterCreation
         fields=("species","species_variant","ancestry_text")
+        labels={"species":"Espécie","species_variant":"Variante","ancestry_text":"Ancestralidade"}
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         self.fields["species"].queryset=Species.objects.filter(is_active=True)
@@ -62,25 +64,27 @@ class CharacterCreationSpeciesForm(forms.ModelForm):
         return instance
 
 class CharacterCreationStyleForm(forms.ModelForm):
-    style_skills=forms.ModelMultipleChoiceField(queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
+    style_skills=forms.ModelMultipleChoiceField(label="Perícias do estilo",queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
     class Meta:
         model=CharacterCreation
         fields=("combat_style","style_skills","favorite_weapon","innate_ability")
+        labels={"combat_style":"Estilo de combate","favorite_weapon":"Arma favorita","innate_ability":"Habilidade básica inata"}
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         self.fields["combat_style"].queryset=CombatStyle.objects.filter(is_active=True)
         style_id=self.data.get("combat_style") if self.is_bound else None
         style=CombatStyle.objects.filter(pk=style_id).first() if style_id else (self.instance.combat_style if self.instance and self.instance.pk else None)
         self.fields["style_skills"].queryset=allowed_style_skills(style)
-        self.fields["favorite_weapon"]=forms.ChoiceField(choices=[("", "---------")]+[(x,x) for x in (style.favorite_weapon_options if style else [])],required=False)
-        self.fields["innate_ability"]=forms.ChoiceField(choices=[("", "---------")]+[(x,x) for x in (style.innate_ability_options if style else [])],required=False)
+        self.fields["favorite_weapon"]=forms.ChoiceField(label="Arma favorita",choices=[("", "---------")]+[(x,x) for x in (style.favorite_weapon_options if style else [])],required=False)
+        self.fields["innate_ability"]=forms.ChoiceField(label="Habilidade básica inata",choices=[("", "---------")]+[(x,x) for x in (style.innate_ability_options if style else [])],required=False)
 
 class CharacterCreationProfessionForm(forms.ModelForm):
-    profession_skills=forms.ModelMultipleChoiceField(queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
-    free_skills=forms.ModelMultipleChoiceField(queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
+    profession_skills=forms.ModelMultipleChoiceField(label="Perícias da profissão",queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
+    free_skills=forms.ModelMultipleChoiceField(label="Perícias livres",queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
     class Meta:
         model=CharacterCreation
         fields=("profession","subprofession","profession_skills","free_skills")
+        labels={"profession":"Profissão","subprofession":"Subprofissão"}
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         self.fields["profession"].queryset=Profession.objects.filter(is_active=True,parent__isnull=True)
@@ -93,10 +97,11 @@ class CharacterCreationProfessionForm(forms.ModelForm):
 
 class CharacterCreationAttributesForm(forms.ModelForm):
     for key in ATTRIBUTE_KEYS:
-        locals()[f"base_{key}"]=forms.IntegerField(min_value=POINT_DISTRIBUTION_MIN,max_value=POINT_DISTRIBUTION_MAX,required=True)
+        locals()[f"base_{key}"]=forms.IntegerField(label=ATTRIBUTE_LABELS[key],min_value=POINT_DISTRIBUTION_MIN,max_value=POINT_DISTRIBUTION_MAX,required=True)
     class Meta:
         model=CharacterCreation
         fields=("attribute_method",)
+        labels={"attribute_method":"Método de geração"}
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         bases=self.instance.attribute_bases or {}
@@ -121,13 +126,14 @@ class CharacterCreationAttributesForm(forms.ModelForm):
         return instance
 
 class CharacterCreationBackgroundForm(forms.ModelForm):
-    background_skills=forms.ModelMultipleChoiceField(queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
-    background_bonus_mode=forms.ChoiceField(choices=(("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=True)
-    background_bonus_primary=forms.ChoiceField(required=False)
-    background_bonus_secondary=forms.ChoiceField(required=False)
+    background_skills=forms.ModelMultipleChoiceField(label="Perícias do antecedente",queryset=Skill.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
+    background_bonus_mode=forms.ChoiceField(label="Bônus de atributo do antecedente",choices=(("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=True)
+    background_bonus_primary=forms.ChoiceField(label="Primeiro atributo",required=False)
+    background_bonus_secondary=forms.ChoiceField(label="Segundo atributo",required=False)
     class Meta:
         model=CharacterCreation
         fields=("background","background_skills")
+        labels={"background":"Antecedente"}
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         self.fields["background"].queryset=Background.objects.filter(is_active=True)
@@ -167,6 +173,7 @@ class CharacterCreationPersonalityForm(forms.ModelForm):
     class Meta:
         model=CharacterCreation
         fields=("appearance","personality","dream")
+        labels={"appearance":"Aparência","personality":"Personalidade","dream":"Sonho"}
         widgets={
             "appearance": forms.Textarea(attrs={"rows":3}),
             "personality": forms.Textarea(attrs={"rows":3}),
@@ -177,3 +184,4 @@ class CharacterCreationEquipmentForm(forms.ModelForm):
     class Meta:
         model=CharacterCreation
         fields=("equipment_choice",)
+        labels={"equipment_choice":"Escolha de equipamento"}

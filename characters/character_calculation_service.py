@@ -3,6 +3,7 @@ import random
 from .models import CANONICAL_ATTRIBUTES, CharacterCreation
 
 ATTRIBUTE_KEYS = [key for key, _ in CANONICAL_ATTRIBUTES]
+ATTRIBUTE_LABELS = dict(CANONICAL_ATTRIBUTES)
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
 POINT_DISTRIBUTION_TOTAL = sum(STANDARD_ARRAY)
 POINT_DISTRIBUTION_MIN = min(STANDARD_ARRAY)
@@ -121,6 +122,7 @@ def preview_derived_values(creation):
     hit_die = creation.combat_style.hit_die if creation.combat_style else 1
     return {
         "attributes": breakdowns,
+        "attribute_rows": [{"key": key, "label": ATTRIBUTE_LABELS[key], **values} for key, values in breakdowns.items()],
         "proficiency_bonus": calculate_proficiency_bonus(1),
         "max_hp": calculate_initial_hp(hit_die, con_mod, species_hp),
         "resistance_class": calculate_resistance_class(dex_mod),

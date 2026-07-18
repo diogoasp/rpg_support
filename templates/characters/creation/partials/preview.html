@@ -8,8 +8,8 @@
   </div>
   <hr>
   <dl class="row small mb-0">
-    {% for key,values in preview.attributes.items %}
-      <dt class="col-6">{{ key }}</dt><dd class="col-6 text-end">{{ values.final_value }}</dd>
+    {% for row in preview.attribute_rows %}
+      <dt class="col-6">{{ row.label }}</dt><dd class="col-6 text-end">{{ row.final_value }}</dd>
     {% endfor %}
   </dl>
 </aside>

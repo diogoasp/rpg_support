@@ -50,6 +50,18 @@ CREATION_FORMS={
     'personality':CharacterCreationPersonalityForm,
     'equipment':CharacterCreationEquipmentForm,
 }
+CREATION_STEP_LABELS={
+    'concept':'Conceito',
+    'species':'Espécie',
+    'style':'Estilo',
+    'profession':'Profissão',
+    'attributes':'Atributos',
+    'background':'Antecedente',
+    'personality':'Personalidade',
+    'pending':'Pendências',
+    'equipment':'Equipamentos',
+    'review':'Revisão',
+}
 
 class PlayerCharacterCreateView(PlayerRequiredMixin,View):
     template_name='characters/creation/wizard.html'
@@ -68,7 +80,8 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
         step=step or self.step(creation)
         form=form or (CREATION_FORMS.get(step,CharacterCreationConceptForm))(instance=creation)
         update_validation_state(creation)
-        return {'campaign':self.campaign,'creation':creation,'form':form,'step':step,'steps':CharacterCreation.STEPS,'options':adaptive_options(creation),'preview':preview_derived_values(creation)}
+        step_items=[{'key':key,'label':CREATION_STEP_LABELS[key]} for key in CharacterCreation.STEPS]
+        return {'campaign':self.campaign,'creation':creation,'form':form,'step':step,'steps':CharacterCreation.STEPS,'step_items':step_items,'options':adaptive_options(creation),'preview':preview_derived_values(creation)}
     def get(self,request,*args,**kwargs):
         creation=self.creation(); step=self.step(creation)
         if step in ('pending','review'):
