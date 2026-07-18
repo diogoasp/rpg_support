@@ -259,11 +259,17 @@ body {
 .app-body .site-shell {
   max-width: 100%;
   min-height: 100vh;
+  overflow: visible;
   background:
     linear-gradient(135deg, rgba(7, 17, 21, .96), rgba(21, 13, 7, .92)),
     var(--wood-img) center/520px repeat;
   border-left: 0;
   border-right: 0;
+}
+
+.app-body .site-shell:before,
+.app-body .site-shell:after {
+  display: none;
 }
 
 .app-layout {
@@ -939,6 +945,10 @@ form p label,
   padding-bottom: 9rem
 }
 
+.master-with-audio-panel .app-content {
+  padding-bottom: 9rem
+}
+
 .audio-panel-toggle {
   position: absolute;
   right: 1rem;
@@ -1053,6 +1063,10 @@ form p label,
   }
 
   .master-with-audio-panel {
+    padding-bottom: 12rem
+  }
+
+  .master-with-audio-panel .app-content {
     padding-bottom: 12rem
   }
 
