@@ -28,6 +28,7 @@ from .forms import (
     ResourceForm,
 )
 from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique, Species
+from .print_sheet_service import print_sheet_context
 from .services import add_character_condition, damage_character, deactivate_character_condition, heal_character, update_character_resources
 
 def rich_queryset():
@@ -80,7 +81,12 @@ class CharacterSheetView(PlayerCharacterView):
         context['character']=character
         context['campaign']=character.campaign
         return self.render_to_response(context,status=422)
-class CharacterPrintView(PlayerCharacterView): template_name='characters/print.html'
+class CharacterPrintView(PlayerCharacterView):
+    template_name='characters/print.html'
+    def get_context_data(self,**kw):
+        c=super().get_context_data(**kw)
+        c.update(print_sheet_context(c['character']))
+        return c
 CREATION_FORMS={
     'concept':CharacterCreationConceptForm,
     'species':CharacterCreationSpeciesForm,

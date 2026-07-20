@@ -3,7 +3,15 @@ from django.urls import reverse
 
 from accounts.models import User
 from campaigns.models import Campaign
-from characters.models import Character, CharacterCreation
+from characters.models import (
+    Character,
+    CharacterCreation,
+    CharacterProficiency,
+    CharacterSkill,
+    CharacterTechnique,
+    RuleProficiency,
+    Skill,
+)
 from inventory.models import InventoryItem
 from ships.models import Ship
 
@@ -178,3 +186,60 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertEqual(character.dream, "Mapear todos os mares.")
         self.assertEqual(character.notes, "História atualizada pela ficha completa.")
         self.assertContains(response, "Mapear todos os mares.")
+
+    def test_print_sheet_lists_all_skills_and_combat_without_inventory(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.strength = 14
+        character.dexterity = 12
+        character.proficiency_bonus = 2
+        character.age = "20"
+        character.height = "1,70 m"
+        character.background = "Marinheiro"
+        character.save()
+        acrobacia = Skill.objects.create(name="Acrobacia", slug="acrobacia", related_attribute="dexterity", sort_order=2)
+        atletismo = Skill.objects.create(name="Atletismo", slug="atletismo", related_attribute="strength", sort_order=1)
+        sobrevivencia = Skill.objects.create(name="Sobrevivência", slug="sobrevivencia", related_attribute="wisdom", sort_order=3)
+        CharacterSkill.objects.create(character=character, skill=atletismo, is_proficient=True)
+        weapon = RuleProficiency.objects.create(
+            ruleset_version="player-book-1.5.7",
+            slug="arma-pistola",
+            name="Pistola",
+            category=RuleProficiency.Category.WEAPON,
+        )
+        CharacterProficiency.objects.create(character=character, proficiency=weapon, source_type="test")
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Corte do Vento",
+            description="Um corte rápido.",
+            range_text="3 m",
+            damage_text="1d6+2 de dano Cortante",
+            cost="1 PP",
+        )
+        InventoryItem.objects.create(character=character, name="Clima-Tact", description="Não deve sair na impressão.", quantity=1)
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ficha impressa de Nami")
+        self.assertContains(response, "Antecedência")
+        self.assertContains(response, "Atributos e Sobrevivência")
+        self.assertContains(response, "Testes e Perícias")
+        self.assertContains(response, "Acrobacia")
+        self.assertContains(response, "Atletismo")
+        self.assertContains(response, "Sobrevivência")
+        self.assertContains(response, "<td>Atletismo</td><td>Força</td><td>Sim</td><td>+4</td>", html=True)
+        self.assertContains(response, "<td>Acrobacia</td><td>Destreza</td><td>Não</td><td>+1</td>", html=True)
+        self.assertLess(response.content.index(b"Acrobacia"), response.content.index(b"Atletismo"))
+        self.assertContains(response, "Ataques possíveis")
+        self.assertContains(response, "Pistola")
+        self.assertContains(response, "Corte do Vento")
+        self.assertContains(response, "1d6")
+        self.assertContains(response, "+2")
+        self.assertNotContains(response, "Inventário")
+        self.assertNotContains(response, "Clima-Tact")
+
+    def test_print_sheet_keeps_player_campaign_isolation(self):
+        self.client.force_login(self.outsider)
+        response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
+        self.assertEqual(response.status_code, 404)

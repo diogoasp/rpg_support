@@ -1,1 +1,155 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Ficha de {{character.name}}</title><style>body{font:12pt Georgia;color:#111;background:#fff}section{break-inside:avoid}table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #bbb;padding:4px}@media print{.no-print{display:none}}</style></head><body><h1>{{character.name}} — Nível {{character.level}}</h1><p>{{character.species}} · {{character.profession}} · {{character.combat_style}}</p><p>PV {{character.current_hp}}/{{character.max_hp}} · PP {{character.current_power_points}}/{{character.max_power_points}} · CR {{character.armor_class}}</p><section><h2>Atributos</h2><p>FOR {{character.strength}} ({{character.strength_modifier|stringformat:'+d'}}) · DES {{character.dexterity}} ({{character.dexterity_modifier|stringformat:'+d'}}) · CON {{character.constitution}} ({{character.constitution_modifier|stringformat:'+d'}}) · INT {{character.intelligence}} ({{character.intelligence_modifier|stringformat:'+d'}}) · SAB {{character.wisdom}} ({{character.wisdom_modifier|stringformat:'+d'}}) · CAR {{character.charisma}} ({{character.charisma_modifier|stringformat:'+d'}})</p></section><section><h2>Perícias</h2><table>{% for cs in character.skills.all %}<tr><td>{{cs.skill.name}}</td><td>{{cs.final_bonus|stringformat:'+d'}}</td></tr>{% endfor %}</table></section><section><h2>Técnicas</h2>{% for x in character.techniques.all %}<p><strong>{{x.name}}</strong>{% if not x.is_available %} — Bloqueada{% endif %}: {{x.description}}</p>{% endfor %}</section><section><h2>Características</h2>{% for x in character.features.all %}<p><strong>{{x.name}}</strong>: {{x.description}}</p>{% endfor %}</section><section><h2>Condições ativas</h2>{% for x in character.conditions.all %}<p>{{x.name}} — {{x.description}}</p>{% endfor %}</section><section><h2>Informações narrativas</h2>{{character.appearance|linebreaks}}{{character.personality|linebreaks}}{{character.dream|linebreaks}}{{character.notes|linebreaks}}</section></body></html>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Ficha impressa de {{ character.name }}</title>
+    <style>
+      @page { size: A4; margin: 12mm; }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: #111; background: #fff; font: 9.5pt Arial, sans-serif; }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 22pt; letter-spacing: .02em; }
+      h2 { margin-bottom: 6px; border-bottom: 2px solid #111; font-size: 12pt; text-transform: uppercase; }
+      h3 { font-size: 10pt; }
+      section { break-inside: avoid; margin-top: 10px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; }
+      th { background: #eee; text-align: left; font-size: 8.5pt; text-transform: uppercase; }
+      .top-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+      .field { border: 1px solid #111; min-height: 34px; padding: 4px 6px; }
+      .field small { display: block; color: #444; font-size: 7.5pt; text-transform: uppercase; }
+      .field strong { display: block; margin-top: 2px; font-size: 10pt; }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .stat-box { border: 1px solid #111; padding: 6px; min-height: 48px; }
+      .stat-box small { display: block; color: #444; text-transform: uppercase; }
+      .stat-box strong { font-size: 15pt; }
+      .skill-table th, .skill-table td { padding: 3px 4px; font-size: 8.2pt; }
+      .combat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+      .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; min-height: 78px; }
+      .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin: 5px 0; }
+      .combat-meta span { border: 1px solid #777; padding: 3px; min-height: 22px; }
+      .muted { color: #444; }
+      .no-print { margin-bottom: 8px; }
+      @media print { .no-print { display: none; } }
+    </style>
+  </head>
+  <body>
+    <button class="no-print" onclick="window.print()">Imprimir</button>
+
+    <header>
+      <h1>{{ character.name }}</h1>
+      <div class="top-grid">
+        <div class="field"><small>Nome</small><strong>{{ character.name }}</strong></div>
+        <div class="field"><small>Altura</small><strong>{{ character.height|default:"-" }}</strong></div>
+        <div class="field"><small>Idade</small><strong>{{ character.age|default:"-" }}</strong></div>
+        <div class="field"><small>Espécie</small><strong>{{ character.species|default:"-" }}</strong></div>
+        <div class="field"><small>Nível</small><strong>{{ character.level }}</strong></div>
+        <div class="field"><small>Profissão</small><strong>{{ character.profession|default:"-" }}</strong></div>
+        <div class="field"><small>Estilo de combate</small><strong>{{ character.combat_style|default:"-" }}</strong></div>
+        <div class="field"><small>Antecedência</small><strong>{{ character.background|default:"-" }}</strong></div>
+        <div class="field"><small>Proficiência</small><strong>{{ character.proficiency_bonus|stringformat:"+d" }}</strong></div>
+        <div class="field"><small>Campanha</small><strong>{{ character.campaign.name }}</strong></div>
+      </div>
+    </header>
+
+    <section>
+      <h2>Atributos e Sobrevivência</h2>
+      <div class="two-col">
+        <table>
+          <thead>
+            <tr><th>Atributo</th><th>Valor</th><th>Mod.</th></tr>
+          </thead>
+          <tbody>
+            {% for row in attribute_rows %}
+              <tr><td>{{ row.label }}</td><td>{{ row.value }}</td><td>{{ row.modifier_label }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="three-col">
+          <div class="stat-box"><small>PV</small><strong>{{ character.current_hp }}/{{ character.max_hp }}</strong></div>
+          <div class="stat-box"><small>PP</small><strong>{{ character.current_power_points }}/{{ character.max_power_points }}</strong></div>
+          <div class="stat-box"><small>CR</small><strong>{{ character.armor_class }}</strong></div>
+          <div class="stat-box"><small>Iniciativa</small><strong>{{ character.initiative|stringformat:"+d" }}</strong></div>
+          <div class="stat-box"><small>Deslocamento</small><strong>{{ character.movement }} m</strong></div>
+          <div class="stat-box"><small>Haki</small><strong>{% if character.haki_trained %}Treinado{% elif character.haki_declared %}Declarado{% else %}-{% endif %}</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Testes e Perícias</h2>
+      <table class="skill-table">
+        <thead>
+          <tr><th>Perícia</th><th>Atributo referência</th><th>Proficiência</th><th>Bônus</th></tr>
+        </thead>
+        <tbody>
+          {% for row in skill_rows %}
+            <tr><td>{{ row.name }}</td><td>{{ row.attribute }}</td><td>{{ row.proficiency }}</td><td>{{ row.bonus_label }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Combate</h2>
+      <h3>Ataques possíveis</h3>
+      <div class="combat-grid">
+        {% for attack in attack_rows %}
+          <div class="combat-card">
+            <h3>{{ attack.name }}</h3>
+            <div class="combat-meta">
+              <span><strong>Atributo</strong><br>{{ attack.attribute }}</span>
+              <span><strong>Dado</strong><br>{{ attack.die }}</span>
+              <span><strong>Mod.</strong><br>{{ attack.modifier }}</span>
+            </div>
+            <p class="muted">{{ attack.notes }}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <h3 style="margin-top:8px">Habilidades e técnicas cadastradas</h3>
+      <div class="combat-grid">
+        {% for technique in technique_rows %}
+          <div class="combat-card">
+            <h3>{{ technique.name }} <span class="muted">({{ technique.action }})</span></h3>
+            <div class="combat-meta">
+              <span><strong>Atributo</strong><br>{{ technique.attribute }}</span>
+              <span><strong>Dado</strong><br>{{ technique.die }}</span>
+              <span><strong>Mod.</strong><br>{{ technique.modifier }}</span>
+            </div>
+            <p><strong>Alcance:</strong> {{ technique.range }} · <strong>Custo:</strong> {{ technique.cost }}</p>
+            <p>{{ technique.description }} {% if technique.damage %}<strong>{{ technique.damage }}</strong>{% endif %}</p>
+          </div>
+        {% empty %}
+          <div class="combat-card"><h3>Nenhuma técnica cadastrada</h3><p class="muted">Use a área de ataques possíveis e registre novas técnicas na ficha do personagem.</p></div>
+        {% endfor %}
+        {% for feature in feature_rows %}
+          <div class="combat-card">
+            <h3>{{ feature.name }}</h3>
+            <div class="combat-meta">
+              <span><strong>Atributo</strong><br>Conforme descrição</span>
+              <span><strong>Dado</strong><br>Conforme descrição</span>
+              <span><strong>Mod.</strong><br>+0</span>
+            </div>
+            <p>{{ feature.description|default:feature.source }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section>
+      <h2>Condições Ativas</h2>
+      <table>
+        <thead><tr><th>Condição</th><th>Descrição</th></tr></thead>
+        <tbody>
+          {% for condition in condition_rows %}
+            <tr><td>{{ condition.name }}</td><td>{{ condition.description|default:"Condição ativa." }}</td></tr>
+          {% empty %}
+            <tr><td colspan="2">Nenhuma condição ativa.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </body>
+</html>
