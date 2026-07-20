@@ -277,9 +277,9 @@
                   <p class="op-combat-card-title">
                     {{ technique.get_action_type_display }}: <span>{{ technique.name }}</span>{% if not technique.is_available %} · Bloqueada{% endif %}
                   </p>
-                  {% if technique.cost %}
+                  {% if technique.power_points_cost %}
                     <p class="op-field-line">
-                      <span>Custo:</span> <span>{{ technique.cost }}</span>
+                      <span>Custo:</span> <span>{{ technique.power_points_cost }} PP</span>
                     </p>
                   {% endif %}
                   {% if technique.range_text %}

@@ -56,6 +56,7 @@ def printable_attack_rows(character):
     rows = []
     for weapon in character.weapons.filter(is_available=True).order_by("sort_order", "name"):
         modifier = character.attribute_modifier(weapon.attribute_modifier)
+        attack_bonus = modifier + (character.proficiency_bonus if weapon.is_proficient else 0)
         rows.append(
             {
                 "name": f"Ataque básico: {weapon.name}",
@@ -63,9 +64,11 @@ def printable_attack_rows(character):
                 "range": weapon.range_text or "-",
                 "die": weapon.damage_die or "Conforme arma",
                 "modifier": signed(modifier),
+                "is_proficient": weapon.is_proficient,
+                "attack_test": f"d20 {signed(modifier)} {'%+d' % character.proficiency_bonus if weapon.is_proficient else '+0'} = d20 {signed(attack_bonus)}",
                 "result_label": "Dano",
                 "formula": f"{weapon.damage_die or 'dado da arma'} {signed(modifier)}",
-                "notes": f"Tipo da arma: {weapon.weapon_type}. Some proficiência ao ataque apenas se houver proficiência com a arma.",
+                "notes": f"Tipo da arma: {weapon.weapon_type}. O dano usa apenas o modificador do atributo.",
             }
         )
     return rows
@@ -148,7 +151,6 @@ def printable_technique_row(character, technique, weapon=None):
         "result_label": result_label,
         "required_weapon_type": technique.required_weapon_type or "-",
         "cost": technique.power_points_cost if technique.power_points_cost else "-",
-        "legacy_cost": technique.cost,
         "description": technique.description,
         "damage": technique.damage_text,
         "notes": notes,

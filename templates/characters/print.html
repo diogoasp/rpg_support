@@ -29,6 +29,8 @@
       .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; min-height: 78px; }
       .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr; gap: 4px; margin: 5px 0; }
       .combat-meta span { border: 1px solid #777; padding: 3px; min-height: 22px; }
+      .attack-test-box { border: 2px solid #111; padding: 5px; margin: 5px 0; }
+      .attack-test-box strong { display: block; text-transform: uppercase; font-size: 8pt; }
       .muted { color: #444; }
       .no-print { margin-bottom: 8px; }
       @media print { .no-print { display: none; } }
@@ -93,11 +95,15 @@
 
     <section>
       <h2>Combate</h2>
-      <h3>Ataques possíveis</h3>
+      <h3>Armas</h3>
       <div class="combat-grid">
         {% for attack in attack_rows %}
           <div class="combat-card">
             <h3>{{ attack.name }}</h3>
+            <div class="attack-test-box">
+              <strong>Teste de ataque</strong>
+              {{ attack.attack_test }}
+            </div>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>{{ attack.attribute }}</span>
               <span><strong>Alcance</strong><br>{{ attack.range }}</span>
@@ -125,11 +131,12 @@
             </div>
             <p><strong>Arma requerida:</strong> {{ technique.required_weapon_type }} · <strong>Armas compatíveis:</strong> {{ technique.matching_weapons }}</p>
             <p>{{ technique.description }} {% if technique.damage %}<strong>{{ technique.damage }}</strong>{% endif %}</p>
-            <p class="muted">{{ technique.notes }}{% if technique.legacy_cost %} Custo legado: {{ technique.legacy_cost }}.{% endif %}</p>
+            <p class="muted">{{ technique.notes }}</p>
           </div>
         {% empty %}
           <div class="combat-card"><h3>Nenhuma técnica cadastrada</h3><p class="muted">Use a área de ataques possíveis e registre novas técnicas na ficha do personagem.</p></div>
         {% endfor %}
+        {% comment %} TODO: Add a section for features and abilities that are not techniques or attacks, if applicable. 
         {% for feature in feature_rows %}
           <div class="combat-card">
             <h3>{{ feature.name }}</h3>
@@ -142,6 +149,7 @@
             <p>{{ feature.description|default:feature.source }}</p>
           </div>
         {% endfor %}
+        {% endcomment %}
       </div>
     </section>
 

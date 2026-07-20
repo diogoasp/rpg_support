@@ -207,6 +207,7 @@ class PlayerCampaignFlowTests(TestCase):
             damage_die="1d8",
             attribute_modifier="dexterity",
             weapon_type="Arma de Fogo",
+            is_proficient=True,
         )
         CharacterTechnique.objects.create(
             character=character,
@@ -252,6 +253,9 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Pistola")
         self.assertContains(response, "Ataque básico: Pistola")
         self.assertContains(response, "1d8 +1")
+        self.assertContains(response, "Teste de ataque")
+        self.assertContains(response, "d20 +1 +2 = d20 +3")
+        self.assertContains(response, "Proficiência: sim")
         self.assertContains(response, "Corte do Vento")
         self.assertContains(response, "1d6 + 1d8 +2")
         self.assertContains(response, "Canção de Coragem")

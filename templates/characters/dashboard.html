@@ -68,7 +68,7 @@
               {% if t.is_featured %}
                 <article class="border rounded p-2 mb-2">
                   <strong>{{ t.name }}</strong>{% if not t.is_available %} <span class="badge bg-secondary">Bloqueada</span>{% endif %}
-                  <p class="mb-0 small">{{ t.description }} {{ t.damage_text }} {{ t.cost }}</p>
+                  <p class="mb-0 small">{{ t.description }} {{ t.damage_text }}{% if t.power_points_cost %} {{ t.power_points_cost }} PP{% endif %}</p>
                 </article>
               {% endif %}
             {% empty %}

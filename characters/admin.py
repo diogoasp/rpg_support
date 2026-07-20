@@ -86,8 +86,8 @@ class CharacterRuleExceptionAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterWeapon)
 class CharacterWeaponAdmin(admin.ModelAdmin):
-    list_display=('name','character','weapon_type','range_text','damage_die','attribute_modifier','is_available')
-    list_filter=('weapon_type','attribute_modifier','is_available')
+    list_display=('name','character','weapon_type','range_text','damage_die','attribute_modifier','is_proficient','is_available')
+    list_filter=('weapon_type','attribute_modifier','is_proficient','is_available')
     search_fields=('name','character__name','weapon_type')
     autocomplete_fields=('character',)
 
