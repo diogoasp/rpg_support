@@ -15,7 +15,11 @@
       table { width: 100%; border-collapse: collapse; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; }
       th { background: #eee; text-align: left; font-size: 8.5pt; text-transform: uppercase; }
-      .top-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+      .print-header { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: stretch; }
+      .portrait-box { width: 92px; aspect-ratio: 1 / 1; border: 2px solid #111; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #eee; }
+      .portrait-box img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+      .portrait-box span { color: #555; font-size: 8pt; text-transform: uppercase; }
+      .top-grid { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 6px; }
       .field { border: 1px solid #111; min-height: 34px; padding: 4px 6px; }
       .field small { display: block; color: #444; font-size: 7.5pt; text-transform: uppercase; }
       .field strong { display: block; margin-top: 2px; font-size: 10pt; }
@@ -41,17 +45,26 @@
 
     <header>
       <h1>{{ character.name }}</h1>
-      <div class="top-grid">
-        <div class="field"><small>Nome</small><strong>{{ character.name }}</strong></div>
-        <div class="field"><small>Altura</small><strong>{{ character.height|default:"-" }}</strong></div>
-        <div class="field"><small>Idade</small><strong>{{ character.age|default:"-" }}</strong></div>
-        <div class="field"><small>Espécie</small><strong>{{ character.species|default:"-" }}</strong></div>
-        <div class="field"><small>Nível</small><strong>{{ character.level }}</strong></div>
-        <div class="field"><small>Profissão</small><strong>{{ character.profession|default:"-" }}</strong></div>
-        <div class="field"><small>Estilo de combate</small><strong>{{ character.combat_style|default:"-" }}</strong></div>
-        <div class="field"><small>Antecedência</small><strong>{{ character.background|default:"-" }}</strong></div>
-        <div class="field"><small>Proficiência</small><strong>{{ character.proficiency_bonus|stringformat:"+d" }}</strong></div>
-        <div class="field"><small>Campanha</small><strong>{{ character.campaign.name }}</strong></div>
+      <div class="print-header">
+        <div class="portrait-box">
+          {% if character.portrait %}
+            <img src="{{ character.portrait.url }}" alt="Foto de {{ character.name }}">
+          {% else %}
+            <span>Foto</span>
+          {% endif %}
+        </div>
+        <div class="top-grid">
+          <div class="field"><small>Nome</small><strong>{{ character.name }}</strong></div>
+          <div class="field"><small>Altura</small><strong>{{ character.height|default:"-" }}</strong></div>
+          <div class="field"><small>Idade</small><strong>{{ character.age|default:"-" }}</strong></div>
+          <div class="field"><small>Espécie</small><strong>{{ character.species|default:"-" }}</strong></div>
+          <div class="field"><small>Nível</small><strong>{{ character.level }}</strong></div>
+          <div class="field"><small>Profissão</small><strong>{{ character.profession|default:"-" }}</strong></div>
+          <div class="field"><small>Estilo de combate</small><strong>{{ character.combat_style|default:"-" }}</strong></div>
+          <div class="field"><small>Antecedência</small><strong>{{ character.background|default:"-" }}</strong></div>
+          <div class="field"><small>Proficiência</small><strong>{{ character.proficiency_bonus|stringformat:"+d" }}</strong></div>
+          <div class="field"><small>Campanha</small><strong>{{ character.campaign.name }}</strong></div>
+        </div>
       </div>
     </header>
 
