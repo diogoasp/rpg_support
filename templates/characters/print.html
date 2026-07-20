@@ -149,23 +149,18 @@
         {% empty %}
           <div class="combat-card"><h3>Nenhuma técnica cadastrada</h3><p class="muted">Use a área de ataques possíveis e registre novas técnicas na ficha do personagem.</p></div>
         {% endfor %}
-        {% comment %} TODO: Add a section for features and abilities that are not techniques or attacks, if applicable. 
-        {% for feature in feature_rows %}
-          <div class="combat-card">
-            <h3>{{ feature.name }}</h3>
-            <div class="combat-meta">
-              <span><strong>Atributo</strong><br>Conforme descrição</span>
-              <span><strong>Alcance</strong><br>Conforme descrição</span>
-              <span><strong>Dado</strong><br>Conforme descrição</span>
-              <span><strong>Efeito</strong><br>Conforme descrição</span>
-            </div>
-            <p>{{ feature.description|default:feature.source }}</p>
-          </div>
-        {% endfor %}
-        {% endcomment %}
       </div>
     </section>
 
+    <section>
+      <h2>Traços e Características</h2>
+        {% for feature in feature_rows %}
+          <div class="combat-card">
+            <h3>{{ feature.name }}</h3>
+            <p>{{ feature.description|default:feature.source }}</p>
+          </div>
+        {% endfor %}
+    </section>
     <section>
       <h2>Condições Ativas</h2>
       <table>

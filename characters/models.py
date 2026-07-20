@@ -143,8 +143,16 @@ class CharacterTechnique(models.Model):
     @property
     def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
 class CharacterFeature(models.Model):
-    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='features',db_index=True); name=models.CharField(max_length=150); description=models.TextField(blank=True); source=models.CharField(max_length=100,blank=True); is_available=models.BooleanField(default=True); sort_order=models.PositiveSmallIntegerField(default=0)
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='features',db_index=True)
+    name=models.CharField(max_length=150)
+    description=models.TextField(blank=True)
+    source=models.CharField(max_length=100,blank=True)
+    is_available=models.BooleanField(default=True)
+    sort_order=models.PositiveSmallIntegerField(default=0)
+    
     class Meta: ordering=('sort_order','name')
+    def __str__(self): return f"{self.character.name} - {self.name}"
+
 class CharacterCondition(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='conditions',db_index=True); name=models.CharField(max_length=100); description=models.TextField(blank=True); is_active=models.BooleanField(default=True,db_index=True); created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
     class Meta: ordering=('-created_at',)
