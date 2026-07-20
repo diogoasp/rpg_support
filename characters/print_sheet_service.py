@@ -57,16 +57,26 @@ def printable_attack_rows(character):
         {
             "name": "Ataque corpo a corpo",
             "attribute": "Força",
-            "die": "1d20",
-            "modifier": signed(character.strength_modifier + character.proficiency_bonus),
-            "notes": "Use para golpes corporais e armas baseadas em Força quando houver proficiência.",
+            "die": "Conforme arma",
+            "attack_modifier": signed(character.strength_modifier + character.proficiency_bonus),
+            "damage_modifier": signed(character.strength_modifier),
+            "notes": "Some proficiência ao ataque apenas quando o personagem for proficiente com a arma.",
         },
         {
-            "name": "Ataque à distância ou ágil",
+            "name": "Ataque à distância",
             "attribute": "Destreza",
-            "die": "1d20",
-            "modifier": signed(character.dexterity_modifier + character.proficiency_bonus),
-            "notes": "Use para disparos, arremessos e armas baseadas em Destreza quando houver proficiência.",
+            "die": "Conforme arma",
+            "attack_modifier": signed(character.dexterity_modifier + character.proficiency_bonus),
+            "damage_modifier": signed(character.dexterity_modifier),
+            "notes": "Armas com arremesso podem usar Força conforme a regra da arma.",
+        },
+        {
+            "name": "Arma com acuidade",
+            "attribute": "Força ou Destreza",
+            "die": "Conforme arma",
+            "attack_modifier": "melhor atributo + prof.",
+            "damage_modifier": "melhor atributo",
+            "notes": "Use Força ou Destreza, respeitando a arma e a proficiência do personagem.",
         },
     ]
     weapon_proficiencies = character.rule_proficiencies.filter(proficiency__category="weapon").select_related("proficiency")
@@ -75,8 +85,9 @@ def printable_attack_rows(character):
             {
                 "name": character_proficiency.proficiency.name,
                 "attribute": "Conforme arma",
-                "die": "1d20",
-                "modifier": f"atributo {signed(character.proficiency_bonus)} prof.",
+                "die": "Conforme arma",
+                "attack_modifier": f"atributo {signed(character.proficiency_bonus)} prof.",
+                "damage_modifier": "atributo",
                 "notes": "Proficiência de arma cadastrada para o personagem.",
             }
         )
@@ -103,7 +114,8 @@ def printable_technique_rows(character):
                 "action": technique.get_action_type_display(),
                 "attribute": "Conforme técnica",
                 "die": die,
-                "modifier": modifier,
+                "attack_modifier": "Conforme técnica",
+                "damage_modifier": modifier,
                 "range": technique.range_text or "-",
                 "cost": technique.cost or "-",
                 "description": technique.description,

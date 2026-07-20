@@ -27,7 +27,7 @@
       .skill-table th, .skill-table td { padding: 3px 4px; font-size: 8.2pt; }
       .combat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
       .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; min-height: 78px; }
-      .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin: 5px 0; }
+      .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin: 5px 0; }
       .combat-meta span { border: 1px solid #777; padding: 3px; min-height: 22px; }
       .muted { color: #444; }
       .no-print { margin-bottom: 8px; }
@@ -100,8 +100,9 @@
             <h3>{{ attack.name }}</h3>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>{{ attack.attribute }}</span>
-              <span><strong>Dado</strong><br>{{ attack.die }}</span>
-              <span><strong>Mod.</strong><br>{{ attack.modifier }}</span>
+              <span><strong>Dado dano</strong><br>{{ attack.die }}</span>
+              <span><strong>Bônus ataque</strong><br>{{ attack.attack_modifier }}</span>
+              <span><strong>Bônus dano</strong><br>{{ attack.damage_modifier }}</span>
             </div>
             <p class="muted">{{ attack.notes }}</p>
           </div>
@@ -115,8 +116,9 @@
             <h3>{{ technique.name }} <span class="muted">({{ technique.action }})</span></h3>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>{{ technique.attribute }}</span>
-              <span><strong>Dado</strong><br>{{ technique.die }}</span>
-              <span><strong>Mod.</strong><br>{{ technique.modifier }}</span>
+              <span><strong>Dado dano</strong><br>{{ technique.die }}</span>
+              <span><strong>Bônus ataque</strong><br>{{ technique.attack_modifier }}</span>
+              <span><strong>Bônus dano</strong><br>{{ technique.damage_modifier }}</span>
             </div>
             <p><strong>Alcance:</strong> {{ technique.range }} · <strong>Custo:</strong> {{ technique.cost }}</p>
             <p>{{ technique.description }} {% if technique.damage %}<strong>{{ technique.damage }}</strong>{% endif %}</p>
@@ -129,8 +131,9 @@
             <h3>{{ feature.name }}</h3>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>Conforme descrição</span>
-              <span><strong>Dado</strong><br>Conforme descrição</span>
-              <span><strong>Mod.</strong><br>+0</span>
+              <span><strong>Dado dano</strong><br>Conforme descrição</span>
+              <span><strong>Bônus ataque</strong><br>Conforme descrição</span>
+              <span><strong>Bônus dano</strong><br>+0</span>
             </div>
             <p>{{ feature.description|default:feature.source }}</p>
           </div>

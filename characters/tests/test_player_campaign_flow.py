@@ -236,6 +236,9 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Corte do Vento")
         self.assertContains(response, "1d6")
         self.assertContains(response, "+2")
+        self.assertContains(response, "Bônus ataque")
+        self.assertContains(response, "Bônus dano")
+        self.assertNotContains(response, "1d20")
         self.assertNotContains(response, "Inventário")
         self.assertNotContains(response, "Clima-Tact")
 
