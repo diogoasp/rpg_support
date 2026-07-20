@@ -16,402 +16,20 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY public.ships_ship DROP CONSTRAINT IF EXISTS ships_ship_campaign_id_2fd61bc8_fk_campaigns_campaign_id;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_vis_user_id_f4d4e2f7_fk_accounts_;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_vis_campaignmap_id_5bd5d79c_fk_maps_camp;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_related_inventory_it_5948db95_fk_inventory;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_campaign_id_7b555659_fk_campaigns_campaign_id;
-ALTER TABLE IF EXISTS ONLY public.inventory_inventoryitem DROP CONSTRAINT IF EXISTS inventory_inventoryi_character_id_120413db_fk_character;
-ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS history_sessionrecor_campaign_id_37dc18b0_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyfeature DROP CONSTRAINT IF EXISTS enemies_enemyfeature_enemy_id_3216cacc_fk_enemies_enemy_id;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyaction DROP CONSTRAINT IF EXISTS enemies_enemyaction_enemy_id_461d4a61_fk_enemies_enemy_id;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_faction_id_d56fecfe_fk_enemies_enemyfaction_id;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounterenemy_enemy_id_aa6d052c_fk_enemies_enemy_id;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_faction_id_1cd4c01e_fk_enemies_e;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounter_encounter_id_5dadca25_fk_encounter;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounter_encounter_id_25e180f2_fk_encounter;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_created_by_id_9124e8f3_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounter_character_id_fd89e08d_fk_character;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_campaign_id_4851c66b_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_user_id_c564eba6_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_content_type_id_c4bce8eb_fk_django_co;
-ALTER TABLE IF EXISTS ONLY public.combat_hpchange DROP CONSTRAINT IF EXISTS combat_hpchange_combatant_id_9572524c_fk_combat_combatant_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_combatant_id_5c4d5ba7_fk_combat_combatant_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_combat_id_b1b6ed11_fk_combat_combat_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_enemy_id_db936517_fk_enemies_enemy_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_combat_id_62e82e27_fk_combat_combat_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_character_id_ca824c94_fk_character;
-ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_encounter_id_e425ea50_fk_encounters_encounter_id;
-ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_campaign_id_91b1d47f_fk_campaigns_campaign_id;
-ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesva_species_id_94ab4833_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleprofi_related_skill_id_5421827a_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_professio_skill_id_987d9bc9_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_professio_profession_id_5ffd92d7_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_professio_parent_id_ce94306b_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatsty_skill_id_efd3369e_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatsty_combatstyle_id_be8d9424_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_user_id_c452ec7d_fk_accounts_;
-ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_user_id_6d9c54fd_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_character_user_id_366b2554_fk_accounts_;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_subprofession_id_dc5ab25a_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_species_variant_id_29dce720_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_species_id_dca3b634_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_character_species_id_5640923c_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_83896d57_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_character_skill_id_4e360f73_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_440f977c_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_3e4218c6_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_2730b6af_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_character_proficiency_id_6b4d5406_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_profession_id_134d16c5_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_character_creation_id_6b17a625_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_combat_style_id_ca817e1e_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_c3b783a1_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_8b3c0d56_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_89094d6d_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_5653541e_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_06c2f609_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS characters_character_character_id_b0886605_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_character_id_9b1335ca_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_character_character_id_8a197b9d_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercondition DROP CONSTRAINT IF EXISTS characters_character_character_id_690483bc_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterfeature DROP CONSTRAINT IF EXISTS characters_character_character_id_5837a53e_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_charactertechnique DROP CONSTRAINT IF EXISTS characters_character_character_id_47775325_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_character_character_id_296af121_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_campaign_id_53a808c0_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_campaign_id_432868e5_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_background_id_c1e1dfbe_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_backgroun_skill_id_2749c577_fk_character;
-ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_backgroun_background_id_dd45f90e_fk_character;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_user_id_81102d8f_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_p_campaign_id_f0e4df59_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_master_id_eec50fbc_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_2f476e4b_fk_django_co;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_b120cbf9_fk_auth_group_id;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissio_permission_id_84c5c92e_fk_auth_perm;
-ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS audio_panel_audioass_campaign_id_55076906_fk_campaigns;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_p_user_id_e4f0a161_fk_accounts_;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_p_permission_id_113bb443_fk_auth_perm;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_user_id_52b62117_fk_accounts_user_id;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_group_id_bd11a704_fk_auth_group_id;
-DROP INDEX IF EXISTS public.unique_active_character_creation_per_campaign_user;
-DROP INDEX IF EXISTS public.ships_ship_campaign_id_2fd61bc8;
-DROP INDEX IF EXISTS public.ships_ship_campaig_4936e2_idx;
-DROP INDEX IF EXISTS public.ships_ship_belongs_to_crew_cb6868b9;
-DROP INDEX IF EXISTS public.one_crew_ship_per_campaign;
-DROP INDEX IF EXISTS public.one_active_combat_per_encounter;
-DROP INDEX IF EXISTS public.one_active_combat_per_campaign;
-DROP INDEX IF EXISTS public.maps_campaignmap_visible_to_users_user_id_f4d4e2f7;
-DROP INDEX IF EXISTS public.maps_campaignmap_visible_to_users_campaignmap_id_5bd5d79c;
-DROP INDEX IF EXISTS public.maps_campaignmap_related_inventory_item_id_5948db95;
-DROP INDEX IF EXISTS public.maps_campaignmap_campaign_id_7b555659;
-DROP INDEX IF EXISTS public.maps_campai_campaig_d7d1c7_idx;
-DROP INDEX IF EXISTS public.maps_campai_campaig_267d5d_idx;
-DROP INDEX IF EXISTS public.inventory_inventoryitem_is_visible_9ba522a5;
-DROP INDEX IF EXISTS public.inventory_inventoryitem_is_active_435aae93;
-DROP INDEX IF EXISTS public.inventory_inventoryitem_character_id_120413db;
-DROP INDEX IF EXISTS public.inventory_i_charact_f76f88_idx;
-DROP INDEX IF EXISTS public.history_sessionrecord_campaign_id_37dc18b0;
-DROP INDEX IF EXISTS public.history_ses_campaig_d85dc3_idx;
-DROP INDEX IF EXISTS public.history_ses_campaig_1a7d24_idx;
-DROP INDEX IF EXISTS public.enemies_enemyfeature_enemy_id_3216cacc;
-DROP INDEX IF EXISTS public.enemies_enemyfaction_slug_dc8cd8f0_like;
-DROP INDEX IF EXISTS public.enemies_enemyaction_enemy_id_461d4a61;
-DROP INDEX IF EXISTS public.enemies_enemy_slug_d44a084d_like;
-DROP INDEX IF EXISTS public.enemies_enemy_operational_complexity_9268d92a_like;
-DROP INDEX IF EXISTS public.enemies_enemy_operational_complexity_9268d92a;
-DROP INDEX IF EXISTS public.enemies_enemy_is_boss_0a7b87b9;
-DROP INDEX IF EXISTS public.enemies_enemy_is_available_for_generator_c15cfacd;
-DROP INDEX IF EXISTS public.enemies_enemy_is_active_828caee9;
-DROP INDEX IF EXISTS public.enemies_enemy_faction_id_d56fecfe;
-DROP INDEX IF EXISTS public.enemies_enemy_environment_4cc8079d_like;
-DROP INDEX IF EXISTS public.enemies_enemy_environment_4cc8079d;
-DROP INDEX IF EXISTS public.enemies_enemy_encounter_mode_fd2646c8_like;
-DROP INDEX IF EXISTS public.enemies_enemy_encounter_mode_fd2646c8;
-DROP INDEX IF EXISTS public.enemies_enemy_created_at_d36148d6;
-DROP INDEX IF EXISTS public.enemies_enemy_category_c1d9b222_like;
-DROP INDEX IF EXISTS public.enemies_enemy_category_c1d9b222;
-DROP INDEX IF EXISTS public.encounters_encounterparticipant_encounter_id_5dadca25;
-DROP INDEX IF EXISTS public.encounters_encounterparticipant_character_id_fd89e08d;
-DROP INDEX IF EXISTS public.encounters_encounterenemy_enemy_id_aa6d052c;
-DROP INDEX IF EXISTS public.encounters_encounterenemy_encounter_id_25e180f2;
-DROP INDEX IF EXISTS public.encounters_encounter_status_4eb20092_like;
-DROP INDEX IF EXISTS public.encounters_encounter_status_4eb20092;
-DROP INDEX IF EXISTS public.encounters_encounter_faction_id_1cd4c01e;
-DROP INDEX IF EXISTS public.encounters_encounter_created_by_id_9124e8f3;
-DROP INDEX IF EXISTS public.encounters_encounter_created_at_804af9d7;
-DROP INDEX IF EXISTS public.encounters_encounter_campaign_id_4851c66b;
-DROP INDEX IF EXISTS public.encounters__campaig_3f10c4_idx;
-DROP INDEX IF EXISTS public.django_session_session_key_c0390e0f_like;
-DROP INDEX IF EXISTS public.django_session_expire_date_a5c62663;
-DROP INDEX IF EXISTS public.django_admin_log_user_id_c564eba6;
-DROP INDEX IF EXISTS public.django_admin_log_content_type_id_c4bce8eb;
-DROP INDEX IF EXISTS public.combat_hpchange_combatant_id_9572524c;
-DROP INDEX IF EXISTS public.combat_combatnote_combatant_id_5c4d5ba7;
-DROP INDEX IF EXISTS public.combat_combatnote_combat_id_b1b6ed11;
-DROP INDEX IF EXISTS public.combat_combatant_enemy_id_db936517;
-DROP INDEX IF EXISTS public.combat_combatant_combat_id_62e82e27;
-DROP INDEX IF EXISTS public.combat_combatant_character_id_ca824c94;
-DROP INDEX IF EXISTS public.combat_combat_status_76dc5241_like;
-DROP INDEX IF EXISTS public.combat_combat_status_76dc5241;
-DROP INDEX IF EXISTS public.combat_combat_encounter_id_e425ea50;
-DROP INDEX IF EXISTS public.combat_combat_campaign_id_91b1d47f;
-DROP INDEX IF EXISTS public.characters_zoanancestrytrait_slug_d2713982_like;
-DROP INDEX IF EXISTS public.characters_zoanancestrytrait_slug_d2713982;
-DROP INDEX IF EXISTS public.characters_zoanancestrytrait_ruleset_version_da441738_like;
-DROP INDEX IF EXISTS public.characters_zoanancestrytrait_ruleset_version_da441738;
-DROP INDEX IF EXISTS public.characters_zoanancestrytrait_is_active_3f61c97f;
-DROP INDEX IF EXISTS public.characters_speciesvariant_species_id_94ab4833;
-DROP INDEX IF EXISTS public.characters_speciesvariant_slug_7d3e306b_like;
-DROP INDEX IF EXISTS public.characters_speciesvariant_slug_7d3e306b;
-DROP INDEX IF EXISTS public.characters_speciesvariant_ruleset_version_8ea0da35_like;
-DROP INDEX IF EXISTS public.characters_speciesvariant_ruleset_version_8ea0da35;
-DROP INDEX IF EXISTS public.characters_speciesvariant_is_active_295c07f9;
-DROP INDEX IF EXISTS public.characters_species_slug_3a57f58c_like;
-DROP INDEX IF EXISTS public.characters_species_slug_3a57f58c;
-DROP INDEX IF EXISTS public.characters_species_ruleset_version_96865588_like;
-DROP INDEX IF EXISTS public.characters_species_ruleset_version_96865588;
-DROP INDEX IF EXISTS public.characters_species_is_active_594ab533;
-DROP INDEX IF EXISTS public.characters_skill_slug_9a85d061_like;
-DROP INDEX IF EXISTS public.characters_skill_is_active_683507b3;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_slug_f26268cc_like;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_slug_f26268cc;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_ruleset_version_8b81cd92_like;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_ruleset_version_8b81cd92;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_related_skill_id_5421827a;
-DROP INDEX IF EXISTS public.characters_ruleproficiency_is_active_2d3a71c0;
-DROP INDEX IF EXISTS public.characters_ruleattribute_slug_80baab8f_like;
-DROP INDEX IF EXISTS public.characters_ruleattribute_slug_80baab8f;
-DROP INDEX IF EXISTS public.characters_ruleattribute_ruleset_version_8381d3e4_like;
-DROP INDEX IF EXISTS public.characters_ruleattribute_ruleset_version_8381d3e4;
-DROP INDEX IF EXISTS public.characters_ruleattribute_is_active_fccec6cb;
-DROP INDEX IF EXISTS public.characters_profession_slug_bd414ffa_like;
-DROP INDEX IF EXISTS public.characters_profession_slug_bd414ffa;
-DROP INDEX IF EXISTS public.characters_profession_ruleset_version_193ba2c1_like;
-DROP INDEX IF EXISTS public.characters_profession_ruleset_version_193ba2c1;
-DROP INDEX IF EXISTS public.characters_profession_parent_id_ce94306b;
-DROP INDEX IF EXISTS public.characters_profession_is_active_76946e9d;
-DROP INDEX IF EXISTS public.characters_profession_allowed_skills_skill_id_987d9bc9;
-DROP INDEX IF EXISTS public.characters_profession_allowed_skills_profession_id_5ffd92d7;
-DROP INDEX IF EXISTS public.characters_combatstyle_slug_1d130fdd_like;
-DROP INDEX IF EXISTS public.characters_combatstyle_slug_1d130fdd;
-DROP INDEX IF EXISTS public.characters_combatstyle_ruleset_version_7876cb29_like;
-DROP INDEX IF EXISTS public.characters_combatstyle_ruleset_version_7876cb29;
-DROP INDEX IF EXISTS public.characters_combatstyle_is_active_b5888ac6;
-DROP INDEX IF EXISTS public.characters_combatstyle_allowed_skills_skill_id_efd3369e;
-DROP INDEX IF EXISTS public.characters_combatstyle_allowed_skills_combatstyle_id_be8d9424;
-DROP INDEX IF EXISTS public.characters_charactertechnique_character_id_47775325;
-DROP INDEX IF EXISTS public.characters_characterskill_skill_id_4e360f73;
-DROP INDEX IF EXISTS public.characters_characterskill_character_id_296af121;
-DROP INDEX IF EXISTS public.characters_characterruleexception_user_id_366b2554;
-DROP INDEX IF EXISTS public.characters_characterruleexception_creation_id_6b17a625;
-DROP INDEX IF EXISTS public.characters_characterproficiency_proficiency_id_6b4d5406;
-DROP INDEX IF EXISTS public.characters_characterproficiency_character_id_8a197b9d;
-DROP INDEX IF EXISTS public.characters_characterfeature_character_id_5837a53e;
-DROP INDEX IF EXISTS public.characters_charactercreation_user_id_c452ec7d;
-DROP INDEX IF EXISTS public.characters_charactercreation_subprofession_id_dc5ab25a;
-DROP INDEX IF EXISTS public.characters_charactercreation_style_skills_skill_id_83896d57;
-DROP INDEX IF EXISTS public.characters_charactercreation_status_7fab41ee_like;
-DROP INDEX IF EXISTS public.characters_charactercreation_status_7fab41ee;
-DROP INDEX IF EXISTS public.characters_charactercreation_species_variant_id_29dce720;
-DROP INDEX IF EXISTS public.characters_charactercreation_species_id_dca3b634;
-DROP INDEX IF EXISTS public.characters_charactercreation_ruleset_version_b554e2c4_like;
-DROP INDEX IF EXISTS public.characters_charactercreation_ruleset_version_b554e2c4;
-DROP INDEX IF EXISTS public.characters_charactercreation_profession_id_134d16c5;
-DROP INDEX IF EXISTS public.characters_charactercreation_free_skills_skill_id_440f977c;
-DROP INDEX IF EXISTS public.characters_charactercreation_combat_style_id_ca817e1e;
-DROP INDEX IF EXISTS public.characters_charactercreation_campaign_id_432868e5;
-DROP INDEX IF EXISTS public.characters_charactercreation_background_id_c1e1dfbe;
-DROP INDEX IF EXISTS public.characters_charactercreati_species_id_5640923c;
-DROP INDEX IF EXISTS public.characters_charactercreati_skill_id_3e4218c6;
-DROP INDEX IF EXISTS public.characters_charactercreati_skill_id_2730b6af;
-DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_c3b783a1;
-DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_8b3c0d56;
-DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_89094d6d;
-DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_5653541e;
-DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_06c2f609;
-DROP INDEX IF EXISTS public.characters_charactercondition_is_active_578aaf32;
-DROP INDEX IF EXISTS public.characters_charactercondition_character_id_690483bc;
-DROP INDEX IF EXISTS public.characters_characterattribute_character_id_b0886605;
-DROP INDEX IF EXISTS public.characters_character_user_id_6d9c54fd;
-DROP INDEX IF EXISTS public.characters_character_campaign_id_53a808c0;
-DROP INDEX IF EXISTS public.characters_background_slug_f394a2d4_like;
-DROP INDEX IF EXISTS public.characters_background_slug_f394a2d4;
-DROP INDEX IF EXISTS public.characters_background_ruleset_version_f51bd8af_like;
-DROP INDEX IF EXISTS public.characters_background_ruleset_version_f51bd8af;
-DROP INDEX IF EXISTS public.characters_background_is_active_a3c198e7;
-DROP INDEX IF EXISTS public.characters_background_allowed_skills_skill_id_2749c577;
-DROP INDEX IF EXISTS public.characters_background_allowed_skills_background_id_dd45f90e;
-DROP INDEX IF EXISTS public.characters__campaig_ad3c95_idx;
-DROP INDEX IF EXISTS public.campaigns_campaign_slug_08eb9673_like;
-DROP INDEX IF EXISTS public.campaigns_campaign_players_user_id_81102d8f;
-DROP INDEX IF EXISTS public.campaigns_campaign_players_campaign_id_f0e4df59;
-DROP INDEX IF EXISTS public.campaigns_campaign_master_id_eec50fbc;
-DROP INDEX IF EXISTS public.auth_permission_content_type_id_2f476e4b;
-DROP INDEX IF EXISTS public.auth_group_permissions_permission_id_84c5c92e;
-DROP INDEX IF EXISTS public.auth_group_permissions_group_id_b120cbf9;
-DROP INDEX IF EXISTS public.auth_group_name_a6ea08ec_like;
-DROP INDEX IF EXISTS public.audio_panel_campaig_fa8237_idx;
-DROP INDEX IF EXISTS public.audio_panel_campaig_e90e98_idx;
-DROP INDEX IF EXISTS public.audio_panel_campaig_765f4b_idx;
-DROP INDEX IF EXISTS public.audio_panel_campaig_73d0f7_idx;
-DROP INDEX IF EXISTS public.audio_panel_campaig_31262c_idx;
-DROP INDEX IF EXISTS public.audio_panel_campaig_1f11ee_idx;
-DROP INDEX IF EXISTS public.audio_panel_audioasset_slug_c02ef1f3_like;
-DROP INDEX IF EXISTS public.audio_panel_audioasset_slug_c02ef1f3;
-DROP INDEX IF EXISTS public.audio_panel_audioasset_campaign_id_55076906;
-DROP INDEX IF EXISTS public.accounts_user_username_6088629e_like;
-DROP INDEX IF EXISTS public.accounts_user_user_permissions_user_id_e4f0a161;
-DROP INDEX IF EXISTS public.accounts_user_user_permissions_permission_id_113bb443;
-DROP INDEX IF EXISTS public.accounts_user_groups_user_id_52b62117;
-DROP INDEX IF EXISTS public.accounts_user_groups_group_id_bd11a704;
-ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS unique_session_number_per_campaign;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS unique_encounter_participant;
-ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS unique_character_skill;
-ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS unique_character_proficiency_source;
-ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS unique_character_per_campaign_user;
-ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS unique_character_attribute_breakdown;
-ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS unique_audio_slug_per_campaign;
-ALTER TABLE IF EXISTS ONLY public.ships_ship DROP CONSTRAINT IF EXISTS ships_ship_pkey;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_visible_to_users_pkey;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_visible_campaignmap_id_user_id_cd8e0be9_uniq;
-ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_pkey;
-ALTER TABLE IF EXISTS ONLY public.inventory_inventoryitem DROP CONSTRAINT IF EXISTS inventory_inventoryitem_pkey;
-ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS history_sessionrecord_pkey;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyfeature DROP CONSTRAINT IF EXISTS enemies_enemyfeature_pkey;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyfaction DROP CONSTRAINT IF EXISTS enemies_enemyfaction_slug_key;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyfaction DROP CONSTRAINT IF EXISTS enemies_enemyfaction_pkey;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemyaction DROP CONSTRAINT IF EXISTS enemies_enemyaction_pkey;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_slug_key;
-ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_pkey;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounterparticipant_pkey;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounterenemy_pkey;
-ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_session DROP CONSTRAINT IF EXISTS django_session_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_migrations DROP CONSTRAINT IF EXISTS django_migrations_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_app_label_model_76bd3d3b_uniq;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_pkey;
-ALTER TABLE IF EXISTS ONLY public.combat_hpchange DROP CONSTRAINT IF EXISTS combat_hpchange_pkey;
-ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_pkey;
-ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_pkey;
-ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_zoanancestrytrait DROP CONSTRAINT IF EXISTS characters_zoanancestrytrait_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_zoanancestrytrait DROP CONSTRAINT IF EXISTS characters_zoanancestrytrait_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesvariant_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesvariant_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_species DROP CONSTRAINT IF EXISTS characters_species_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_species DROP CONSTRAINT IF EXISTS characters_species_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_skill DROP CONSTRAINT IF EXISTS characters_skill_slug_key;
-ALTER TABLE IF EXISTS ONLY public.characters_skill DROP CONSTRAINT IF EXISTS characters_skill_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleproficiency_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleproficiency_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_ruleattribute DROP CONSTRAINT IF EXISTS characters_ruleattribute_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_ruleattribute DROP CONSTRAINT IF EXISTS characters_ruleattribute_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_profession_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_profession_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_profession_allowed_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_profession_al_profession_id_skill_id_d656483a_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle DROP CONSTRAINT IF EXISTS characters_combatstyle_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle DROP CONSTRAINT IF EXISTS characters_combatstyle_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatstyle_allowed_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatstyle_a_combatstyle_id_skill_id_cc76ade0_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactertechnique DROP CONSTRAINT IF EXISTS characters_charactertechnique_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_characterskill_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_characterruleexception_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_characterproficiency_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_characterfeature DROP CONSTRAINT IF EXISTS characters_characterfeature_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_style_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_profession_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_charactercreation_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_charactercreation_mixed_species_origins_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_free_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_charactercreation_character_id_key;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_background_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_spe_ab706246_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_d5bc21ee_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_bb030549_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_752d4876_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_2e1f0bd3_uniq;
-ALTER TABLE IF EXISTS ONLY public.characters_charactercondition DROP CONSTRAINT IF EXISTS characters_charactercondition_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS characters_characterattribute_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_background DROP CONSTRAINT IF EXISTS characters_background_ruleset_slug_unique;
-ALTER TABLE IF EXISTS ONLY public.characters_background DROP CONSTRAINT IF EXISTS characters_background_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_background_allowed_skills_pkey;
-ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_background_al_background_id_skill_id_4e1ac5a1_uniq;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_slug_key;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_pkey;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_campaign_id_user_id_0eb0e0da_uniq;
-ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_codename_01ab375a_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_permission_id_0cd325b0_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_name_key;
-ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS audio_panel_audioasset_pkey;
-ALTER TABLE IF EXISTS ONLY public.accounts_user DROP CONSTRAINT IF EXISTS accounts_user_username_key;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_permissions_pkey;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq;
-ALTER TABLE IF EXISTS ONLY public.accounts_user DROP CONSTRAINT IF EXISTS accounts_user_pkey;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_user_id_group_id_59c0b32f_uniq;
-ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_pkey;
-DROP TABLE IF EXISTS public.ships_ship;
-DROP TABLE IF EXISTS public.maps_campaignmap_visible_to_users;
-DROP TABLE IF EXISTS public.maps_campaignmap;
-DROP TABLE IF EXISTS public.inventory_inventoryitem;
-DROP TABLE IF EXISTS public.history_sessionrecord;
-DROP TABLE IF EXISTS public.enemies_enemyfeature;
-DROP TABLE IF EXISTS public.enemies_enemyfaction;
-DROP TABLE IF EXISTS public.enemies_enemyaction;
-DROP TABLE IF EXISTS public.enemies_enemy;
-DROP TABLE IF EXISTS public.encounters_encounterparticipant;
-DROP TABLE IF EXISTS public.encounters_encounterenemy;
-DROP TABLE IF EXISTS public.encounters_encounter;
-DROP TABLE IF EXISTS public.django_session;
-DROP TABLE IF EXISTS public.django_migrations;
-DROP TABLE IF EXISTS public.django_content_type;
-DROP TABLE IF EXISTS public.django_admin_log;
-DROP TABLE IF EXISTS public.combat_hpchange;
-DROP TABLE IF EXISTS public.combat_combatnote;
-DROP TABLE IF EXISTS public.combat_combatant;
-DROP TABLE IF EXISTS public.combat_combat;
-DROP TABLE IF EXISTS public.characters_zoanancestrytrait;
-DROP TABLE IF EXISTS public.characters_speciesvariant;
-DROP TABLE IF EXISTS public.characters_species;
-DROP TABLE IF EXISTS public.characters_skill;
-DROP TABLE IF EXISTS public.characters_ruleproficiency;
-DROP TABLE IF EXISTS public.characters_ruleattribute;
-DROP TABLE IF EXISTS public.characters_profession_allowed_skills;
-DROP TABLE IF EXISTS public.characters_profession;
-DROP TABLE IF EXISTS public.characters_combatstyle_allowed_skills;
-DROP TABLE IF EXISTS public.characters_combatstyle;
-DROP TABLE IF EXISTS public.characters_charactertechnique;
-DROP TABLE IF EXISTS public.characters_characterskill;
-DROP TABLE IF EXISTS public.characters_characterruleexception;
-DROP TABLE IF EXISTS public.characters_characterproficiency;
-DROP TABLE IF EXISTS public.characters_characterfeature;
-DROP TABLE IF EXISTS public.characters_charactercreation_style_skills;
-DROP TABLE IF EXISTS public.characters_charactercreation_profession_skills;
-DROP TABLE IF EXISTS public.characters_charactercreation_mixed_species_origins;
-DROP TABLE IF EXISTS public.characters_charactercreation_free_skills;
-DROP TABLE IF EXISTS public.characters_charactercreation_background_skills;
-DROP TABLE IF EXISTS public.characters_charactercreation;
-DROP TABLE IF EXISTS public.characters_charactercondition;
-DROP TABLE IF EXISTS public.characters_characterattribute;
-DROP TABLE IF EXISTS public.characters_character;
-DROP TABLE IF EXISTS public.characters_background_allowed_skills;
-DROP TABLE IF EXISTS public.characters_background;
-DROP TABLE IF EXISTS public.campaigns_campaign_players;
-DROP TABLE IF EXISTS public.campaigns_campaign;
-DROP TABLE IF EXISTS public.auth_permission;
-DROP TABLE IF EXISTS public.auth_group_permissions;
-DROP TABLE IF EXISTS public.auth_group;
-DROP TABLE IF EXISTS public.audio_panel_audioasset;
-DROP TABLE IF EXISTS public.accounts_user_user_permissions;
-DROP TABLE IF EXISTS public.accounts_user_groups;
-DROP TABLE IF EXISTS public.accounts_user;
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -1195,13 +813,19 @@ CREATE TABLE public.characters_charactertechnique (
     action_type character varying(20) NOT NULL,
     range_text character varying(100) NOT NULL,
     damage_text character varying(150) NOT NULL,
-    cost character varying(100) NOT NULL,
     is_available boolean NOT NULL,
     is_featured boolean NOT NULL,
     sort_order smallint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     character_id bigint NOT NULL,
+    attribute_modifier character varying(20) NOT NULL,
+    category character varying(20) NOT NULL,
+    damage_die character varying(40) NOT NULL,
+    power_points_cost smallint NOT NULL,
+    required_weapon_type character varying(100) NOT NULL,
+    technique_type character varying(20) NOT NULL,
+    CONSTRAINT characters_charactertechnique_power_points_cost_check CHECK ((power_points_cost >= 0)),
     CONSTRAINT characters_charactertechnique_sort_order_check CHECK ((sort_order >= 0))
 );
 
@@ -1212,6 +836,41 @@ CREATE TABLE public.characters_charactertechnique (
 
 ALTER TABLE public.characters_charactertechnique ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
     SEQUENCE NAME public.characters_charactertechnique_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterweapon; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterweapon (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    range_text character varying(100) NOT NULL,
+    damage_die character varying(40) NOT NULL,
+    attribute_modifier character varying(20) NOT NULL,
+    weapon_type character varying(100) NOT NULL,
+    is_available boolean NOT NULL,
+    sort_order smallint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    character_id bigint NOT NULL,
+    is_proficient boolean NOT NULL,
+    CONSTRAINT characters_characterweapon_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: characters_characterweapon_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterweapon ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterweapon_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -2279,12 +1938,12 @@ ALTER TABLE public.ships_ship ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTI
 COPY public.accounts_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, role) FROM stdin;
 3	pbkdf2_sha256$1000000$GfUce5sxhX9zcCdR4TVmle$jlGzYoWYxEyiUyMydGK6sjd5ksow6wWEoRAlECkogdE=	2026-07-18 20:57:15.520617+00	f	lucas				f	t	2026-07-18 20:51:26+00	player
 5	pbkdf2_sha256$1000000$wHfyWIi66lN5OkOudEZSx8$CCjzrurafl2fHy/KBY0p2CoY/OITHuqEQFtavfxarA0=	2026-07-18 20:57:22.974535+00	f	maria				f	t	2026-07-18 20:53:27+00	player
-4	pbkdf2_sha256$1000000$ze08zwshKbaje5z05e22vk$UaF/qrYKrHA+udI8IvFvShHMs/199X572uJFjQlL9NM=	2026-07-18 20:57:41.003214+00	f	bernardo				f	t	2026-07-18 20:51:54+00	player
 2	pbkdf2_sha256$1000000$M8OrsCD4pdM9jA9LulXZ6E$RM4/AX2nhhfaWM9o4I/ol5WcPOuCxz3u/AKtkTfCIhk=	2026-07-18 21:02:11.625634+00	t	mestre				t	t	2026-07-18 20:50:06.412087+00	
-6	pbkdf2_sha256$1000000$2B9WQayLCrDoZgxe5631wa$7JQIUWY+OQO5hrLVdpmzPni9CGX8OLeevRxLoqgqVC8=	2026-07-18 21:34:47.413897+00	f	danielly				f	t	2026-07-18 20:57:27+00	player
-1	pbkdf2_sha256$1000000$jHlsiVRu0EEYrbQCGps3gp$Qc8p6Jwt26mBrsES7zUNUPJ0B/14cyogfv84GcRiey4=	2026-07-18 22:20:59.986229+00	t	diogo			diogo@example.test	t	t	2026-07-18 20:00:36+00	master
 8	pbkdf2_sha256$1000000$pajhDaEFmZP84bYGbjycko$ZX71BA85tPbqjQgYL3UgTyg1VGDGOyBWIOpV8dzGDR8=	2026-07-18 22:24:56.5094+00	f	luisa				f	t	2026-07-18 20:58:47+00	player
 7	pbkdf2_sha256$1000000$yFNQQAuRf2OClwO0aBtkle$9EJICRsOzv7SWO8epIqOdEszE4GiFDfS9/cUBhjy/xE=	2026-07-18 22:52:21.10173+00	f	kaiky				f	t	2026-07-18 20:58:29+00	player
+1	pbkdf2_sha256$1000000$jHlsiVRu0EEYrbQCGps3gp$Qc8p6Jwt26mBrsES7zUNUPJ0B/14cyogfv84GcRiey4=	2026-07-20 21:23:41.987033+00	t	diogo			diogo@example.test	t	t	2026-07-18 20:00:36+00	master
+4	pbkdf2_sha256$1000000$ze08zwshKbaje5z05e22vk$UaF/qrYKrHA+udI8IvFvShHMs/199X572uJFjQlL9NM=	2026-07-20 21:41:49.152233+00	f	bernardo				f	t	2026-07-18 20:51:54+00	player
+6	pbkdf2_sha256$1000000$2B9WQayLCrDoZgxe5631wa$7JQIUWY+OQO5hrLVdpmzPni9CGX8OLeevRxLoqgqVC8=	2026-07-20 22:19:02.719606+00	f	danielly				f	t	2026-07-18 20:57:27+00	player
 \.
 
 
@@ -2497,6 +2156,10 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 162	Can change audio asset	41	change_audioasset
 163	Can delete audio asset	41	delete_audioasset
 164	Can view audio asset	41	view_audioasset
+165	Can add character weapon	42	add_characterweapon
+166	Can change character weapon	42	change_characterweapon
+167	Can delete character weapon	42	delete_characterweapon
+168	Can view character weapon	42	view_characterweapon
 \.
 
 
@@ -2977,7 +2640,20 @@ COPY public.characters_characterskill (id, is_proficient, is_expert, custom_bonu
 -- Data for Name: characters_charactertechnique; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.characters_charactertechnique (id, name, description, action_type, range_text, damage_text, cost, is_available, is_featured, sort_order, created_at, updated_at, character_id) FROM stdin;
+COPY public.characters_charactertechnique (id, name, description, action_type, range_text, damage_text, is_available, is_featured, sort_order, created_at, updated_at, character_id, attribute_modifier, category, damage_die, power_points_cost, required_weapon_type, technique_type) FROM stdin;
+2	Ataque Desarmado	Atinge o inimigo com um golpe desarmado.	action	1m	1d4 + Modificador de Força	t	f	0	2026-07-20 21:41:35.176074+00	2026-07-20 21:41:35.176084+00	2	strength	attack	1d4	0	Nenhuma	unarmed
+3	Ataque Desarmado	Usa garra para golpear o inimigo.	action	1m	1d6 + Modificador de Força	t	f	0	2026-07-20 22:05:02.336988+00	2026-07-20 22:05:02.337+00	7	strength	attack	1d6	0	Nenhuma	unarmed
+4	Ponto Cruz	Ataque poderoso que costura o inimigo com eletricidade, deixando-o na condição de agarrado.\r\n\r\nO inimigo deve realizar uma salvaguarda de força CD 14.	action	2m	1d10 + Dado da Arma + Modificador de Destreza	t	f	0	2026-07-20 22:09:08.482492+00	2026-07-20 22:28:11.73729+00	7	dexterity	attack	1d10	2	Rapieira	combat
+\.
+
+
+--
+-- Data for Name: characters_characterweapon; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterweapon (id, name, range_text, damage_die, attribute_modifier, weapon_type, is_available, sort_order, created_at, updated_at, character_id, is_proficient) FROM stdin;
+1	Tridente de Pérolas	2m	1d10	strength	Tridente	t	0	2026-07-20 21:50:50.801907+00	2026-07-20 21:58:04.416962+00	2	t
+2	Agulha Gigante	1,2m	1d8	dexterity	Rapieira	t	0	2026-07-20 22:02:07.709151+00	2026-07-20 22:02:07.709162+00	7	t
 \.
 
 
@@ -3409,6 +3085,14 @@ COPY public.django_admin_log (id, action_time, object_id, object_repr, action_fl
 30	2026-07-18 22:27:21.956966+00	1	Kuro	2	[{"changed": {"fields": ["CR"]}}]	8	1
 31	2026-07-18 22:38:22.362588+00	3	Sora	2	[{"changed": {"fields": ["PP m\\u00e1ximo", "PP atual"]}}]	8	1
 32	2026-07-18 22:42:50.570038+00	8	Antonie Dorian Grey	2	[{"changed": {"fields": ["PV m\\u00e1ximo", "PV atual"]}}]	8	1
+33	2026-07-20 21:41:35.178714+00	2	CharacterTechnique object (2)	1	[{"added": {}}]	12	1
+34	2026-07-20 21:50:50.803486+00	1	Tridente de Pérolas	1	[{"added": {}}]	42	1
+35	2026-07-20 21:58:04.41784+00	1	Tridente de Pérolas	2	[{"changed": {"fields": ["Proficiente"]}}]	42	1
+36	2026-07-20 22:02:07.710704+00	2	Agulha Gigante	1	[{"added": {}}]	42	1
+37	2026-07-20 22:05:02.338382+00	3	CharacterTechnique object (3)	1	[{"added": {}}]	12	1
+38	2026-07-20 22:09:08.483705+00	4	CharacterTechnique object (4)	1	[{"added": {}}]	12	1
+39	2026-07-20 22:20:25.989389+00	4	CharacterTechnique object (4)	2	[{"changed": {"fields": ["Modificador de atributo"]}}]	12	1
+40	2026-07-20 22:28:11.738275+00	4	CharacterTechnique object (4)	2	[{"changed": {"fields": ["Name", "Description", "Damage text", "Dado de dano/cura", "PP para uso", "Tipo de t\\u00e9cnica"]}}]	12	1
 \.
 
 
@@ -3458,6 +3142,7 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 39	combat	combatnote
 40	combat	hpchange
 41	audio_panel	audioasset
+42	characters	characterweapon
 \.
 
 
@@ -3505,6 +3190,9 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 37	ships	0001_initial	2026-07-18 20:00:31.271281+00
 38	ships	0002_rename_ships_ship_campaig_6f18bc_idx_ships_ship_campaig_7859b9_idx	2026-07-18 20:00:31.309182+00
 39	ships	0003_alter_ship_options_and_more	2026-07-18 20:00:31.578437+00
+40	characters	0006_charactertechnique_attribute_modifier_and_more	2026-07-20 21:24:18.387664+00
+41	characters	0007_remove_charactertechnique_cost	2026-07-20 21:41:31.263902+00
+42	characters	0008_characterweapon_is_proficient	2026-07-20 21:57:59.806499+00
 \.
 
 
@@ -3525,6 +3213,8 @@ p0h8w1ep23g5h5ztxpu1io0fhyhgt646	.eJxVjDEOwjAMRe-SGUUB0jhmZO8ZIttxSQGlUtNOiLtDpQ
 1dnkvhbeowdggr32istj8watndiqf5lz	.eJxVjMsOwiAQRf-FtSFQGGBcuvcbyPCSqoGktCvjv2uTLnR7zzn3xTxta_XbyIufEzszyU6_W6D4yG0H6U7t1nnsbV3mwHeFH3Twa0_5eTncv4NKo35rZ0DZoBVCButSFJiEKeAcYjBTzGAmsloZLS0KykoWKIICRhkloJbs_QG3pTbM:1wlDP2:7Gf08sFRIQTRAyipjrGilruH2_MJUky0lzbp0Iz5kqU	2026-07-19 04:21:00.118934+00
 upk5u9i0bf86xwb7ihs8c4vuv65w21mc	.eJxVjDEOwjAMRe-SGUUB0jhmZO8ZIttxSQGlUtNOiLtDpQ6w_vfef5lE61LS2nROYzYXE83hd2OSh9YN5DvV22Rlqss8st0Uu9Nm-ynr87q7fweFWvnWQRyKHIE6L6i-c6czAqsGJDcwKToHkbMOwFEyhRiZkQAygBChN-8P_Gk43w:1wlDSq:qLPpMOrPmOhSG5Rvuvw01-L7dKExkmbs9xM_jN30HA0	2026-07-19 04:24:56.580001+00
 6c9ezlu18q5n79jow8vkufz3g960xp8l	.eJxVjMEOwiAQBf-FsyHAQgGP3v0GwgIrVQNJaU_Gf9cmPej1zcx7sRC3tYZtlCXMmZ2ZZaffDWN6lLaDfI_t1nnqbV1m5LvCDzr4tefyvBzu30GNo35roJyMSUjaeUuT0wk0KiE9ARgQFpQ2QmLJjiQpzEapVCwSeMAJomXvD95xN6g:1wlDtN:qYuNCGdxBeonmoJXTLh7pxbBZKXJnU0pEm95EdD_Mmw	2026-07-19 04:52:21.187069+00
+f5ad503kq7rx3r4msdgo6y91v4qyop59	.eJxVjMsOwiAQRf-FtSFQGGBcuvcbyPCSqoGktCvjv2uTLnR7zzn3xTxta_XbyIufEzszyU6_W6D4yG0H6U7t1nnsbV3mwHeFH3Twa0_5eTncv4NKo35rZ0DZoBVCButSFJiEKeAcYjBTzGAmsloZLS0KykoWKIICRhkloJbs_QG3pTbM:1wlvSf:yc7iH0Hwo4C4FTOWqgAVM1Z-5tE6UZwBaDydDBrHb5w	2026-07-21 03:23:41.988332+00
+z13sdt6kww3k09am1dt1o4quwc9gtj2h	.eJxVjMsOgjAQAP-lZ9OwS58evfMNzba7WNRAQuFk_HdDwkGvM5N5q0T7VtPeZE0Tq6ty6vLLMpWnzIfgB833RZdl3tYp6yPRp216WFhet7P9G1Rq9dia3loyBZhsNB2MRqIFFvQBLcLoXIgQOSOKG9Ghj8Fjn4k7ALEG1ecLuUg2iw:1wlwKE:FW1ofqstgtRNrzU4Bje71yGwEY4PvbCX4nV9KFcpPEg	2026-07-21 04:19:02.757825+00
 \.
 
 
@@ -3703,7 +3393,7 @@ SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.auth_permission_id_seq', 164, true);
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 168, true);
 
 
 --
@@ -3829,7 +3519,14 @@ SELECT pg_catalog.setval('public.characters_characterskill_id_seq', 60, true);
 -- Name: characters_charactertechnique_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.characters_charactertechnique_id_seq', 1, false);
+SELECT pg_catalog.setval('public.characters_charactertechnique_id_seq', 4, true);
+
+
+--
+-- Name: characters_characterweapon_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterweapon_id_seq', 2, true);
 
 
 --
@@ -3934,21 +3631,21 @@ SELECT pg_catalog.setval('public.combat_hpchange_id_seq', 1, false);
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 32, true);
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 40, true);
 
 
 --
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.django_content_type_id_seq', 41, true);
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 42, true);
 
 
 --
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 39, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 42, true);
 
 
 --
@@ -4361,6 +4058,14 @@ ALTER TABLE ONLY public.characters_characterskill
 
 ALTER TABLE ONLY public.characters_charactertechnique
     ADD CONSTRAINT characters_charactertechnique_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterweapon characters_characterweapon_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterweapon
+    ADD CONSTRAINT characters_characterweapon_pkey PRIMARY KEY (id);
 
 
 --
@@ -4933,6 +4638,13 @@ CREATE INDEX characters__campaig_ad3c95_idx ON public.characters_character USING
 
 
 --
+-- Name: characters__charact_bb9a0b_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters__charact_bb9a0b_idx ON public.characters_characterweapon USING btree (character_id, is_available, weapon_type);
+
+
+--
 -- Name: characters_background_allowed_skills_background_id_dd45f90e; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5224,6 +4936,20 @@ CREATE INDEX characters_characterskill_skill_id_4e360f73 ON public.characters_ch
 --
 
 CREATE INDEX characters_charactertechnique_character_id_47775325 ON public.characters_charactertechnique USING btree (character_id);
+
+
+--
+-- Name: characters_characterweapon_character_id_3adae368; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterweapon_character_id_3adae368 ON public.characters_characterweapon USING btree (character_id);
+
+
+--
+-- Name: characters_characterweapon_is_available_c2176f15; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterweapon_is_available_c2176f15 ON public.characters_characterweapon USING btree (is_available);
 
 
 --
@@ -5965,7 +5691,7 @@ CREATE INDEX ships_ship_campaign_id_2fd61bc8 ON public.ships_ship USING btree (c
 -- Name: unique_active_character_creation_per_campaign_user; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX unique_active_character_creation_per_campaign_user ON public.characters_charactercreation USING btree (campaign_id, user_id) WHERE ((status)::text = ANY ((ARRAY['draft'::character varying, 'ready'::character varying, 'reopened'::character varying])::text[]));
+CREATE UNIQUE INDEX unique_active_character_creation_per_campaign_user ON public.characters_charactercreation USING btree (campaign_id, user_id) WHERE ((status)::text = ANY (ARRAY[('draft'::character varying)::text, ('ready'::character varying)::text, ('reopened'::character varying)::text]));
 
 
 --
@@ -6102,6 +5828,14 @@ ALTER TABLE ONLY public.characters_character
 
 ALTER TABLE ONLY public.characters_characterskill
     ADD CONSTRAINT characters_character_character_id_296af121_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterweapon characters_character_character_id_3adae368_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterweapon
+    ADD CONSTRAINT characters_character_character_id_3adae368_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
