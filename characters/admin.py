@@ -10,6 +10,7 @@ from .models import (
     CharacterRuleException,
     CharacterSkill,
     CharacterTechnique,
+    CharacterWeapon,
     CombatStyle,
     Profession,
     RuleAttribute,
@@ -23,10 +24,11 @@ from .models import (
 
 class SkillInline(admin.TabularInline): model=CharacterSkill; extra=0; autocomplete_fields=('skill',)
 class AttributeInline(admin.TabularInline): model=CharacterAttribute; extra=0; readonly_fields=('final_value',)
+class WeaponInline(admin.StackedInline): model=CharacterWeapon; extra=0
 class TechniqueInline(admin.StackedInline): model=CharacterTechnique; extra=0
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    list_display=('name','campaign','user','level','species','combat_style','profession','current_hp','current_power_points'); list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available'); search_fields=('name','user__username','campaign__name','species','profession','combat_style'); autocomplete_fields=('campaign','user'); list_select_related=('campaign','user'); readonly_fields=('created_at','updated_at'); inlines=(AttributeInline,SkillInline,TechniqueInline,)
+    list_display=('name','campaign','user','level','species','combat_style','profession','current_hp','current_power_points'); list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available'); search_fields=('name','user__username','campaign__name','species','profession','combat_style'); autocomplete_fields=('campaign','user'); list_select_related=('campaign','user'); readonly_fields=('created_at','updated_at'); inlines=(AttributeInline,SkillInline,WeaponInline,TechniqueInline,)
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin): search_fields=('name','slug'); list_filter=('related_attribute','is_active'); prepopulated_fields={'slug':('name',)}
@@ -82,4 +84,19 @@ class CharacterProficiencyAdmin(admin.ModelAdmin):
 class CharacterRuleExceptionAdmin(admin.ModelAdmin):
     list_display=('creation','user','ignored_rule','created_at'); list_filter=('ignored_rule','created_at'); search_fields=('creation__name','user__username','ignored_rule','justification'); autocomplete_fields=('creation','user'); readonly_fields=('created_at',)
 
-for model in (CharacterSkill,CharacterTechnique,CharacterFeature,CharacterCondition): admin.site.register(model)
+@admin.register(CharacterWeapon)
+class CharacterWeaponAdmin(admin.ModelAdmin):
+    list_display=('name','character','weapon_type','range_text','damage_die','attribute_modifier','is_available')
+    list_filter=('weapon_type','attribute_modifier','is_available')
+    search_fields=('name','character__name','weapon_type')
+    autocomplete_fields=('character',)
+
+@admin.register(CharacterTechnique)
+class CharacterTechniqueAdmin(admin.ModelAdmin):
+    list_display=('name','character','category','technique_type','required_weapon_type','range_text','damage_die','power_points_cost','is_available')
+    list_filter=('category','technique_type','required_weapon_type','attribute_modifier','is_available')
+    search_fields=('name','character__name','required_weapon_type','description')
+    autocomplete_fields=('character',)
+    def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
+
+for model in (CharacterSkill,CharacterFeature,CharacterCondition): admin.site.register(model)

@@ -1,6 +1,6 @@
 import re
 
-from .models import CANONICAL_ATTRIBUTES, Skill
+from .models import CANONICAL_ATTRIBUTES, CharacterTechnique, Skill
 
 
 ATTRIBUTE_LABELS = dict(CANONICAL_ATTRIBUTES) | {
@@ -53,42 +53,19 @@ def printable_skill_rows(character):
 
 
 def printable_attack_rows(character):
-    rows = [
-        {
-            "name": "Ataque corpo a corpo",
-            "attribute": "Força",
-            "die": "Conforme arma",
-            "attack_modifier": signed(character.strength_modifier + character.proficiency_bonus),
-            "damage_modifier": signed(character.strength_modifier),
-            "notes": "Some proficiência ao ataque apenas quando o personagem for proficiente com a arma.",
-        },
-        {
-            "name": "Ataque à distância",
-            "attribute": "Destreza",
-            "die": "Conforme arma",
-            "attack_modifier": signed(character.dexterity_modifier + character.proficiency_bonus),
-            "damage_modifier": signed(character.dexterity_modifier),
-            "notes": "Armas com arremesso podem usar Força conforme a regra da arma.",
-        },
-        {
-            "name": "Arma com acuidade",
-            "attribute": "Força ou Destreza",
-            "die": "Conforme arma",
-            "attack_modifier": "melhor atributo + prof.",
-            "damage_modifier": "melhor atributo",
-            "notes": "Use Força ou Destreza, respeitando a arma e a proficiência do personagem.",
-        },
-    ]
-    weapon_proficiencies = character.rule_proficiencies.filter(proficiency__category="weapon").select_related("proficiency")
-    for character_proficiency in weapon_proficiencies:
+    rows = []
+    for weapon in character.weapons.filter(is_available=True).order_by("sort_order", "name"):
+        modifier = character.attribute_modifier(weapon.attribute_modifier)
         rows.append(
             {
-                "name": character_proficiency.proficiency.name,
-                "attribute": "Conforme arma",
-                "die": "Conforme arma",
-                "attack_modifier": f"atributo {signed(character.proficiency_bonus)} prof.",
-                "damage_modifier": "atributo",
-                "notes": "Proficiência de arma cadastrada para o personagem.",
+                "name": f"Ataque básico: {weapon.name}",
+                "attribute": ATTRIBUTE_LABELS.get(weapon.attribute_modifier, weapon.get_attribute_modifier_display()),
+                "range": weapon.range_text or "-",
+                "die": weapon.damage_die or "Conforme arma",
+                "modifier": signed(modifier),
+                "result_label": "Dano",
+                "formula": f"{weapon.damage_die or 'dado da arma'} {signed(modifier)}",
+                "notes": f"Tipo da arma: {weapon.weapon_type}. Some proficiência ao ataque apenas se houver proficiência com a arma.",
             }
         )
     return rows
@@ -107,22 +84,75 @@ def printable_technique_rows(character):
     rows = []
     techniques = character.techniques.filter(is_available=True).order_by("sort_order", "name")
     for technique in techniques:
-        die, modifier = split_damage_text(technique.damage_text)
-        rows.append(
-            {
-                "name": technique.name,
-                "action": technique.get_action_type_display(),
-                "attribute": "Conforme técnica",
-                "die": die,
-                "attack_modifier": "Conforme técnica",
-                "damage_modifier": modifier,
-                "range": technique.range_text or "-",
-                "cost": technique.cost or "-",
-                "description": technique.description,
-                "damage": technique.damage_text,
-            }
-        )
+        matching_weapons = character.weapons.filter(is_available=True, weapon_type=technique.required_weapon_type).order_by("sort_order", "name") if technique.required_weapon_type else []
+        weapon = next(iter(matching_weapons), None)
+        row = printable_technique_row(character, technique, weapon)
+        row["matching_weapons"] = ", ".join(w.name for w in matching_weapons) if matching_weapons else "-"
+        rows.append(row)
     return rows
+
+
+def printable_technique_row(character, technique, weapon=None):
+    modifier_key = "strength" if technique.technique_type == CharacterTechnique.TechniqueType.UNARMED else technique.attribute_modifier
+    modifier = character.attribute_modifier(modifier_key)
+    modifier_label = signed(modifier)
+    technique_die = technique.damage_die or split_damage_text(technique.damage_text)[0]
+    weapon_die = weapon.damage_die if weapon else "dado da arma"
+    category_label = technique.get_category_display()
+    type_label = technique.get_technique_type_display()
+    result_label = "Dano"
+    if technique.category == CharacterTechnique.Category.SUPPORT and technique.technique_type == CharacterTechnique.TechniqueType.HEAL:
+        result_label = "Cura"
+    if technique.category == CharacterTechnique.Category.SUPPORT and technique.technique_type == CharacterTechnique.TechniqueType.BUFF:
+        result_label = "Buff"
+
+    if technique.technique_type == CharacterTechnique.TechniqueType.UNARMED:
+        die = technique_die
+        formula = f"{technique_die} {signed(character.strength_modifier)}"
+        attribute = "Força"
+        modifier_label = signed(character.strength_modifier)
+    elif technique.technique_type == CharacterTechnique.TechniqueType.BASIC:
+        die = weapon_die
+        formula = f"{weapon_die} {modifier_label}"
+        attribute = ATTRIBUTE_LABELS.get(technique.attribute_modifier, technique.get_attribute_modifier_display())
+    elif technique.technique_type == CharacterTechnique.TechniqueType.COMBAT:
+        die = f"{technique_die} + {weapon_die}"
+        formula = f"{technique_die} + {weapon_die} {modifier_label}"
+        attribute = ATTRIBUTE_LABELS.get(technique.attribute_modifier, technique.get_attribute_modifier_display())
+    elif technique.technique_type == CharacterTechnique.TechniqueType.BUFF:
+        die = technique_die
+        formula = f"({technique_die} {modifier_label}) / 2"
+        attribute = ATTRIBUTE_LABELS.get(technique.attribute_modifier, technique.get_attribute_modifier_display())
+    else:
+        die = technique_die
+        formula = f"{technique_die} {modifier_label}"
+        attribute = ATTRIBUTE_LABELS.get(technique.attribute_modifier, technique.get_attribute_modifier_display())
+
+    if technique.technique_type == CharacterTechnique.TechniqueType.BUFF:
+        notes = "O resultado dividido por 2 é registrado como bônus de modificador para quem recebeu o buff."
+    elif technique.technique_type == CharacterTechnique.TechniqueType.HEAL:
+        notes = "Use a mesma fórmula de ataque, mas aplique o resultado como cura."
+    else:
+        notes = "Some proficiência ao ataque apenas se a técnica ou arma permitir e o personagem for proficiente."
+
+    return {
+        "name": technique.name,
+        "action": technique.get_action_type_display(),
+        "category": category_label,
+        "technique_type": type_label,
+        "attribute": attribute,
+        "range": technique.range_text or "-",
+        "die": die,
+        "modifier": modifier_label,
+        "formula": formula,
+        "result_label": result_label,
+        "required_weapon_type": technique.required_weapon_type or "-",
+        "cost": technique.power_points_cost if technique.power_points_cost else "-",
+        "legacy_cost": technique.cost,
+        "description": technique.description,
+        "damage": technique.damage_text,
+        "notes": notes,
+    }
 
 
 def printable_feature_rows(character):

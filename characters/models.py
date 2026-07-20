@@ -77,12 +77,61 @@ class CharacterSkill(models.Model):
         if self.is_expert and not self.is_proficient: raise ValidationError({'is_expert':'Especialização exige proficiência.'})
     @property
     def final_bonus(self): return self.character.attribute_modifier(self.skill.related_attribute)+(self.character.proficiency_bonus if self.is_proficient else 0)+(self.character.proficiency_bonus if self.is_expert else 0)+(self.custom_bonus or 0)
+
+class CharacterWeapon(models.Model):
+    ATTRIBUTE_CHOICES=CANONICAL_ATTRIBUTES
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='weapons',db_index=True)
+    name=models.CharField('nome',max_length=150)
+    range_text=models.CharField('alcance',max_length=100,blank=True)
+    damage_die=models.CharField('dado de dano',max_length=40,blank=True)
+    attribute_modifier=models.CharField('modificador de atributo',max_length=20,choices=ATTRIBUTE_CHOICES,default='strength')
+    weapon_type=models.CharField('tipo da arma',max_length=100)
+    is_available=models.BooleanField('disponível',default=True,db_index=True)
+    sort_order=models.PositiveSmallIntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering=('sort_order','name')
+        indexes=[models.Index(fields=('character','is_available','weapon_type'))]
+    def __str__(self): return self.name
+    @property
+    def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
+
 class CharacterTechnique(models.Model):
     ACTIONS=[('action','Ação'),('bonus_action','Ação bônus'),('reaction','Reação'),('passive','Passiva'),('other','Outro')]
+    class Category(models.TextChoices):
+        ATTACK='attack','Ataque'
+        SUPPORT='support','Suporte'
+    class TechniqueType(models.TextChoices):
+        UNARMED='unarmed','Desarmado'
+        BASIC='basic','Básico'
+        INNATE='innate','Técnica inata'
+        COMBAT='combat','Técnica de combate'
+        BUFF='buff','Buff'
+        HEAL='heal','Cura'
+    ATTACK_TYPES=(TechniqueType.UNARMED,TechniqueType.BASIC,TechniqueType.INNATE,TechniqueType.COMBAT)
+    SUPPORT_TYPES=(TechniqueType.BUFF,TechniqueType.HEAL)
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='techniques',db_index=True); name=models.CharField(max_length=150); description=models.TextField(blank=True)
     action_type=models.CharField(max_length=20,choices=ACTIONS,default='action'); range_text=models.CharField(max_length=100,blank=True); damage_text=models.CharField(max_length=150,blank=True); cost=models.CharField(max_length=100,blank=True)
+    damage_die=models.CharField('dado de dano/cura',max_length=40,blank=True)
+    attribute_modifier=models.CharField('modificador de atributo',max_length=20,choices=CANONICAL_ATTRIBUTES,default='strength')
+    required_weapon_type=models.CharField('tipo de arma requerida',max_length=100,blank=True)
+    power_points_cost=models.PositiveSmallIntegerField('PP para uso',default=0)
+    category=models.CharField('categoria',max_length=20,choices=Category.choices,default=Category.ATTACK)
+    technique_type=models.CharField('tipo de técnica',max_length=20,choices=TechniqueType.choices,default=TechniqueType.INNATE)
     is_available=models.BooleanField(default=True); is_featured=models.BooleanField(default=False); sort_order=models.PositiveSmallIntegerField(default=0); created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
     class Meta: ordering=('sort_order','name')
+    def clean(self):
+        if self.category==self.Category.ATTACK and self.technique_type not in self.ATTACK_TYPES:
+            raise ValidationError({'technique_type':'Ataques aceitam apenas Desarmado, Básico, Técnica inata ou Técnica de combate.'})
+        if self.category==self.Category.SUPPORT and self.technique_type not in self.SUPPORT_TYPES:
+            raise ValidationError({'technique_type':'Suportes aceitam apenas Buff ou Cura.'})
+        if self.technique_type in (self.TechniqueType.BASIC,self.TechniqueType.COMBAT) and not self.required_weapon_type:
+            raise ValidationError({'required_weapon_type':'Informe o tipo de arma requerida para este tipo de técnica.'})
+    @property
+    def effective_damage_die(self): return self.damage_die or self.damage_text
+    @property
+    def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
 class CharacterFeature(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='features',db_index=True); name=models.CharField(max_length=150); description=models.TextField(blank=True); source=models.CharField(max_length=100,blank=True); is_available=models.BooleanField(default=True); sort_order=models.PositiveSmallIntegerField(default=0)
     class Meta: ordering=('sort_order','name')

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
@@ -6,10 +7,9 @@ from campaigns.models import Campaign
 from characters.models import (
     Character,
     CharacterCreation,
-    CharacterProficiency,
     CharacterSkill,
     CharacterTechnique,
-    RuleProficiency,
+    CharacterWeapon,
     Skill,
 )
 from inventory.models import InventoryItem
@@ -200,20 +200,37 @@ class PlayerCampaignFlowTests(TestCase):
         atletismo = Skill.objects.create(name="Atletismo", slug="atletismo", related_attribute="strength", sort_order=1)
         sobrevivencia = Skill.objects.create(name="Sobrevivência", slug="sobrevivencia", related_attribute="wisdom", sort_order=3)
         CharacterSkill.objects.create(character=character, skill=atletismo, is_proficient=True)
-        weapon = RuleProficiency.objects.create(
-            ruleset_version="player-book-1.5.7",
-            slug="arma-pistola",
+        CharacterWeapon.objects.create(
+            character=character,
             name="Pistola",
-            category=RuleProficiency.Category.WEAPON,
+            range_text="18 m",
+            damage_die="1d8",
+            attribute_modifier="dexterity",
+            weapon_type="Arma de Fogo",
         )
-        CharacterProficiency.objects.create(character=character, proficiency=weapon, source_type="test")
         CharacterTechnique.objects.create(
             character=character,
             name="Corte do Vento",
             description="Um corte rápido.",
             range_text="3 m",
+            damage_die="1d6",
             damage_text="1d6+2 de dano Cortante",
-            cost="1 PP",
+            attribute_modifier="strength",
+            required_weapon_type="Arma de Fogo",
+            power_points_cost=1,
+            category=CharacterTechnique.Category.ATTACK,
+            technique_type=CharacterTechnique.TechniqueType.COMBAT,
+        )
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Canção de Coragem",
+            description="Inspira um aliado.",
+            range_text="9 m",
+            damage_die="1d6",
+            attribute_modifier="presence",
+            power_points_cost=2,
+            category=CharacterTechnique.Category.SUPPORT,
+            technique_type=CharacterTechnique.TechniqueType.BUFF,
         )
         InventoryItem.objects.create(character=character, name="Clima-Tact", description="Não deve sair na impressão.", quantity=1)
 
@@ -233,14 +250,35 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertLess(response.content.index(b"Acrobacia"), response.content.index(b"Atletismo"))
         self.assertContains(response, "Ataques possíveis")
         self.assertContains(response, "Pistola")
+        self.assertContains(response, "Ataque básico: Pistola")
+        self.assertContains(response, "1d8 +1")
         self.assertContains(response, "Corte do Vento")
-        self.assertContains(response, "1d6")
-        self.assertContains(response, "+2")
-        self.assertContains(response, "Bônus ataque")
-        self.assertContains(response, "Bônus dano")
+        self.assertContains(response, "1d6 + 1d8 +2")
+        self.assertContains(response, "Canção de Coragem")
+        self.assertContains(response, "(1d6 +0) / 2")
+        self.assertContains(response, "O resultado dividido por 2")
         self.assertNotContains(response, "1d20")
         self.assertNotContains(response, "Inventário")
         self.assertNotContains(response, "Clima-Tact")
+
+    def test_technique_category_limits_available_types(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        technique = CharacterTechnique(
+            character=character,
+            name="Cura inválida",
+            category=CharacterTechnique.Category.SUPPORT,
+            technique_type=CharacterTechnique.TechniqueType.COMBAT,
+            required_weapon_type="Arma de Fogo",
+        )
+
+        with self.assertRaises(ValidationError):
+            technique.full_clean()
+
+        technique.category = CharacterTechnique.Category.ATTACK
+        technique.technique_type = CharacterTechnique.TechniqueType.COMBAT
+        technique.required_weapon_type = ""
+        with self.assertRaises(ValidationError):
+            technique.full_clean()
 
     def test_print_sheet_keeps_player_campaign_isolation(self):
         self.client.force_login(self.outsider)
