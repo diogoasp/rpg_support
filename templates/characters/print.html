@@ -83,11 +83,11 @@
       <h2>Testes e Perícias</h2>
       <table class="skill-table">
         <thead>
-          <tr><th>Perícia</th><th>Atributo referência</th><th>Proficiência</th><th>Bônus</th></tr>
+          <tr><th>Perícia</th><th>Descrição</th><th>Atributo referência</th><th>Proficiência</th><th>Bônus</th></tr>
         </thead>
         <tbody>
           {% for row in skill_rows %}
-            <tr><td>{{ row.name }}</td><td>{{ row.attribute }}</td><td>{{ row.proficiency }}</td><td>{{ row.bonus_label }}</td></tr>
+            <tr><td>{{ row.name }}</td><td>{{ row.description }}</td><td>{{ row.attribute }}</td><td>{{ row.proficiency }}</td><td>{{ row.bonus_label }}</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -95,14 +95,14 @@
 
     <section>
       <h2>Combate</h2>
-      <h3>Armas</h3>
+      <h3>Ataques possíveis</h3>
       <div class="combat-grid">
         {% for attack in attack_rows %}
           <div class="combat-card">
             <h3>{{ attack.name }}</h3>
             <div class="attack-test-box">
               <strong>Teste de ataque</strong>
-              {{ attack.attack_test }}
+              {{ attack.attack_test }} · Proficiência: {% if attack.is_proficient %}sim{% else %}não{% endif %}
             </div>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>{{ attack.attribute }}</span>

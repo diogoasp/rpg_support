@@ -8,6 +8,27 @@ ATTRIBUTE_LABELS = dict(CANONICAL_ATTRIBUTES) | {
     "charisma": "Carisma",
 }
 
+SKILL_DESCRIPTION_FALLBACKS = {
+    "Acrobacia": "Saltar obstáculos, manter equilíbrio e executar manobras corporais.",
+    "Atletismo": "Força física para correr, nadar, escalar, empurrar ou agarrar.",
+    "Atuação": "Performance, disfarce cênico, música, dança e presença artística.",
+    "Enganação": "Mentir, blefar, disfarçar intenções e sustentar falsas aparências.",
+    "Furtividade": "Mover-se sem ser notado, esconder-se e evitar vigilância.",
+    "Haki": "Uso e percepção de Haki quando a regra permitir esse tipo de teste.",
+    "História": "Conhecimento sobre eventos, povos, lugares, tradições e registros.",
+    "Intimidação": "Impor medo, pressão ou ameaça para influenciar alguém.",
+    "Intuição": "Ler intenções, emoções, mentiras e pressentir riscos sociais.",
+    "Investigação": "Analisar pistas, procurar detalhes e deduzir informações.",
+    "Natureza": "Conhecimento de clima, terreno, criaturas, plantas e fenômenos naturais.",
+    "Percepção": "Notar sons, movimentos, presenças, detalhes e perigos imediatos.",
+    "Persuasão": "Convencer, negociar, inspirar confiança e argumentar.",
+    "Prestidigitação": "Truques manuais, furtos discretos, manipulação fina e sabotagem leve.",
+    "Provocação": "Irritar, distrair, desafiar ou tirar alguém do eixo.",
+    "Sobrenatural": "Entender fenômenos, poderes e efeitos fora do comum.",
+    "Sobrevivência": "Rastrear, orientar-se, procurar abrigo, alimento e lidar com perigos naturais.",
+    "Sorte": "Resolver situações em que acaso e fortuna são o fator principal.",
+}
+
 
 def signed(value):
     value = int(value)
@@ -44,6 +65,7 @@ def printable_skill_rows(character):
             {
                 "name": skill.name,
                 "attribute": ATTRIBUTE_LABELS.get(skill.related_attribute, skill.get_related_attribute_display()),
+                "description": skill.description or SKILL_DESCRIPTION_FALLBACKS.get(skill.name, "-"),
                 "proficiency": "Especialista" if is_expert else ("Sim" if is_proficient else "Não"),
                 "bonus": bonus,
                 "bonus_label": signed(bonus),
