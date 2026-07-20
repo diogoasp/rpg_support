@@ -34,6 +34,14 @@ def update_validation_state(creation):
     return errors, pending
 
 
+def get_or_create_static_proficiency(creation, slug, name, category):
+    return RuleProficiency.objects.get_or_create(
+        ruleset_version=creation.ruleset_version,
+        slug=slug,
+        defaults={"name": name, "category": category},
+    )[0]
+
+
 def apply_catalog_proficiencies(character, creation):
     skill_sources = (
         ("estilo_de_combate", creation.combat_style_id, creation.style_skills.all()),
@@ -48,15 +56,30 @@ def apply_catalog_proficiencies(character, creation):
             CharacterSkill.objects.update_or_create(character=character, skill=skill, defaults={"is_proficient": True, "is_expert": False})
 
     for save in creation.combat_style.saving_throws:
-        proficiency = RuleProficiency.objects.get(ruleset_version=creation.ruleset_version, slug=f"salvaguarda-{save}")
+        proficiency = get_or_create_static_proficiency(
+            creation,
+            f"salvaguarda-{save}",
+            f"Salvaguarda de {save}",
+            RuleProficiency.Category.SAVING_THROW,
+        )
         add_character_proficiency(character, proficiency, "combat_style", creation.combat_style_id, 1, False)
 
     for weapon in creation.combat_style.weapon_proficiencies:
-        proficiency = RuleProficiency.objects.get(ruleset_version=creation.ruleset_version, slug=f"arma-{slugify(weapon)}")
+        proficiency = get_or_create_static_proficiency(
+            creation,
+            f"arma-{slugify(weapon)}",
+            weapon,
+            RuleProficiency.Category.WEAPON,
+        )
         add_character_proficiency(character, proficiency, "combat_style", creation.combat_style_id, 1, False)
 
     for kit in creation.combat_style.kit_proficiencies:
-        proficiency = RuleProficiency.objects.get(ruleset_version=creation.ruleset_version, slug=f"kit-{slugify(kit)}")
+        proficiency = get_or_create_static_proficiency(
+            creation,
+            f"kit-{slugify(kit)}",
+            kit,
+            RuleProficiency.Category.KIT,
+        )
         add_character_proficiency(character, proficiency, "combat_style", creation.combat_style_id, 1, False)
 
 
@@ -208,6 +231,8 @@ def confirm_creation(creation, actor=None):
     character.initiative = derived["initiative"]
     character.max_hp = derived["max_hp"]
     character.current_hp = derived["max_hp"]
+    character.max_power_points = derived["max_power_points"]
+    character.current_power_points = derived["max_power_points"]
     character.movement = int(creation.species_variant.overrides.get("movement", creation.species.movement) if creation.species_variant else creation.species.movement)
     character.age = creation.age
     character.height = creation.height

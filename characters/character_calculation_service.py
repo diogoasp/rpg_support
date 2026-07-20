@@ -60,6 +60,10 @@ def calculate_initial_hp(hit_die, constitution_modifier, species_base_hp, other_
     return max(1, int(hit_die) + int(constitution_modifier) + int(species_base_hp) + int(other_modifiers))
 
 
+def calculate_power_points(level, willpower_modifier, other_modifiers=0):
+    return max(0, int(level) + int(willpower_modifier) + int(other_modifiers))
+
+
 def calculate_resistance_class(dexterity_modifier, additive_bonus=0, substitute_formula=None):
     if substitute_formula is not None:
         return int(substitute_formula) + int(additive_bonus)
@@ -111,6 +115,7 @@ def preview_derived_values(creation):
     breakdowns = calculate_attribute_breakdowns(creation)
     dex_mod = calculate_attribute_modifier(breakdowns["dexterity"]["final_value"])
     con_mod = calculate_attribute_modifier(breakdowns["constitution"]["final_value"])
+    will_mod = calculate_attribute_modifier(breakdowns["willpower"]["final_value"])
     str_value = breakdowns["strength"]["final_value"]
     species_hp = 0
     if creation.species:
@@ -125,6 +130,7 @@ def preview_derived_values(creation):
         "attribute_rows": [{"key": key, "label": ATTRIBUTE_LABELS[key], **values} for key, values in breakdowns.items()],
         "proficiency_bonus": calculate_proficiency_bonus(1),
         "max_hp": calculate_initial_hp(hit_die, con_mod, species_hp),
+        "max_power_points": calculate_power_points(1, will_mod),
         "resistance_class": calculate_resistance_class(dex_mod),
         "initiative": calculate_initiative(dex_mod),
         "carrying_capacity": calculate_carrying_capacity(str_value),

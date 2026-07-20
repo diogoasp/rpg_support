@@ -81,8 +81,6 @@ class CharacterCreationSpeciesForm(forms.ModelForm):
         self.fields["marine_ancestry"].initial=ancestry_choices.get("marine_ancestry","")
     def clean(self):
         cleaned=super().clean()
-        species=cleaned.get("species")
-        variant=cleaned.get("species_variant")
         mode=cleaned.get("species_bonus_mode")
         primary=cleaned.get("species_bonus_primary")
         secondary=cleaned.get("species_bonus_secondary")
@@ -92,34 +90,12 @@ class CharacterCreationSpeciesForm(forms.ModelForm):
             self.add_error("species_bonus_primary","Escolha o atributo do bônus racial.")
         if mode=="plus1_plus1" and (not secondary or secondary==primary):
             self.add_error("species_bonus_secondary","Escolha um segundo atributo diferente.")
-        if species and species.slug=="mestico" and len(cleaned.get("mixed_species_origins") or [])!=2:
-            self.add_error("mixed_species_origins","Escolha exatamente duas origens para Mestiço.")
-        if species and "dial" in species.required_choices and not cleaned.get("dial_choice"):
-            self.add_error("dial_choice","Informe o dial inicial.")
-        if species and "ancestry" in species.required_choices:
-            if not cleaned.get("ancestry_text"):
-                self.add_error("ancestry_text","Informe a ancestralidade.")
-            has_trait=bool(common_traits or specific_traits or cleaned.get("predator_ancestry"))
-            if not has_trait and not (variant and "marine_ancestry" in variant.required_choices):
-                self.add_error("common_ancestry_traits","Escolha ao menos um traço de ancestralidade.")
         if common_traits and len(common_traits)>2:
             self.add_error("common_ancestry_traits","Escolha no máximo dois traços comuns.")
         if specific_traits and len(specific_traits)>1:
             self.add_error("specific_ancestry_traits","Escolha no máximo um traço específico.")
         if cleaned.get("predator_ancestry") and (common_traits or specific_traits):
             self.add_error("predator_ancestry","Predador substitui os demais traços de ancestralidade.")
-        if cleaned.get("predator_ancestry") and not cleaned.get("carnivore_hunter"):
-            self.add_error("carnivore_hunter","Predador exige ancestral carnívoro caçador ou autorização do mestre.")
-        if variant:
-            required=variant.required_choices or []
-            if "expert_skill" in required and not cleaned.get("expert_skill"):
-                self.add_error("expert_skill","Escolha a perícia com especialização.")
-            if "snake_name" in required and not cleaned.get("snake_name"):
-                self.add_error("snake_name","Informe o nome da Cobra Bélica.")
-            if "restricted_skill" in required and not cleaned.get("restricted_skill"):
-                self.add_error("restricted_skill","Escolha Haki, Sobrenatural ou Sorte.")
-            if "marine_ancestry" in required and not cleaned.get("marine_ancestry"):
-                self.add_error("marine_ancestry","Informe a ancestralidade marinha.")
         return cleaned
     def save(self,commit=True):
         instance=super().save(commit=False)

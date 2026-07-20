@@ -27,7 +27,7 @@ from .forms import (
     PlayerCharacterSheetForm,
     ResourceForm,
 )
-from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique
+from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique, Species
 from .services import add_character_condition, damage_character, deactivate_character_condition, heal_character, update_character_resources
 
 def rich_queryset():
@@ -123,7 +123,15 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
         if refresh_validation:
             update_validation_state(creation)
         step_items=[{'key':key,'label':CREATION_STEP_LABELS[key]} for key in CharacterCreation.STEPS]
-        return {'campaign':self.campaign,'creation':creation,'form':form,'step':step,'steps':CharacterCreation.STEPS,'step_items':step_items,'options':adaptive_options(creation),'preview':preview_derived_values(creation)}
+        species_variant_options={}
+        if step=='species':
+            species_variant_options={
+                str(species.pk): [{'id': variant.pk, 'name': variant.name} for variant in species.variants.filter(is_active=True)]
+                for species in Species.objects.filter(is_active=True).prefetch_related('variants')
+            }
+        return {'campaign':self.campaign,'creation':creation,'form':form,'step':step,'steps':CharacterCreation.STEPS,'step_items':step_items,'options':adaptive_options(creation),'preview':preview_derived_values(creation),'species_variant_options':species_variant_options}
+    def invalid_status(self):
+        return 200 if self.request.headers.get('HX-Request') else 422
     def get(self,request,*args,**kwargs):
         creation=self.creation(); step=self.step(creation)
         if step in ('pending','review'):
@@ -142,7 +150,7 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
                 creation.pending_choices=errors.get('pending_choices',[])
                 creation.save(update_fields=('validation_errors','pending_choices','updated_at'))
                 messages.error(request,'Não foi possível confirmar a ficha. Resolva as pendências destacadas abaixo.')
-                return render(request,self.template_name,self.context(creation,step='review',refresh_validation=False),status=422)
+                return render(request,self.template_name,self.context(creation,step='review',refresh_validation=False),status=self.invalid_status())
         form_class=CREATION_FORMS.get(step,CharacterCreationConceptForm); form=form_class(request.POST,instance=creation)
         if form.is_valid():
             creation=form.save()
@@ -154,7 +162,7 @@ class PlayerCharacterCreateView(PlayerRequiredMixin,View):
             if hasattr(form,'save_m2m'): form.save_m2m()
             update_validation_state(creation)
             return redirect(f"{request.path}?step={next_step}")
-        return render(request,self.template_name,self.context(creation,form=form,step=step),status=422)
+        return render(request,self.template_name,self.context(creation,form=form,step=step),status=self.invalid_status())
 
 def _next_step(step):
     try: return CharacterCreation.STEPS[min(CharacterCreation.STEPS.index(step)+1,len(CharacterCreation.STEPS)-1)]

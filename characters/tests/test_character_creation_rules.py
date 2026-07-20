@@ -16,6 +16,7 @@ from characters.character_calculation_service import (
     calculate_damage_bonus,
     calculate_initial_hp,
     calculate_initiative,
+    calculate_power_points,
     calculate_resistance_class,
     calculate_saving_throw,
     calculate_skill_bonus,
@@ -36,6 +37,7 @@ from characters.models import (
     CharacterRuleException,
     CombatStyle,
     Profession,
+    RuleProficiency,
     Skill,
     Species,
     SpeciesVariant,
@@ -137,6 +139,8 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(len(values), 6)
         self.assertEqual(len(rolls), 6)
         self.assertEqual(calculate_initial_hp(12, 2, 10), 24)
+        self.assertEqual(calculate_power_points(1, 1), 2)
+        self.assertEqual(calculate_power_points(1, -2), 0)
         self.assertEqual(calculate_resistance_class(3), 13)
         self.assertEqual(calculate_initiative(3), 3)
         self.assertEqual(calculate_carrying_capacity(15), 150)
@@ -247,6 +251,126 @@ class CharacterCreationRulesTests(TestCase):
         background_form.save()
         self.assertEqual(creation.background_attribute_bonuses, {"constitution": 2})
 
+    def test_mink_species_step_can_save_before_ancestry_is_complete(self):
+        user = User.objects.create_user("mink-draft", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        creation = get_or_create_draft(self.campaign, user)
+        mink = Species.objects.get(slug="mink")
+        robusto = SpeciesVariant.objects.get(slug="robusto")
+        species_form = CharacterCreationSpeciesForm(
+            {
+                "species": mink.pk,
+                "species_variant": robusto.pk,
+                "ancestry_text": "",
+                "mixed_species_origins": [],
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": "",
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
+                "species_bonus_mode": "plus2",
+                "species_bonus_primary": "dexterity",
+                "species_bonus_secondary": "",
+            },
+            instance=creation,
+        )
+        self.assertTrue(species_form.is_valid(), species_form.errors)
+        species_form.save()
+        creation.refresh_from_db()
+        self.assertEqual(creation.species, mink)
+        self.assertEqual(creation.species_variant, robusto)
+        errors, _ = validate_creation(creation, final=True)
+        self.assertIn("ancestry_text", errors)
+
+    def test_species_step_saves_mixed_humano_mink_origins(self):
+        user = User.objects.create_user("mixed-form", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        mestico = Species.objects.get(slug="mestico")
+        humano = Species.objects.get(slug="humano")
+        mink = Species.objects.get(slug="mink")
+        self.client.force_login(user)
+        response = self.client.post(
+            f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=species',
+            {
+                "step": "species",
+                "species": mestico.pk,
+                "species_variant": "",
+                "mixed_species_origins": [humano.pk, mink.pk],
+                "ancestry_text": "",
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": "",
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
+                "species_bonus_mode": "plus1_plus1",
+                "species_bonus_primary": "wisdom",
+                "species_bonus_secondary": "dexterity",
+                "next_step": "species",
+            },
+        )
+        self.assertRedirects(response, f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=species')
+        creation = CharacterCreation.objects.get(campaign=self.campaign, user=user)
+        self.assertEqual(creation.species, mestico)
+        self.assertEqual(set(creation.mixed_species_origins.values_list("slug", flat=True)), {"humano", "mink"})
+
+    def test_species_step_displays_form_errors(self):
+        user = User.objects.create_user("species-errors", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        mestico = Species.objects.get(slug="mestico")
+        self.client.force_login(user)
+        response = self.client.post(
+            f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=species',
+            {
+                "step": "species",
+                "species": mestico.pk,
+                "species_variant": "",
+                "mixed_species_origins": [],
+                "ancestry_text": "",
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": "",
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
+                "species_bonus_mode": "plus2",
+                "species_bonus_primary": "",
+                "species_bonus_secondary": "",
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertContains(response, "Não foi possível salvar esta etapa", status_code=422)
+        self.assertContains(response, "Primeiro atributo", status_code=422)
+
+        response = self.client.post(
+            f'{reverse("characters:create", kwargs={"slug": self.campaign.slug})}?step=species',
+            {
+                "step": "species",
+                "species": mestico.pk,
+                "species_variant": "",
+                "mixed_species_origins": [],
+                "ancestry_text": "",
+                "common_ancestry_traits": [],
+                "specific_ancestry_traits": [],
+                "dial_choice": "",
+                "expert_skill": "",
+                "snake_name": "",
+                "restricted_skill": "",
+                "marine_ancestry": "",
+                "species_bonus_mode": "plus2",
+                "species_bonus_primary": "",
+                "species_bonus_secondary": "",
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Não foi possível salvar esta etapa")
+        self.assertContains(response, "Primeiro atributo")
+
     def test_no_profession_blocks_subprofession_and_forbidden_skills(self):
         creation = get_or_create_draft(self.campaign, self.player)
         fill_creation(creation, profession="sem-profissao")
@@ -273,6 +397,8 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(character.willpower, 10)
         self.assertEqual(character.presence, 8)
         self.assertEqual(character.max_hp, 24)
+        self.assertEqual(character.max_power_points, 1)
+        self.assertEqual(character.current_power_points, 1)
         self.assertEqual(character.age, "19")
         self.assertEqual(character.height, "1,72 m")
         self.assertEqual(character.weight, "62 kg")
@@ -280,6 +406,19 @@ class CharacterCreationRulesTests(TestCase):
         self.assertEqual(character.attribute_breakdowns.count(), 6)
         self.assertGreater(character.rule_proficiencies.count(), 0)
         self.assertTrue(character.inventory_items.filter(name__icontains="mochila").exists())
+
+    def test_confirmation_creates_missing_static_rule_proficiencies(self):
+        user = User.objects.create_user("missing-static-prof", role=User.Role.PLAYER)
+        self.campaign.players.add(user)
+        creation = fill_creation(get_or_create_draft(self.campaign, user), style="espadachim", profession="arqueologo", background="familia-d")
+        creation.combat_style.weapon_proficiencies = ["Armas Cortantes", "Armas Perfurantes"]
+        creation.combat_style.save(update_fields=("weapon_proficiencies",))
+        RuleProficiency.objects.filter(ruleset_version=creation.ruleset_version, slug="arma-armas-perfurantes").delete()
+
+        character = confirm_creation(creation)
+
+        self.assertTrue(RuleProficiency.objects.filter(ruleset_version=creation.ruleset_version, slug="arma-armas-perfurantes").exists())
+        self.assertTrue(character.rule_proficiencies.filter(proficiency__slug="arma-armas-perfurantes").exists())
 
     def test_species_variant_effects_are_applied_to_final_sheet(self):
         human_user = User.objects.create_user("humanozarrao", role=User.Role.PLAYER)

@@ -51,6 +51,21 @@
         <form method="post" class="paper-panel" hx-post="{{ request.path }}?step={{ step }}" hx-target="body" hx-swap="outerHTML">
           {% csrf_token %}
           <input type="hidden" name="step" value="{{ step }}">
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              <strong>Não foi possível salvar esta etapa.</strong>
+              <ul class="mb-0">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
           {% if step == "attributes" %}
             <div class="alert alert-info" id="attribute-budget" data-total="72">
               Distribua 72 pontos entre os atributos. Cada valor base deve ficar entre 8 e 15 antes dos bônus.
@@ -82,6 +97,43 @@
 </section>
 {% endblock %}
 {% block extra_scripts %}
+{% if step == "species" %}
+{{ species_variant_options|json_script:"species-variant-options" }}
+<script>
+  (() => {
+    const dataElement = document.querySelector("#species-variant-options");
+    const speciesSelect = document.querySelector("#id_species");
+    const variantSelect = document.querySelector("#id_species_variant");
+    if (!dataElement || !speciesSelect || !variantSelect) return;
+
+    const variantsBySpecies = JSON.parse(dataElement.textContent);
+    const variantRow = variantSelect.closest("p");
+    const placeholder = variantSelect.querySelector('option[value=""]')?.textContent || "---------";
+
+    const addOption = (value, label) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      variantSelect.appendChild(option);
+    };
+
+    const renderVariants = (preserveSelection) => {
+      const selectedValue = preserveSelection ? variantSelect.value : "";
+      const variants = variantsBySpecies[String(speciesSelect.value)] || [];
+      variantSelect.textContent = "";
+      addOption("", placeholder);
+      variants.forEach((variant) => addOption(String(variant.id), variant.name));
+      const stillAvailable = variants.some((variant) => String(variant.id) === selectedValue);
+      variantSelect.value = stillAvailable ? selectedValue : "";
+      variantSelect.disabled = variants.length === 0;
+      if (variantRow) variantRow.classList.toggle("d-none", variants.length === 0);
+    };
+
+    renderVariants(true);
+    speciesSelect.addEventListener("change", () => renderVariants(false));
+  })();
+</script>
+{% endif %}
 {% if step == "attributes" %}
 <script>
   (() => {
