@@ -70,11 +70,20 @@ class Skill(models.Model):
     class Meta: ordering=('sort_order','name')
     def __str__(self): return self.name
 class CharacterSkill(models.Model):
-    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='skills',db_index=True); skill=models.ForeignKey(Skill,on_delete=models.PROTECT)
-    is_proficient=models.BooleanField(default=False); is_expert=models.BooleanField(default=False); custom_bonus=models.SmallIntegerField(null=True,blank=True)
-    class Meta: constraints=[models.UniqueConstraint(fields=('character','skill'),name='unique_character_skill')]
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='skills',db_index=True)
+    skill=models.ForeignKey(Skill,on_delete=models.PROTECT)
+    is_proficient=models.BooleanField(default=False)
+    is_expert=models.BooleanField(default=False)
+    custom_bonus=models.SmallIntegerField(null=True,blank=True)
+    
+    class Meta: 
+        constraints=[models.UniqueConstraint(fields=('character','skill'),name='unique_character_skill')]
+    
+    def __str__(self): return f"{self.character.name} - {self.skill.name}"
+
     def clean(self):
         if self.is_expert and not self.is_proficient: raise ValidationError({'is_expert':'Especialização exige proficiência.'})
+    
     @property
     def final_bonus(self): return self.character.attribute_modifier(self.skill.related_attribute)+(self.character.proficiency_bonus if self.is_proficient else 0)+(self.character.proficiency_bonus if self.is_expert else 0)+(self.custom_bonus or 0)
 
