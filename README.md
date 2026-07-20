@@ -116,6 +116,12 @@ Para rodar apenas o catálogo do Livro do Jogador:
 make seed-player-book
 ```
 
+Para reaplicar o estado atual do banco como seed completo a partir do dump SQL gerado no repositório:
+
+```bash
+make seed-complete
+```
+
 O jogador inicia a criação pela seleção de campanha no painel e acessa:
 
 ```text

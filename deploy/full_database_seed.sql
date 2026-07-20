@@ -1,0 +1,6598 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.4
+-- Dumped by pg_dump version 16.4
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+ALTER TABLE IF EXISTS ONLY public.ships_ship DROP CONSTRAINT IF EXISTS ships_ship_campaign_id_2fd61bc8_fk_campaigns_campaign_id;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_vis_user_id_f4d4e2f7_fk_accounts_;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_vis_campaignmap_id_5bd5d79c_fk_maps_camp;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_related_inventory_it_5948db95_fk_inventory;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_campaign_id_7b555659_fk_campaigns_campaign_id;
+ALTER TABLE IF EXISTS ONLY public.inventory_inventoryitem DROP CONSTRAINT IF EXISTS inventory_inventoryi_character_id_120413db_fk_character;
+ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS history_sessionrecor_campaign_id_37dc18b0_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyfeature DROP CONSTRAINT IF EXISTS enemies_enemyfeature_enemy_id_3216cacc_fk_enemies_enemy_id;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyaction DROP CONSTRAINT IF EXISTS enemies_enemyaction_enemy_id_461d4a61_fk_enemies_enemy_id;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_faction_id_d56fecfe_fk_enemies_enemyfaction_id;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounterenemy_enemy_id_aa6d052c_fk_enemies_enemy_id;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_faction_id_1cd4c01e_fk_enemies_e;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounter_encounter_id_5dadca25_fk_encounter;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounter_encounter_id_25e180f2_fk_encounter;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_created_by_id_9124e8f3_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounter_character_id_fd89e08d_fk_character;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_campaign_id_4851c66b_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_user_id_c564eba6_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_content_type_id_c4bce8eb_fk_django_co;
+ALTER TABLE IF EXISTS ONLY public.combat_hpchange DROP CONSTRAINT IF EXISTS combat_hpchange_combatant_id_9572524c_fk_combat_combatant_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_combatant_id_5c4d5ba7_fk_combat_combatant_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_combat_id_b1b6ed11_fk_combat_combat_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_enemy_id_db936517_fk_enemies_enemy_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_combat_id_62e82e27_fk_combat_combat_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_character_id_ca824c94_fk_character;
+ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_encounter_id_e425ea50_fk_encounters_encounter_id;
+ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_campaign_id_91b1d47f_fk_campaigns_campaign_id;
+ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesva_species_id_94ab4833_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleprofi_related_skill_id_5421827a_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_professio_skill_id_987d9bc9_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_professio_profession_id_5ffd92d7_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_professio_parent_id_ce94306b_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatsty_skill_id_efd3369e_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatsty_combatstyle_id_be8d9424_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_user_id_c452ec7d_fk_accounts_;
+ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_user_id_6d9c54fd_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_character_user_id_366b2554_fk_accounts_;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_subprofession_id_dc5ab25a_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_species_variant_id_29dce720_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_species_id_dca3b634_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_character_species_id_5640923c_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_83896d57_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_character_skill_id_4e360f73_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_440f977c_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_3e4218c6_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_character_skill_id_2730b6af_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_character_proficiency_id_6b4d5406_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_profession_id_134d16c5_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_character_creation_id_6b17a625_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_combat_style_id_ca817e1e_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_c3b783a1_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_8b3c0d56_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_89094d6d_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_5653541e_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_character_charactercreation_id_06c2f609_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS characters_character_character_id_b0886605_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_character_id_9b1335ca_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_character_character_id_8a197b9d_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercondition DROP CONSTRAINT IF EXISTS characters_character_character_id_690483bc_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterfeature DROP CONSTRAINT IF EXISTS characters_character_character_id_5837a53e_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_charactertechnique DROP CONSTRAINT IF EXISTS characters_character_character_id_47775325_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_character_character_id_296af121_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_campaign_id_53a808c0_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_campaign_id_432868e5_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_character_background_id_c1e1dfbe_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_backgroun_skill_id_2749c577_fk_character;
+ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_backgroun_background_id_dd45f90e_fk_character;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_user_id_81102d8f_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_p_campaign_id_f0e4df59_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_master_id_eec50fbc_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_2f476e4b_fk_django_co;
+ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_b120cbf9_fk_auth_group_id;
+ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissio_permission_id_84c5c92e_fk_auth_perm;
+ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS audio_panel_audioass_campaign_id_55076906_fk_campaigns;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_p_user_id_e4f0a161_fk_accounts_;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_p_permission_id_113bb443_fk_auth_perm;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_user_id_52b62117_fk_accounts_user_id;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_group_id_bd11a704_fk_auth_group_id;
+DROP INDEX IF EXISTS public.unique_active_character_creation_per_campaign_user;
+DROP INDEX IF EXISTS public.ships_ship_campaign_id_2fd61bc8;
+DROP INDEX IF EXISTS public.ships_ship_campaig_4936e2_idx;
+DROP INDEX IF EXISTS public.ships_ship_belongs_to_crew_cb6868b9;
+DROP INDEX IF EXISTS public.one_crew_ship_per_campaign;
+DROP INDEX IF EXISTS public.one_active_combat_per_encounter;
+DROP INDEX IF EXISTS public.one_active_combat_per_campaign;
+DROP INDEX IF EXISTS public.maps_campaignmap_visible_to_users_user_id_f4d4e2f7;
+DROP INDEX IF EXISTS public.maps_campaignmap_visible_to_users_campaignmap_id_5bd5d79c;
+DROP INDEX IF EXISTS public.maps_campaignmap_related_inventory_item_id_5948db95;
+DROP INDEX IF EXISTS public.maps_campaignmap_campaign_id_7b555659;
+DROP INDEX IF EXISTS public.maps_campai_campaig_d7d1c7_idx;
+DROP INDEX IF EXISTS public.maps_campai_campaig_267d5d_idx;
+DROP INDEX IF EXISTS public.inventory_inventoryitem_is_visible_9ba522a5;
+DROP INDEX IF EXISTS public.inventory_inventoryitem_is_active_435aae93;
+DROP INDEX IF EXISTS public.inventory_inventoryitem_character_id_120413db;
+DROP INDEX IF EXISTS public.inventory_i_charact_f76f88_idx;
+DROP INDEX IF EXISTS public.history_sessionrecord_campaign_id_37dc18b0;
+DROP INDEX IF EXISTS public.history_ses_campaig_d85dc3_idx;
+DROP INDEX IF EXISTS public.history_ses_campaig_1a7d24_idx;
+DROP INDEX IF EXISTS public.enemies_enemyfeature_enemy_id_3216cacc;
+DROP INDEX IF EXISTS public.enemies_enemyfaction_slug_dc8cd8f0_like;
+DROP INDEX IF EXISTS public.enemies_enemyaction_enemy_id_461d4a61;
+DROP INDEX IF EXISTS public.enemies_enemy_slug_d44a084d_like;
+DROP INDEX IF EXISTS public.enemies_enemy_operational_complexity_9268d92a_like;
+DROP INDEX IF EXISTS public.enemies_enemy_operational_complexity_9268d92a;
+DROP INDEX IF EXISTS public.enemies_enemy_is_boss_0a7b87b9;
+DROP INDEX IF EXISTS public.enemies_enemy_is_available_for_generator_c15cfacd;
+DROP INDEX IF EXISTS public.enemies_enemy_is_active_828caee9;
+DROP INDEX IF EXISTS public.enemies_enemy_faction_id_d56fecfe;
+DROP INDEX IF EXISTS public.enemies_enemy_environment_4cc8079d_like;
+DROP INDEX IF EXISTS public.enemies_enemy_environment_4cc8079d;
+DROP INDEX IF EXISTS public.enemies_enemy_encounter_mode_fd2646c8_like;
+DROP INDEX IF EXISTS public.enemies_enemy_encounter_mode_fd2646c8;
+DROP INDEX IF EXISTS public.enemies_enemy_created_at_d36148d6;
+DROP INDEX IF EXISTS public.enemies_enemy_category_c1d9b222_like;
+DROP INDEX IF EXISTS public.enemies_enemy_category_c1d9b222;
+DROP INDEX IF EXISTS public.encounters_encounterparticipant_encounter_id_5dadca25;
+DROP INDEX IF EXISTS public.encounters_encounterparticipant_character_id_fd89e08d;
+DROP INDEX IF EXISTS public.encounters_encounterenemy_enemy_id_aa6d052c;
+DROP INDEX IF EXISTS public.encounters_encounterenemy_encounter_id_25e180f2;
+DROP INDEX IF EXISTS public.encounters_encounter_status_4eb20092_like;
+DROP INDEX IF EXISTS public.encounters_encounter_status_4eb20092;
+DROP INDEX IF EXISTS public.encounters_encounter_faction_id_1cd4c01e;
+DROP INDEX IF EXISTS public.encounters_encounter_created_by_id_9124e8f3;
+DROP INDEX IF EXISTS public.encounters_encounter_created_at_804af9d7;
+DROP INDEX IF EXISTS public.encounters_encounter_campaign_id_4851c66b;
+DROP INDEX IF EXISTS public.encounters__campaig_3f10c4_idx;
+DROP INDEX IF EXISTS public.django_session_session_key_c0390e0f_like;
+DROP INDEX IF EXISTS public.django_session_expire_date_a5c62663;
+DROP INDEX IF EXISTS public.django_admin_log_user_id_c564eba6;
+DROP INDEX IF EXISTS public.django_admin_log_content_type_id_c4bce8eb;
+DROP INDEX IF EXISTS public.combat_hpchange_combatant_id_9572524c;
+DROP INDEX IF EXISTS public.combat_combatnote_combatant_id_5c4d5ba7;
+DROP INDEX IF EXISTS public.combat_combatnote_combat_id_b1b6ed11;
+DROP INDEX IF EXISTS public.combat_combatant_enemy_id_db936517;
+DROP INDEX IF EXISTS public.combat_combatant_combat_id_62e82e27;
+DROP INDEX IF EXISTS public.combat_combatant_character_id_ca824c94;
+DROP INDEX IF EXISTS public.combat_combat_status_76dc5241_like;
+DROP INDEX IF EXISTS public.combat_combat_status_76dc5241;
+DROP INDEX IF EXISTS public.combat_combat_encounter_id_e425ea50;
+DROP INDEX IF EXISTS public.combat_combat_campaign_id_91b1d47f;
+DROP INDEX IF EXISTS public.characters_zoanancestrytrait_slug_d2713982_like;
+DROP INDEX IF EXISTS public.characters_zoanancestrytrait_slug_d2713982;
+DROP INDEX IF EXISTS public.characters_zoanancestrytrait_ruleset_version_da441738_like;
+DROP INDEX IF EXISTS public.characters_zoanancestrytrait_ruleset_version_da441738;
+DROP INDEX IF EXISTS public.characters_zoanancestrytrait_is_active_3f61c97f;
+DROP INDEX IF EXISTS public.characters_speciesvariant_species_id_94ab4833;
+DROP INDEX IF EXISTS public.characters_speciesvariant_slug_7d3e306b_like;
+DROP INDEX IF EXISTS public.characters_speciesvariant_slug_7d3e306b;
+DROP INDEX IF EXISTS public.characters_speciesvariant_ruleset_version_8ea0da35_like;
+DROP INDEX IF EXISTS public.characters_speciesvariant_ruleset_version_8ea0da35;
+DROP INDEX IF EXISTS public.characters_speciesvariant_is_active_295c07f9;
+DROP INDEX IF EXISTS public.characters_species_slug_3a57f58c_like;
+DROP INDEX IF EXISTS public.characters_species_slug_3a57f58c;
+DROP INDEX IF EXISTS public.characters_species_ruleset_version_96865588_like;
+DROP INDEX IF EXISTS public.characters_species_ruleset_version_96865588;
+DROP INDEX IF EXISTS public.characters_species_is_active_594ab533;
+DROP INDEX IF EXISTS public.characters_skill_slug_9a85d061_like;
+DROP INDEX IF EXISTS public.characters_skill_is_active_683507b3;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_slug_f26268cc_like;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_slug_f26268cc;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_ruleset_version_8b81cd92_like;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_ruleset_version_8b81cd92;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_related_skill_id_5421827a;
+DROP INDEX IF EXISTS public.characters_ruleproficiency_is_active_2d3a71c0;
+DROP INDEX IF EXISTS public.characters_ruleattribute_slug_80baab8f_like;
+DROP INDEX IF EXISTS public.characters_ruleattribute_slug_80baab8f;
+DROP INDEX IF EXISTS public.characters_ruleattribute_ruleset_version_8381d3e4_like;
+DROP INDEX IF EXISTS public.characters_ruleattribute_ruleset_version_8381d3e4;
+DROP INDEX IF EXISTS public.characters_ruleattribute_is_active_fccec6cb;
+DROP INDEX IF EXISTS public.characters_profession_slug_bd414ffa_like;
+DROP INDEX IF EXISTS public.characters_profession_slug_bd414ffa;
+DROP INDEX IF EXISTS public.characters_profession_ruleset_version_193ba2c1_like;
+DROP INDEX IF EXISTS public.characters_profession_ruleset_version_193ba2c1;
+DROP INDEX IF EXISTS public.characters_profession_parent_id_ce94306b;
+DROP INDEX IF EXISTS public.characters_profession_is_active_76946e9d;
+DROP INDEX IF EXISTS public.characters_profession_allowed_skills_skill_id_987d9bc9;
+DROP INDEX IF EXISTS public.characters_profession_allowed_skills_profession_id_5ffd92d7;
+DROP INDEX IF EXISTS public.characters_combatstyle_slug_1d130fdd_like;
+DROP INDEX IF EXISTS public.characters_combatstyle_slug_1d130fdd;
+DROP INDEX IF EXISTS public.characters_combatstyle_ruleset_version_7876cb29_like;
+DROP INDEX IF EXISTS public.characters_combatstyle_ruleset_version_7876cb29;
+DROP INDEX IF EXISTS public.characters_combatstyle_is_active_b5888ac6;
+DROP INDEX IF EXISTS public.characters_combatstyle_allowed_skills_skill_id_efd3369e;
+DROP INDEX IF EXISTS public.characters_combatstyle_allowed_skills_combatstyle_id_be8d9424;
+DROP INDEX IF EXISTS public.characters_charactertechnique_character_id_47775325;
+DROP INDEX IF EXISTS public.characters_characterskill_skill_id_4e360f73;
+DROP INDEX IF EXISTS public.characters_characterskill_character_id_296af121;
+DROP INDEX IF EXISTS public.characters_characterruleexception_user_id_366b2554;
+DROP INDEX IF EXISTS public.characters_characterruleexception_creation_id_6b17a625;
+DROP INDEX IF EXISTS public.characters_characterproficiency_proficiency_id_6b4d5406;
+DROP INDEX IF EXISTS public.characters_characterproficiency_character_id_8a197b9d;
+DROP INDEX IF EXISTS public.characters_characterfeature_character_id_5837a53e;
+DROP INDEX IF EXISTS public.characters_charactercreation_user_id_c452ec7d;
+DROP INDEX IF EXISTS public.characters_charactercreation_subprofession_id_dc5ab25a;
+DROP INDEX IF EXISTS public.characters_charactercreation_style_skills_skill_id_83896d57;
+DROP INDEX IF EXISTS public.characters_charactercreation_status_7fab41ee_like;
+DROP INDEX IF EXISTS public.characters_charactercreation_status_7fab41ee;
+DROP INDEX IF EXISTS public.characters_charactercreation_species_variant_id_29dce720;
+DROP INDEX IF EXISTS public.characters_charactercreation_species_id_dca3b634;
+DROP INDEX IF EXISTS public.characters_charactercreation_ruleset_version_b554e2c4_like;
+DROP INDEX IF EXISTS public.characters_charactercreation_ruleset_version_b554e2c4;
+DROP INDEX IF EXISTS public.characters_charactercreation_profession_id_134d16c5;
+DROP INDEX IF EXISTS public.characters_charactercreation_free_skills_skill_id_440f977c;
+DROP INDEX IF EXISTS public.characters_charactercreation_combat_style_id_ca817e1e;
+DROP INDEX IF EXISTS public.characters_charactercreation_campaign_id_432868e5;
+DROP INDEX IF EXISTS public.characters_charactercreation_background_id_c1e1dfbe;
+DROP INDEX IF EXISTS public.characters_charactercreati_species_id_5640923c;
+DROP INDEX IF EXISTS public.characters_charactercreati_skill_id_3e4218c6;
+DROP INDEX IF EXISTS public.characters_charactercreati_skill_id_2730b6af;
+DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_c3b783a1;
+DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_8b3c0d56;
+DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_89094d6d;
+DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_5653541e;
+DROP INDEX IF EXISTS public.characters_charactercreati_charactercreation_id_06c2f609;
+DROP INDEX IF EXISTS public.characters_charactercondition_is_active_578aaf32;
+DROP INDEX IF EXISTS public.characters_charactercondition_character_id_690483bc;
+DROP INDEX IF EXISTS public.characters_characterattribute_character_id_b0886605;
+DROP INDEX IF EXISTS public.characters_character_user_id_6d9c54fd;
+DROP INDEX IF EXISTS public.characters_character_campaign_id_53a808c0;
+DROP INDEX IF EXISTS public.characters_background_slug_f394a2d4_like;
+DROP INDEX IF EXISTS public.characters_background_slug_f394a2d4;
+DROP INDEX IF EXISTS public.characters_background_ruleset_version_f51bd8af_like;
+DROP INDEX IF EXISTS public.characters_background_ruleset_version_f51bd8af;
+DROP INDEX IF EXISTS public.characters_background_is_active_a3c198e7;
+DROP INDEX IF EXISTS public.characters_background_allowed_skills_skill_id_2749c577;
+DROP INDEX IF EXISTS public.characters_background_allowed_skills_background_id_dd45f90e;
+DROP INDEX IF EXISTS public.characters__campaig_ad3c95_idx;
+DROP INDEX IF EXISTS public.campaigns_campaign_slug_08eb9673_like;
+DROP INDEX IF EXISTS public.campaigns_campaign_players_user_id_81102d8f;
+DROP INDEX IF EXISTS public.campaigns_campaign_players_campaign_id_f0e4df59;
+DROP INDEX IF EXISTS public.campaigns_campaign_master_id_eec50fbc;
+DROP INDEX IF EXISTS public.auth_permission_content_type_id_2f476e4b;
+DROP INDEX IF EXISTS public.auth_group_permissions_permission_id_84c5c92e;
+DROP INDEX IF EXISTS public.auth_group_permissions_group_id_b120cbf9;
+DROP INDEX IF EXISTS public.auth_group_name_a6ea08ec_like;
+DROP INDEX IF EXISTS public.audio_panel_campaig_fa8237_idx;
+DROP INDEX IF EXISTS public.audio_panel_campaig_e90e98_idx;
+DROP INDEX IF EXISTS public.audio_panel_campaig_765f4b_idx;
+DROP INDEX IF EXISTS public.audio_panel_campaig_73d0f7_idx;
+DROP INDEX IF EXISTS public.audio_panel_campaig_31262c_idx;
+DROP INDEX IF EXISTS public.audio_panel_campaig_1f11ee_idx;
+DROP INDEX IF EXISTS public.audio_panel_audioasset_slug_c02ef1f3_like;
+DROP INDEX IF EXISTS public.audio_panel_audioasset_slug_c02ef1f3;
+DROP INDEX IF EXISTS public.audio_panel_audioasset_campaign_id_55076906;
+DROP INDEX IF EXISTS public.accounts_user_username_6088629e_like;
+DROP INDEX IF EXISTS public.accounts_user_user_permissions_user_id_e4f0a161;
+DROP INDEX IF EXISTS public.accounts_user_user_permissions_permission_id_113bb443;
+DROP INDEX IF EXISTS public.accounts_user_groups_user_id_52b62117;
+DROP INDEX IF EXISTS public.accounts_user_groups_group_id_bd11a704;
+ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS unique_session_number_per_campaign;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS unique_encounter_participant;
+ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS unique_character_skill;
+ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS unique_character_proficiency_source;
+ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS unique_character_per_campaign_user;
+ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS unique_character_attribute_breakdown;
+ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS unique_audio_slug_per_campaign;
+ALTER TABLE IF EXISTS ONLY public.ships_ship DROP CONSTRAINT IF EXISTS ships_ship_pkey;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_visible_to_users_pkey;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap_visible_to_users DROP CONSTRAINT IF EXISTS maps_campaignmap_visible_campaignmap_id_user_id_cd8e0be9_uniq;
+ALTER TABLE IF EXISTS ONLY public.maps_campaignmap DROP CONSTRAINT IF EXISTS maps_campaignmap_pkey;
+ALTER TABLE IF EXISTS ONLY public.inventory_inventoryitem DROP CONSTRAINT IF EXISTS inventory_inventoryitem_pkey;
+ALTER TABLE IF EXISTS ONLY public.history_sessionrecord DROP CONSTRAINT IF EXISTS history_sessionrecord_pkey;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyfeature DROP CONSTRAINT IF EXISTS enemies_enemyfeature_pkey;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyfaction DROP CONSTRAINT IF EXISTS enemies_enemyfaction_slug_key;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyfaction DROP CONSTRAINT IF EXISTS enemies_enemyfaction_pkey;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemyaction DROP CONSTRAINT IF EXISTS enemies_enemyaction_pkey;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_slug_key;
+ALTER TABLE IF EXISTS ONLY public.enemies_enemy DROP CONSTRAINT IF EXISTS enemies_enemy_pkey;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterparticipant DROP CONSTRAINT IF EXISTS encounters_encounterparticipant_pkey;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounterenemy DROP CONSTRAINT IF EXISTS encounters_encounterenemy_pkey;
+ALTER TABLE IF EXISTS ONLY public.encounters_encounter DROP CONSTRAINT IF EXISTS encounters_encounter_pkey;
+ALTER TABLE IF EXISTS ONLY public.django_session DROP CONSTRAINT IF EXISTS django_session_pkey;
+ALTER TABLE IF EXISTS ONLY public.django_migrations DROP CONSTRAINT IF EXISTS django_migrations_pkey;
+ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_pkey;
+ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_app_label_model_76bd3d3b_uniq;
+ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_pkey;
+ALTER TABLE IF EXISTS ONLY public.combat_hpchange DROP CONSTRAINT IF EXISTS combat_hpchange_pkey;
+ALTER TABLE IF EXISTS ONLY public.combat_combatnote DROP CONSTRAINT IF EXISTS combat_combatnote_pkey;
+ALTER TABLE IF EXISTS ONLY public.combat_combatant DROP CONSTRAINT IF EXISTS combat_combatant_pkey;
+ALTER TABLE IF EXISTS ONLY public.combat_combat DROP CONSTRAINT IF EXISTS combat_combat_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_zoanancestrytrait DROP CONSTRAINT IF EXISTS characters_zoanancestrytrait_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_zoanancestrytrait DROP CONSTRAINT IF EXISTS characters_zoanancestrytrait_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesvariant_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_speciesvariant DROP CONSTRAINT IF EXISTS characters_speciesvariant_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_species DROP CONSTRAINT IF EXISTS characters_species_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_species DROP CONSTRAINT IF EXISTS characters_species_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_skill DROP CONSTRAINT IF EXISTS characters_skill_slug_key;
+ALTER TABLE IF EXISTS ONLY public.characters_skill DROP CONSTRAINT IF EXISTS characters_skill_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleproficiency_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_ruleproficiency DROP CONSTRAINT IF EXISTS characters_ruleproficiency_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_ruleattribute DROP CONSTRAINT IF EXISTS characters_ruleattribute_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_ruleattribute DROP CONSTRAINT IF EXISTS characters_ruleattribute_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_profession_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_profession DROP CONSTRAINT IF EXISTS characters_profession_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_profession_allowed_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_profession_allowed_skills DROP CONSTRAINT IF EXISTS characters_profession_al_profession_id_skill_id_d656483a_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle DROP CONSTRAINT IF EXISTS characters_combatstyle_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle DROP CONSTRAINT IF EXISTS characters_combatstyle_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatstyle_allowed_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_combatstyle_allowed_skills DROP CONSTRAINT IF EXISTS characters_combatstyle_a_combatstyle_id_skill_id_cc76ade0_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactertechnique DROP CONSTRAINT IF EXISTS characters_charactertechnique_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_characterskill DROP CONSTRAINT IF EXISTS characters_characterskill_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_characterruleexception DROP CONSTRAINT IF EXISTS characters_characterruleexception_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_characterproficiency DROP CONSTRAINT IF EXISTS characters_characterproficiency_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_characterfeature DROP CONSTRAINT IF EXISTS characters_characterfeature_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_style_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_profession_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_charactercreation_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_charactercreation_mixed_species_origins_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_free_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation DROP CONSTRAINT IF EXISTS characters_charactercreation_character_id_key;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_charactercreation_background_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_mixed_species_origins DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_spe_ab706246_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_style_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_d5bc21ee_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_profession_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_bb030549_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_background_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_752d4876_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercreation_free_skills DROP CONSTRAINT IF EXISTS characters_charactercrea_charactercreation_id_ski_2e1f0bd3_uniq;
+ALTER TABLE IF EXISTS ONLY public.characters_charactercondition DROP CONSTRAINT IF EXISTS characters_charactercondition_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_characterattribute DROP CONSTRAINT IF EXISTS characters_characterattribute_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_character DROP CONSTRAINT IF EXISTS characters_character_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_background DROP CONSTRAINT IF EXISTS characters_background_ruleset_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.characters_background DROP CONSTRAINT IF EXISTS characters_background_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_background_allowed_skills_pkey;
+ALTER TABLE IF EXISTS ONLY public.characters_background_allowed_skills DROP CONSTRAINT IF EXISTS characters_background_al_background_id_skill_id_4e1ac5a1_uniq;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_slug_key;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_pkey;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign_players DROP CONSTRAINT IF EXISTS campaigns_campaign_players_campaign_id_user_id_0eb0e0da_uniq;
+ALTER TABLE IF EXISTS ONLY public.campaigns_campaign DROP CONSTRAINT IF EXISTS campaigns_campaign_pkey;
+ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_pkey;
+ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_codename_01ab375a_uniq;
+ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_pkey;
+ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_pkey;
+ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_permission_id_0cd325b0_uniq;
+ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_name_key;
+ALTER TABLE IF EXISTS ONLY public.audio_panel_audioasset DROP CONSTRAINT IF EXISTS audio_panel_audioasset_pkey;
+ALTER TABLE IF EXISTS ONLY public.accounts_user DROP CONSTRAINT IF EXISTS accounts_user_username_key;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_permissions_pkey;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_user_permissions DROP CONSTRAINT IF EXISTS accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq;
+ALTER TABLE IF EXISTS ONLY public.accounts_user DROP CONSTRAINT IF EXISTS accounts_user_pkey;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_user_id_group_id_59c0b32f_uniq;
+ALTER TABLE IF EXISTS ONLY public.accounts_user_groups DROP CONSTRAINT IF EXISTS accounts_user_groups_pkey;
+DROP TABLE IF EXISTS public.ships_ship;
+DROP TABLE IF EXISTS public.maps_campaignmap_visible_to_users;
+DROP TABLE IF EXISTS public.maps_campaignmap;
+DROP TABLE IF EXISTS public.inventory_inventoryitem;
+DROP TABLE IF EXISTS public.history_sessionrecord;
+DROP TABLE IF EXISTS public.enemies_enemyfeature;
+DROP TABLE IF EXISTS public.enemies_enemyfaction;
+DROP TABLE IF EXISTS public.enemies_enemyaction;
+DROP TABLE IF EXISTS public.enemies_enemy;
+DROP TABLE IF EXISTS public.encounters_encounterparticipant;
+DROP TABLE IF EXISTS public.encounters_encounterenemy;
+DROP TABLE IF EXISTS public.encounters_encounter;
+DROP TABLE IF EXISTS public.django_session;
+DROP TABLE IF EXISTS public.django_migrations;
+DROP TABLE IF EXISTS public.django_content_type;
+DROP TABLE IF EXISTS public.django_admin_log;
+DROP TABLE IF EXISTS public.combat_hpchange;
+DROP TABLE IF EXISTS public.combat_combatnote;
+DROP TABLE IF EXISTS public.combat_combatant;
+DROP TABLE IF EXISTS public.combat_combat;
+DROP TABLE IF EXISTS public.characters_zoanancestrytrait;
+DROP TABLE IF EXISTS public.characters_speciesvariant;
+DROP TABLE IF EXISTS public.characters_species;
+DROP TABLE IF EXISTS public.characters_skill;
+DROP TABLE IF EXISTS public.characters_ruleproficiency;
+DROP TABLE IF EXISTS public.characters_ruleattribute;
+DROP TABLE IF EXISTS public.characters_profession_allowed_skills;
+DROP TABLE IF EXISTS public.characters_profession;
+DROP TABLE IF EXISTS public.characters_combatstyle_allowed_skills;
+DROP TABLE IF EXISTS public.characters_combatstyle;
+DROP TABLE IF EXISTS public.characters_charactertechnique;
+DROP TABLE IF EXISTS public.characters_characterskill;
+DROP TABLE IF EXISTS public.characters_characterruleexception;
+DROP TABLE IF EXISTS public.characters_characterproficiency;
+DROP TABLE IF EXISTS public.characters_characterfeature;
+DROP TABLE IF EXISTS public.characters_charactercreation_style_skills;
+DROP TABLE IF EXISTS public.characters_charactercreation_profession_skills;
+DROP TABLE IF EXISTS public.characters_charactercreation_mixed_species_origins;
+DROP TABLE IF EXISTS public.characters_charactercreation_free_skills;
+DROP TABLE IF EXISTS public.characters_charactercreation_background_skills;
+DROP TABLE IF EXISTS public.characters_charactercreation;
+DROP TABLE IF EXISTS public.characters_charactercondition;
+DROP TABLE IF EXISTS public.characters_characterattribute;
+DROP TABLE IF EXISTS public.characters_character;
+DROP TABLE IF EXISTS public.characters_background_allowed_skills;
+DROP TABLE IF EXISTS public.characters_background;
+DROP TABLE IF EXISTS public.campaigns_campaign_players;
+DROP TABLE IF EXISTS public.campaigns_campaign;
+DROP TABLE IF EXISTS public.auth_permission;
+DROP TABLE IF EXISTS public.auth_group_permissions;
+DROP TABLE IF EXISTS public.auth_group;
+DROP TABLE IF EXISTS public.audio_panel_audioasset;
+DROP TABLE IF EXISTS public.accounts_user_user_permissions;
+DROP TABLE IF EXISTS public.accounts_user_groups;
+DROP TABLE IF EXISTS public.accounts_user;
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: accounts_user; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_user (
+    id bigint NOT NULL,
+    password character varying(128) NOT NULL,
+    last_login timestamp with time zone,
+    is_superuser boolean NOT NULL,
+    username character varying(150) NOT NULL,
+    first_name character varying(150) NOT NULL,
+    last_name character varying(150) NOT NULL,
+    email character varying(254) NOT NULL,
+    is_staff boolean NOT NULL,
+    is_active boolean NOT NULL,
+    date_joined timestamp with time zone NOT NULL,
+    role character varying(20) NOT NULL
+);
+
+
+--
+-- Name: accounts_user_groups; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_user_groups (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    group_id integer NOT NULL
+);
+
+
+--
+-- Name: accounts_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.accounts_user_groups ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.accounts_user_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: accounts_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.accounts_user ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.accounts_user_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: accounts_user_user_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_user_user_permissions (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+--
+-- Name: accounts_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.accounts_user_user_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.accounts_user_user_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: audio_panel_audioasset; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.audio_panel_audioasset (
+    id bigint NOT NULL,
+    title character varying(180) NOT NULL,
+    slug character varying(200) NOT NULL,
+    audio_file character varying(100) NOT NULL,
+    category character varying(20) NOT NULL,
+    description text NOT NULL,
+    character_name character varying(150) NOT NULL,
+    scene_name character varying(150) NOT NULL,
+    tags character varying(300) NOT NULL,
+    is_favorite boolean NOT NULL,
+    is_active boolean NOT NULL,
+    is_featured boolean NOT NULL,
+    default_volume numeric(4,3) NOT NULL,
+    default_loop boolean NOT NULL,
+    default_channel character varying(10) NOT NULL,
+    sort_order integer NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    last_played_at timestamp with time zone,
+    play_count bigint NOT NULL,
+    campaign_id bigint NOT NULL,
+    CONSTRAINT audio_panel_audioasset_play_count_check CHECK ((play_count >= 0)),
+    CONSTRAINT audio_panel_audioasset_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: audio_panel_audioasset_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.audio_panel_audioasset ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.audio_panel_audioasset_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_group (
+    id integer NOT NULL,
+    name character varying(150) NOT NULL
+);
+
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_group ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_group_permissions (
+    id bigint NOT NULL,
+    group_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_group_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_permission (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    content_type_id integer NOT NULL,
+    codename character varying(100) NOT NULL
+);
+
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_permission ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: campaigns_campaign; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.campaigns_campaign (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    slug character varying(50) NOT NULL,
+    description text NOT NULL,
+    cover_image character varying(100) NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    master_id bigint NOT NULL
+);
+
+
+--
+-- Name: campaigns_campaign_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.campaigns_campaign ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.campaigns_campaign_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: campaigns_campaign_players; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.campaigns_campaign_players (
+    id bigint NOT NULL,
+    campaign_id bigint NOT NULL,
+    user_id bigint NOT NULL
+);
+
+
+--
+-- Name: campaigns_campaign_players_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.campaigns_campaign_players ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.campaigns_campaign_players_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_background; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_background (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    skill_choice_count smallint NOT NULL,
+    recommended_attribute character varying(20) NOT NULL,
+    special_feature_name character varying(150) NOT NULL,
+    special_feature_description text NOT NULL,
+    allows_master_customization boolean NOT NULL,
+    CONSTRAINT characters_background_skill_choice_count_check CHECK ((skill_choice_count >= 0))
+);
+
+
+--
+-- Name: characters_background_allowed_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_background_allowed_skills (
+    id bigint NOT NULL,
+    background_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_background_allowed_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_background_allowed_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_background_allowed_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_background_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_background ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_background_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_character; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_character (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    portrait character varying(100) NOT NULL,
+    level smallint NOT NULL,
+    species character varying(100) NOT NULL,
+    profession character varying(100) NOT NULL,
+    combat_style character varying(150) NOT NULL,
+    background character varying(150) NOT NULL,
+    bounty bigint NOT NULL,
+    armor_class smallint NOT NULL,
+    proficiency_bonus smallint NOT NULL,
+    initiative smallint NOT NULL,
+    movement smallint NOT NULL,
+    max_hp integer NOT NULL,
+    current_hp integer NOT NULL,
+    max_power_points integer NOT NULL,
+    current_power_points integer NOT NULL,
+    strength smallint NOT NULL,
+    dexterity smallint NOT NULL,
+    constitution smallint NOT NULL,
+    intelligence smallint NOT NULL,
+    wisdom smallint NOT NULL,
+    charisma smallint NOT NULL,
+    haki_declared boolean NOT NULL,
+    haki_trained boolean NOT NULL,
+    devil_fruit_name character varying(150) NOT NULL,
+    devil_fruit_available boolean NOT NULL,
+    appearance text NOT NULL,
+    personality text NOT NULL,
+    dream text NOT NULL,
+    notes text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    campaign_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    presence smallint NOT NULL,
+    willpower smallint NOT NULL,
+    age character varying(60) NOT NULL,
+    dream_path character varying(40) NOT NULL,
+    height character varying(60) NOT NULL,
+    weight character varying(60) NOT NULL,
+    CONSTRAINT characters_character_armor_class_check CHECK ((armor_class >= 0)),
+    CONSTRAINT characters_character_bounty_check CHECK ((bounty >= 0)),
+    CONSTRAINT characters_character_charisma_check CHECK ((charisma >= 0)),
+    CONSTRAINT characters_character_constitution_check CHECK ((constitution >= 0)),
+    CONSTRAINT characters_character_current_hp_check CHECK ((current_hp >= 0)),
+    CONSTRAINT characters_character_current_power_points_check CHECK ((current_power_points >= 0)),
+    CONSTRAINT characters_character_dexterity_check CHECK ((dexterity >= 0)),
+    CONSTRAINT characters_character_intelligence_check CHECK ((intelligence >= 0)),
+    CONSTRAINT characters_character_level_check CHECK ((level >= 0)),
+    CONSTRAINT characters_character_max_hp_check CHECK ((max_hp >= 0)),
+    CONSTRAINT characters_character_max_power_points_check CHECK ((max_power_points >= 0)),
+    CONSTRAINT characters_character_movement_check CHECK ((movement >= 0)),
+    CONSTRAINT characters_character_presence_check CHECK ((presence >= 0)),
+    CONSTRAINT characters_character_strength_check CHECK ((strength >= 0)),
+    CONSTRAINT characters_character_willpower_check CHECK ((willpower >= 0)),
+    CONSTRAINT characters_character_wisdom_check CHECK ((wisdom >= 0))
+);
+
+
+--
+-- Name: characters_character_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_character ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_character_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterattribute; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterattribute (
+    id bigint NOT NULL,
+    attribute character varying(20) NOT NULL,
+    base_value smallint NOT NULL,
+    species_bonus smallint NOT NULL,
+    background_bonus smallint NOT NULL,
+    other_bonus smallint NOT NULL,
+    final_value smallint NOT NULL,
+    character_id bigint NOT NULL,
+    CONSTRAINT characters_characterattribute_base_value_check CHECK ((base_value >= 0)),
+    CONSTRAINT characters_characterattribute_final_value_check CHECK ((final_value >= 0))
+);
+
+
+--
+-- Name: characters_characterattribute_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterattribute ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterattribute_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercondition; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercondition (
+    id bigint NOT NULL,
+    name character varying(100) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    character_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercondition_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercondition ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercondition_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation (
+    id bigint NOT NULL,
+    status character varying(20) NOT NULL,
+    current_step character varying(30) NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    completed_steps jsonb NOT NULL,
+    pending_choices jsonb NOT NULL,
+    validation_errors jsonb NOT NULL,
+    warnings jsonb NOT NULL,
+    approved_by_master boolean NOT NULL,
+    name character varying(150) NOT NULL,
+    concept text NOT NULL,
+    appearance text NOT NULL,
+    personality text NOT NULL,
+    dream text NOT NULL,
+    ancestry_text character varying(150) NOT NULL,
+    ancestry_choices jsonb NOT NULL,
+    favorite_weapon character varying(120) NOT NULL,
+    innate_ability character varying(150) NOT NULL,
+    equipment_choice character varying(150) NOT NULL,
+    attribute_method character varying(30) NOT NULL,
+    attribute_bases jsonb NOT NULL,
+    species_attribute_bonuses jsonb NOT NULL,
+    background_attribute_bonuses jsonb NOT NULL,
+    other_attribute_bonuses jsonb NOT NULL,
+    random_rolls jsonb NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    completed_at timestamp with time zone,
+    background_id bigint,
+    campaign_id bigint NOT NULL,
+    character_id bigint,
+    user_id bigint NOT NULL,
+    combat_style_id bigint,
+    profession_id bigint,
+    subprofession_id bigint,
+    species_id bigint,
+    species_variant_id bigint,
+    age character varying(60) NOT NULL,
+    dream_path character varying(40) NOT NULL,
+    height character varying(60) NOT NULL,
+    weight character varying(60) NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_background_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation_background_skills (
+    id bigint NOT NULL,
+    charactercreation_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_background_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation_background_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_background_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation_free_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation_free_skills (
+    id bigint NOT NULL,
+    charactercreation_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_free_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation_free_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_free_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation_mixed_species_origins (
+    id bigint NOT NULL,
+    charactercreation_id bigint NOT NULL,
+    species_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation_mixed_species_origins ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_mixed_species_origins_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation_profession_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation_profession_skills (
+    id bigint NOT NULL,
+    charactercreation_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_profession_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation_profession_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_profession_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactercreation_style_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactercreation_style_skills (
+    id bigint NOT NULL,
+    charactercreation_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_charactercreation_style_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactercreation_style_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactercreation_style_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterfeature; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterfeature (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    description text NOT NULL,
+    source character varying(100) NOT NULL,
+    is_available boolean NOT NULL,
+    sort_order smallint NOT NULL,
+    character_id bigint NOT NULL,
+    CONSTRAINT characters_characterfeature_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: characters_characterfeature_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterfeature ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterfeature_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterproficiency; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterproficiency (
+    id bigint NOT NULL,
+    source_type character varying(60) NOT NULL,
+    source_object_id integer,
+    multiplier smallint NOT NULL,
+    is_selected boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    character_id bigint NOT NULL,
+    proficiency_id bigint NOT NULL,
+    CONSTRAINT characters_characterproficiency_multiplier_check CHECK ((multiplier >= 0)),
+    CONSTRAINT characters_characterproficiency_source_object_id_check CHECK ((source_object_id >= 0))
+);
+
+
+--
+-- Name: characters_characterproficiency_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterproficiency ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterproficiency_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterruleexception; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterruleexception (
+    id bigint NOT NULL,
+    ignored_rule character varying(150) NOT NULL,
+    justification text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    creation_id bigint NOT NULL,
+    user_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_characterruleexception_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterruleexception ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterruleexception_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_characterskill; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_characterskill (
+    id bigint NOT NULL,
+    is_proficient boolean NOT NULL,
+    is_expert boolean NOT NULL,
+    custom_bonus smallint,
+    character_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_characterskill_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_characterskill ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_characterskill_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_charactertechnique; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_charactertechnique (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    description text NOT NULL,
+    action_type character varying(20) NOT NULL,
+    range_text character varying(100) NOT NULL,
+    damage_text character varying(150) NOT NULL,
+    cost character varying(100) NOT NULL,
+    is_available boolean NOT NULL,
+    is_featured boolean NOT NULL,
+    sort_order smallint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    character_id bigint NOT NULL,
+    CONSTRAINT characters_charactertechnique_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: characters_charactertechnique_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_charactertechnique ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_charactertechnique_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_combatstyle; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_combatstyle (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    hit_die smallint NOT NULL,
+    saving_throws jsonb NOT NULL,
+    skill_choice_count smallint NOT NULL,
+    any_skill_allowed boolean NOT NULL,
+    weapon_proficiencies jsonb NOT NULL,
+    kit_proficiencies jsonb NOT NULL,
+    primary_attributes jsonb NOT NULL,
+    favorite_weapon_options jsonb NOT NULL,
+    innate_ability_options jsonb NOT NULL,
+    initial_equipment jsonb NOT NULL,
+    initial_money character varying(80) NOT NULL,
+    requirements jsonb NOT NULL,
+    level_1_features jsonb NOT NULL,
+    CONSTRAINT characters_combatstyle_hit_die_check CHECK ((hit_die >= 0)),
+    CONSTRAINT characters_combatstyle_skill_choice_count_check CHECK ((skill_choice_count >= 0))
+);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_combatstyle_allowed_skills (
+    id bigint NOT NULL,
+    combatstyle_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_combatstyle_allowed_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_combatstyle_allowed_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_combatstyle_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_combatstyle ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_combatstyle_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_profession; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_profession (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    is_no_profession boolean NOT NULL,
+    skill_choice_count smallint NOT NULL,
+    special_trade_skill character varying(120) NOT NULL,
+    tools jsonb NOT NULL,
+    initial_items jsonb NOT NULL,
+    initial_work_knowledges jsonb NOT NULL,
+    restrictions jsonb NOT NULL,
+    parent_id bigint,
+    CONSTRAINT characters_profession_skill_choice_count_check CHECK ((skill_choice_count >= 0))
+);
+
+
+--
+-- Name: characters_profession_allowed_skills; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_profession_allowed_skills (
+    id bigint NOT NULL,
+    profession_id bigint NOT NULL,
+    skill_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_profession_allowed_skills_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_profession_allowed_skills ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_profession_allowed_skills_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_profession_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_profession ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_profession_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_ruleattribute; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_ruleattribute (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    key character varying(20) NOT NULL
+);
+
+
+--
+-- Name: characters_ruleattribute_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_ruleattribute ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_ruleattribute_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_ruleproficiency; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_ruleproficiency (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    category character varying(20) NOT NULL,
+    related_skill_id bigint
+);
+
+
+--
+-- Name: characters_ruleproficiency_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_ruleproficiency ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_ruleproficiency_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_skill; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_skill (
+    id bigint NOT NULL,
+    name character varying(100) NOT NULL,
+    slug character varying(50) NOT NULL,
+    related_attribute character varying(20) NOT NULL,
+    description text NOT NULL,
+    sort_order smallint NOT NULL,
+    is_active boolean NOT NULL,
+    CONSTRAINT characters_skill_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: characters_skill_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_skill ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_skill_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_species; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_species (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    base_hp smallint NOT NULL,
+    size character varying(80) NOT NULL,
+    movement numeric(4,1) NOT NULL,
+    swim_speed numeric(4,1) NOT NULL,
+    prejudice character varying(120) NOT NULL,
+    benefits jsonb NOT NULL,
+    difficulties jsonb NOT NULL,
+    cultural_traits jsonb NOT NULL,
+    ancestry_rules jsonb NOT NULL,
+    required_choices jsonb NOT NULL,
+    CONSTRAINT characters_species_base_hp_check CHECK ((base_hp >= 0))
+);
+
+
+--
+-- Name: characters_species_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_species ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_species_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_speciesvariant; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_speciesvariant (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    overrides jsonb NOT NULL,
+    effects jsonb NOT NULL,
+    required_choices jsonb NOT NULL,
+    species_id bigint NOT NULL
+);
+
+
+--
+-- Name: characters_speciesvariant_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_speciesvariant ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_speciesvariant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: characters_zoanancestrytrait; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.characters_zoanancestrytrait (
+    id bigint NOT NULL,
+    ruleset_version character varying(40) NOT NULL,
+    slug character varying(120) NOT NULL,
+    name character varying(150) NOT NULL,
+    source_pages character varying(40) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    trait_type character varying(20) NOT NULL,
+    requires_master_approval boolean NOT NULL,
+    carnivore_hunter_only boolean NOT NULL
+);
+
+
+--
+-- Name: characters_zoanancestrytrait_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.characters_zoanancestrytrait ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.characters_zoanancestrytrait_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: combat_combat; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.combat_combat (
+    id bigint NOT NULL,
+    status character varying(12) NOT NULL,
+    mode character varying(20) NOT NULL,
+    track_player_resources boolean NOT NULL,
+    round_number integer NOT NULL,
+    current_turn_index integer NOT NULL,
+    started_at timestamp with time zone NOT NULL,
+    finished_at timestamp with time zone,
+    updated_at timestamp with time zone NOT NULL,
+    master_notes text NOT NULL,
+    result character varying(20) NOT NULL,
+    final_note text NOT NULL,
+    campaign_id bigint NOT NULL,
+    encounter_id bigint NOT NULL,
+    CONSTRAINT combat_combat_current_turn_index_check CHECK ((current_turn_index >= 0)),
+    CONSTRAINT combat_combat_round_number_check CHECK ((round_number >= 0))
+);
+
+
+--
+-- Name: combat_combat_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.combat_combat ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.combat_combat_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: combat_combatant; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.combat_combatant (
+    id bigint NOT NULL,
+    combatant_type character varying(10) NOT NULL,
+    display_name character varying(150) NOT NULL,
+    image character varying(100) NOT NULL,
+    max_hp integer NOT NULL,
+    current_hp integer NOT NULL,
+    max_power_points integer NOT NULL,
+    current_power_points integer NOT NULL,
+    armor_class smallint NOT NULL,
+    resistance_bonus smallint NOT NULL,
+    initiative smallint,
+    turn_order integer NOT NULL,
+    narrative_state character varying(20) NOT NULL,
+    custom_narrative_state character varying(80) NOT NULL,
+    is_defeated boolean NOT NULL,
+    is_active boolean NOT NULL,
+    is_boss boolean NOT NULL,
+    master_note text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    character_id bigint,
+    combat_id bigint NOT NULL,
+    enemy_id bigint,
+    CONSTRAINT combat_combatant_armor_class_check CHECK ((armor_class >= 0)),
+    CONSTRAINT combat_combatant_current_hp_check CHECK ((current_hp >= 0)),
+    CONSTRAINT combat_combatant_current_power_points_check CHECK ((current_power_points >= 0)),
+    CONSTRAINT combat_combatant_max_hp_check CHECK ((max_hp >= 0)),
+    CONSTRAINT combat_combatant_max_power_points_check CHECK ((max_power_points >= 0)),
+    CONSTRAINT combat_combatant_turn_order_check CHECK ((turn_order >= 0)),
+    CONSTRAINT combatant_exactly_one_reference CHECK ((((character_id IS NULL) AND (enemy_id IS NOT NULL)) OR ((character_id IS NOT NULL) AND (enemy_id IS NULL)))),
+    CONSTRAINT combatant_hp_bounds CHECK (((current_hp >= 0) AND (current_hp <= max_hp)))
+);
+
+
+--
+-- Name: combat_combatant_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.combat_combatant ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.combat_combatant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: combat_combatnote; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.combat_combatnote (
+    id bigint NOT NULL,
+    note_type character varying(20) NOT NULL,
+    text text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    combat_id bigint NOT NULL,
+    combatant_id bigint
+);
+
+
+--
+-- Name: combat_combatnote_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.combat_combatnote ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.combat_combatnote_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: combat_hpchange; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.combat_hpchange (
+    id bigint NOT NULL,
+    previous_hp integer NOT NULL,
+    new_hp integer NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    is_reverted boolean NOT NULL,
+    combatant_id bigint NOT NULL,
+    CONSTRAINT combat_hpchange_new_hp_check CHECK ((new_hp >= 0)),
+    CONSTRAINT combat_hpchange_previous_hp_check CHECK ((previous_hp >= 0))
+);
+
+
+--
+-- Name: combat_hpchange_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.combat_hpchange ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.combat_hpchange_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_admin_log (
+    id integer NOT NULL,
+    action_time timestamp with time zone NOT NULL,
+    object_id text,
+    object_repr character varying(200) NOT NULL,
+    action_flag smallint NOT NULL,
+    change_message text NOT NULL,
+    content_type_id integer,
+    user_id bigint NOT NULL,
+    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
+);
+
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_admin_log ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_admin_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_content_type (
+    id integer NOT NULL,
+    app_label character varying(100) NOT NULL,
+    model character varying(100) NOT NULL
+);
+
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_content_type ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_content_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_migrations (
+    id bigint NOT NULL,
+    app character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    applied timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_migrations ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_migrations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_session; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_session (
+    session_key character varying(40) NOT NULL,
+    session_data text NOT NULL,
+    expire_date timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: encounters_encounter; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.encounters_encounter (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    difficulty character varying(10) NOT NULL,
+    status character varying(12) NOT NULL,
+    has_boss boolean NOT NULL,
+    environment character varying(20) NOT NULL,
+    estimated_difficulty character varying(10) NOT NULL,
+    estimated_threat numeric(10,2) NOT NULL,
+    operational_load integer NOT NULL,
+    generator_notes text NOT NULL,
+    master_notes text NOT NULL,
+    generation_parameters jsonb NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    started_at timestamp with time zone,
+    finished_at timestamp with time zone,
+    campaign_id bigint NOT NULL,
+    created_by_id bigint NOT NULL,
+    faction_id bigint,
+    CONSTRAINT encounters_encounter_operational_load_check CHECK ((operational_load >= 0))
+);
+
+
+--
+-- Name: encounters_encounter_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.encounters_encounter ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.encounters_encounter_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: encounters_encounterenemy; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.encounters_encounterenemy (
+    id bigint NOT NULL,
+    display_name character varying(150) NOT NULL,
+    quantity smallint NOT NULL,
+    max_hp_override integer,
+    armor_class_override smallint,
+    resistance_bonus_override smallint,
+    is_boss boolean NOT NULL,
+    sort_order smallint NOT NULL,
+    master_note text NOT NULL,
+    encounter_id bigint NOT NULL,
+    enemy_id bigint NOT NULL,
+    CONSTRAINT encounters_encounterenemy_armor_class_override_check CHECK ((armor_class_override >= 0)),
+    CONSTRAINT encounters_encounterenemy_max_hp_override_check CHECK ((max_hp_override >= 0)),
+    CONSTRAINT encounters_encounterenemy_quantity_check CHECK ((quantity >= 0)),
+    CONSTRAINT encounters_encounterenemy_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: encounters_encounterenemy_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.encounters_encounterenemy ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.encounters_encounterenemy_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: encounters_encounterparticipant; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.encounters_encounterparticipant (
+    id bigint NOT NULL,
+    is_active boolean NOT NULL,
+    character_id bigint NOT NULL,
+    encounter_id bigint NOT NULL
+);
+
+
+--
+-- Name: encounters_encounterparticipant_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.encounters_encounterparticipant ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.encounters_encounterparticipant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: enemies_enemy; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.enemies_enemy (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    slug character varying(50) NOT NULL,
+    image character varying(100) NOT NULL,
+    description text NOT NULL,
+    category character varying(20) NOT NULL,
+    environment character varying(20) NOT NULL,
+    difficulty_tier character varying(40) NOT NULL,
+    challenge_rating numeric(6,2) NOT NULL,
+    recommended_min_level smallint NOT NULL,
+    recommended_max_level smallint NOT NULL,
+    max_hp integer NOT NULL,
+    armor_class smallint NOT NULL,
+    resistance_bonus smallint NOT NULL,
+    initiative smallint NOT NULL,
+    movement smallint NOT NULL,
+    strength smallint NOT NULL,
+    dexterity smallint NOT NULL,
+    constitution smallint NOT NULL,
+    intelligence smallint NOT NULL,
+    wisdom smallint NOT NULL,
+    charisma smallint NOT NULL,
+    is_boss boolean NOT NULL,
+    is_named_character boolean NOT NULL,
+    is_canon_character boolean NOT NULL,
+    operational_complexity character varying(20) NOT NULL,
+    encounter_mode character varying(20) NOT NULL,
+    threat_score_override numeric(8,2),
+    is_available_for_generator boolean NOT NULL,
+    is_active boolean NOT NULL,
+    combat_behavior text NOT NULL,
+    retreat_condition text NOT NULL,
+    surrender_condition text NOT NULL,
+    master_tips text NOT NULL,
+    notes text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    faction_id bigint,
+    CONSTRAINT enemies_enemy_armor_class_check CHECK ((armor_class >= 0)),
+    CONSTRAINT enemies_enemy_charisma_check CHECK ((charisma >= 0)),
+    CONSTRAINT enemies_enemy_constitution_check CHECK ((constitution >= 0)),
+    CONSTRAINT enemies_enemy_dexterity_check CHECK ((dexterity >= 0)),
+    CONSTRAINT enemies_enemy_intelligence_check CHECK ((intelligence >= 0)),
+    CONSTRAINT enemies_enemy_max_hp_check CHECK ((max_hp >= 0)),
+    CONSTRAINT enemies_enemy_movement_check CHECK ((movement >= 0)),
+    CONSTRAINT enemies_enemy_recommended_max_level_check CHECK ((recommended_max_level >= 0)),
+    CONSTRAINT enemies_enemy_recommended_min_level_check CHECK ((recommended_min_level >= 0)),
+    CONSTRAINT enemies_enemy_strength_check CHECK ((strength >= 0)),
+    CONSTRAINT enemies_enemy_wisdom_check CHECK ((wisdom >= 0)),
+    CONSTRAINT enemy_level_range_valid CHECK ((recommended_max_level >= recommended_min_level)),
+    CONSTRAINT enemy_max_hp_positive CHECK ((max_hp > 0))
+);
+
+
+--
+-- Name: enemies_enemy_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.enemies_enemy ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.enemies_enemy_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: enemies_enemyaction; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.enemies_enemyaction (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    description text NOT NULL,
+    action_type character varying(20) NOT NULL,
+    attack_bonus smallint,
+    save_dc smallint,
+    save_attribute character varying(20) NOT NULL,
+    range_text character varying(100) NOT NULL,
+    target_text character varying(100) NOT NULL,
+    damage_text character varying(150) NOT NULL,
+    effect_text text NOT NULL,
+    resource_cost character varying(100) NOT NULL,
+    recharge_text character varying(100) NOT NULL,
+    is_limited boolean NOT NULL,
+    uses_per_encounter smallint,
+    sort_order smallint NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    enemy_id bigint NOT NULL,
+    CONSTRAINT enemies_enemyaction_save_dc_check CHECK ((save_dc >= 0)),
+    CONSTRAINT enemies_enemyaction_sort_order_check CHECK ((sort_order >= 0)),
+    CONSTRAINT enemies_enemyaction_uses_per_encounter_check CHECK ((uses_per_encounter >= 0))
+);
+
+
+--
+-- Name: enemies_enemyaction_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.enemies_enemyaction ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.enemies_enemyaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: enemies_enemyfaction; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.enemies_enemyfaction (
+    id bigint NOT NULL,
+    name character varying(120) NOT NULL,
+    slug character varying(50) NOT NULL,
+    description text NOT NULL,
+    is_active boolean NOT NULL
+);
+
+
+--
+-- Name: enemies_enemyfaction_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.enemies_enemyfaction ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.enemies_enemyfaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: enemies_enemyfeature; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.enemies_enemyfeature (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    description text NOT NULL,
+    feature_type character varying(50) NOT NULL,
+    sort_order smallint NOT NULL,
+    is_active boolean NOT NULL,
+    enemy_id bigint NOT NULL,
+    CONSTRAINT enemies_enemyfeature_sort_order_check CHECK ((sort_order >= 0))
+);
+
+
+--
+-- Name: enemies_enemyfeature_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.enemies_enemyfeature ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.enemies_enemyfeature_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: history_sessionrecord; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.history_sessionrecord (
+    id bigint NOT NULL,
+    session_number integer NOT NULL,
+    title character varying(180) NOT NULL,
+    session_date date NOT NULL,
+    cover_image character varying(100) NOT NULL,
+    summary text NOT NULL,
+    audio_file character varying(100) NOT NULL,
+    transcription text NOT NULL,
+    ai_summary text NOT NULL,
+    ai_decisions text NOT NULL,
+    ai_detected_items text NOT NULL,
+    ai_processed_at timestamp with time zone,
+    is_published boolean NOT NULL,
+    published_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    campaign_id bigint NOT NULL,
+    CONSTRAINT history_sessionrecord_session_number_check CHECK ((session_number >= 0))
+);
+
+
+--
+-- Name: history_sessionrecord_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.history_sessionrecord ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.history_sessionrecord_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: inventory_inventoryitem; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inventory_inventoryitem (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    description text NOT NULL,
+    image character varying(100) NOT NULL,
+    file character varying(100) NOT NULL,
+    quantity integer,
+    master_note text NOT NULL,
+    is_visible boolean NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    character_id bigint NOT NULL,
+    CONSTRAINT inventory_inventoryitem_quantity_check CHECK ((quantity >= 0))
+);
+
+
+--
+-- Name: inventory_inventoryitem_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.inventory_inventoryitem ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.inventory_inventoryitem_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: maps_campaignmap; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.maps_campaignmap (
+    id bigint NOT NULL,
+    title character varying(160) NOT NULL,
+    description text NOT NULL,
+    map_type character varying(20) NOT NULL,
+    image character varying(100) NOT NULL,
+    file character varying(100) NOT NULL,
+    is_visible_to_players boolean NOT NULL,
+    is_featured boolean NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    campaign_id bigint NOT NULL,
+    related_inventory_item_id bigint
+);
+
+
+--
+-- Name: maps_campaignmap_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.maps_campaignmap ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.maps_campaignmap_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.maps_campaignmap_visible_to_users (
+    id bigint NOT NULL,
+    campaignmap_id bigint NOT NULL,
+    user_id bigint NOT NULL
+);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.maps_campaignmap_visible_to_users ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.maps_campaignmap_visible_to_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: ships_ship; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ships_ship (
+    id bigint NOT NULL,
+    name character varying(150) NOT NULL,
+    image character varying(100) NOT NULL,
+    category character varying(20) NOT NULL,
+    description text NOT NULL,
+    max_hp integer NOT NULL,
+    current_hp integer NOT NULL,
+    resistance_class smallint NOT NULL,
+    resistance_bonus smallint NOT NULL,
+    speed character varying(80) NOT NULL,
+    max_crew integer NOT NULL,
+    current_crew integer NOT NULL,
+    navigation_resources character varying(20) NOT NULL,
+    cannons smallint NOT NULL,
+    facilities text NOT NULL,
+    notes text NOT NULL,
+    is_active boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    campaign_id bigint NOT NULL,
+    belongs_to_crew boolean NOT NULL,
+    CONSTRAINT ship_current_crew_valid CHECK (((current_crew >= 0) AND (current_crew <= max_crew))),
+    CONSTRAINT ship_current_hp_valid CHECK (((current_hp >= 0) AND (current_hp <= max_hp))),
+    CONSTRAINT ship_max_crew_nonnegative CHECK ((max_crew >= 0)),
+    CONSTRAINT ship_max_hp_positive CHECK ((max_hp > 0)),
+    CONSTRAINT ships_ship_cannons_check CHECK ((cannons >= 0)),
+    CONSTRAINT ships_ship_current_crew_check CHECK ((current_crew >= 0)),
+    CONSTRAINT ships_ship_current_hp_check CHECK ((current_hp >= 0)),
+    CONSTRAINT ships_ship_max_crew_check CHECK ((max_crew >= 0)),
+    CONSTRAINT ships_ship_max_hp_check CHECK ((max_hp >= 0)),
+    CONSTRAINT ships_ship_resistance_class_check CHECK ((resistance_class >= 0))
+);
+
+
+--
+-- Name: ships_ship_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.ships_ship ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.ships_ship_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Data for Name: accounts_user; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.accounts_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, role) FROM stdin;
+3	pbkdf2_sha256$1000000$GfUce5sxhX9zcCdR4TVmle$jlGzYoWYxEyiUyMydGK6sjd5ksow6wWEoRAlECkogdE=	2026-07-18 20:57:15.520617+00	f	lucas				f	t	2026-07-18 20:51:26+00	player
+5	pbkdf2_sha256$1000000$wHfyWIi66lN5OkOudEZSx8$CCjzrurafl2fHy/KBY0p2CoY/OITHuqEQFtavfxarA0=	2026-07-18 20:57:22.974535+00	f	maria				f	t	2026-07-18 20:53:27+00	player
+4	pbkdf2_sha256$1000000$ze08zwshKbaje5z05e22vk$UaF/qrYKrHA+udI8IvFvShHMs/199X572uJFjQlL9NM=	2026-07-18 20:57:41.003214+00	f	bernardo				f	t	2026-07-18 20:51:54+00	player
+2	pbkdf2_sha256$1000000$M8OrsCD4pdM9jA9LulXZ6E$RM4/AX2nhhfaWM9o4I/ol5WcPOuCxz3u/AKtkTfCIhk=	2026-07-18 21:02:11.625634+00	t	mestre				t	t	2026-07-18 20:50:06.412087+00	
+6	pbkdf2_sha256$1000000$2B9WQayLCrDoZgxe5631wa$7JQIUWY+OQO5hrLVdpmzPni9CGX8OLeevRxLoqgqVC8=	2026-07-18 21:34:47.413897+00	f	danielly				f	t	2026-07-18 20:57:27+00	player
+1	pbkdf2_sha256$1000000$jHlsiVRu0EEYrbQCGps3gp$Qc8p6Jwt26mBrsES7zUNUPJ0B/14cyogfv84GcRiey4=	2026-07-18 22:20:59.986229+00	t	diogo			diogo@example.test	t	t	2026-07-18 20:00:36+00	master
+8	pbkdf2_sha256$1000000$pajhDaEFmZP84bYGbjycko$ZX71BA85tPbqjQgYL3UgTyg1VGDGOyBWIOpV8dzGDR8=	2026-07-18 22:24:56.5094+00	f	luisa				f	t	2026-07-18 20:58:47+00	player
+7	pbkdf2_sha256$1000000$yFNQQAuRf2OClwO0aBtkle$9EJICRsOzv7SWO8epIqOdEszE4GiFDfS9/cUBhjy/xE=	2026-07-18 22:52:21.10173+00	f	kaiky				f	t	2026-07-18 20:58:29+00	player
+\.
+
+
+--
+-- Data for Name: accounts_user_groups; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.accounts_user_groups (id, user_id, group_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: accounts_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.accounts_user_user_permissions (id, user_id, permission_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: audio_panel_audioasset; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.audio_panel_audioasset (id, title, slug, audio_file, category, description, character_name, scene_name, tags, is_favorite, is_active, is_featured, default_volume, default_loop, default_channel, sort_order, created_at, updated_at, last_played_at, play_count, campaign_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.auth_group (id, name) FROM stdin;
+\.
+
+
+--
+-- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
+1	Can add log entry	1	add_logentry
+2	Can change log entry	1	change_logentry
+3	Can delete log entry	1	delete_logentry
+4	Can view log entry	1	view_logentry
+5	Can add permission	2	add_permission
+6	Can change permission	2	change_permission
+7	Can delete permission	2	delete_permission
+8	Can view permission	2	view_permission
+9	Can add group	3	add_group
+10	Can change group	3	change_group
+11	Can delete group	3	delete_group
+12	Can view group	3	view_group
+13	Can add content type	4	add_contenttype
+14	Can change content type	4	change_contenttype
+15	Can delete content type	4	delete_contenttype
+16	Can view content type	4	view_contenttype
+17	Can add session	5	add_session
+18	Can change session	5	change_session
+19	Can delete session	5	delete_session
+20	Can view session	5	view_session
+21	Can add user	6	add_user
+22	Can change user	6	change_user
+23	Can delete user	6	delete_user
+24	Can view user	6	view_user
+25	Can add campanha	7	add_campaign
+26	Can change campanha	7	change_campaign
+27	Can delete campanha	7	delete_campaign
+28	Can view campanha	7	view_campaign
+29	Can add character	8	add_character
+30	Can change character	8	change_character
+31	Can delete character	8	delete_character
+32	Can view character	8	view_character
+33	Can add skill	9	add_skill
+34	Can change skill	9	change_skill
+35	Can delete skill	9	delete_skill
+36	Can view skill	9	view_skill
+37	Can add character condition	10	add_charactercondition
+38	Can change character condition	10	change_charactercondition
+39	Can delete character condition	10	delete_charactercondition
+40	Can view character condition	10	view_charactercondition
+41	Can add character feature	11	add_characterfeature
+42	Can change character feature	11	change_characterfeature
+43	Can delete character feature	11	delete_characterfeature
+44	Can view character feature	11	view_characterfeature
+45	Can add character technique	12	add_charactertechnique
+46	Can change character technique	12	change_charactertechnique
+47	Can delete character technique	12	delete_charactertechnique
+48	Can view character technique	12	view_charactertechnique
+49	Can add character skill	13	add_characterskill
+50	Can change character skill	13	change_characterskill
+51	Can delete character skill	13	delete_characterskill
+52	Can view character skill	13	view_characterskill
+53	Can add antecedente	14	add_background
+54	Can change antecedente	14	change_background
+55	Can delete antecedente	14	delete_background
+56	Can view antecedente	14	view_background
+57	Can add character attribute	15	add_characterattribute
+58	Can change character attribute	15	change_characterattribute
+59	Can delete character attribute	15	delete_characterattribute
+60	Can view character attribute	15	view_characterattribute
+61	Can add character creation	16	add_charactercreation
+62	Can change character creation	16	change_charactercreation
+63	Can delete character creation	16	delete_charactercreation
+64	Can view character creation	16	view_charactercreation
+65	Can add character rule exception	17	add_characterruleexception
+66	Can change character rule exception	17	change_characterruleexception
+67	Can delete character rule exception	17	delete_characterruleexception
+68	Can view character rule exception	17	view_characterruleexception
+69	Can add estilo de combate	18	add_combatstyle
+70	Can change estilo de combate	18	change_combatstyle
+71	Can delete estilo de combate	18	delete_combatstyle
+72	Can view estilo de combate	18	view_combatstyle
+73	Can add profissão	19	add_profession
+74	Can change profissão	19	change_profession
+75	Can delete profissão	19	delete_profession
+76	Can view profissão	19	view_profession
+77	Can add atributo de regra	20	add_ruleattribute
+78	Can change atributo de regra	20	change_ruleattribute
+79	Can delete atributo de regra	20	delete_ruleattribute
+80	Can view atributo de regra	20	view_ruleattribute
+81	Can add proficiência	21	add_ruleproficiency
+82	Can change proficiência	21	change_ruleproficiency
+83	Can delete proficiência	21	delete_ruleproficiency
+84	Can view proficiência	21	view_ruleproficiency
+85	Can add character proficiency	22	add_characterproficiency
+86	Can change character proficiency	22	change_characterproficiency
+87	Can delete character proficiency	22	delete_characterproficiency
+88	Can view character proficiency	22	view_characterproficiency
+89	Can add espécie	23	add_species
+90	Can change espécie	23	change_species
+91	Can delete espécie	23	delete_species
+92	Can view espécie	23	view_species
+93	Can add variante	24	add_speciesvariant
+94	Can change variante	24	change_speciesvariant
+95	Can delete variante	24	delete_speciesvariant
+96	Can view variante	24	view_speciesvariant
+97	Can add traço Zoan de ancestralidade	25	add_zoanancestrytrait
+98	Can change traço Zoan de ancestralidade	25	change_zoanancestrytrait
+99	Can delete traço Zoan de ancestralidade	25	delete_zoanancestrytrait
+100	Can view traço Zoan de ancestralidade	25	view_zoanancestrytrait
+101	Can add inventory item	26	add_inventoryitem
+102	Can change inventory item	26	change_inventoryitem
+103	Can delete inventory item	26	delete_inventoryitem
+104	Can view inventory item	26	view_inventoryitem
+105	Can add ship	27	add_ship
+106	Can change ship	27	change_ship
+107	Can delete ship	27	delete_ship
+108	Can view ship	27	view_ship
+109	Can add campaign map	28	add_campaignmap
+110	Can change campaign map	28	change_campaignmap
+111	Can delete campaign map	28	delete_campaignmap
+112	Can view campaign map	28	view_campaignmap
+113	Can add session record	29	add_sessionrecord
+114	Can change session record	29	change_sessionrecord
+115	Can delete session record	29	delete_sessionrecord
+116	Can view session record	29	view_sessionrecord
+117	Can add enemy	30	add_enemy
+118	Can change enemy	30	change_enemy
+119	Can delete enemy	30	delete_enemy
+120	Can view enemy	30	view_enemy
+121	Can add enemy faction	31	add_enemyfaction
+122	Can change enemy faction	31	change_enemyfaction
+123	Can delete enemy faction	31	delete_enemyfaction
+124	Can view enemy faction	31	view_enemyfaction
+125	Can add enemy action	32	add_enemyaction
+126	Can change enemy action	32	change_enemyaction
+127	Can delete enemy action	32	delete_enemyaction
+128	Can view enemy action	32	view_enemyaction
+129	Can add enemy feature	33	add_enemyfeature
+130	Can change enemy feature	33	change_enemyfeature
+131	Can delete enemy feature	33	delete_enemyfeature
+132	Can view enemy feature	33	view_enemyfeature
+133	Can add encounter	34	add_encounter
+134	Can change encounter	34	change_encounter
+135	Can delete encounter	34	delete_encounter
+136	Can view encounter	34	view_encounter
+137	Can add encounter enemy	35	add_encounterenemy
+138	Can change encounter enemy	35	change_encounterenemy
+139	Can delete encounter enemy	35	delete_encounterenemy
+140	Can view encounter enemy	35	view_encounterenemy
+141	Can add encounter participant	36	add_encounterparticipant
+142	Can change encounter participant	36	change_encounterparticipant
+143	Can delete encounter participant	36	delete_encounterparticipant
+144	Can view encounter participant	36	view_encounterparticipant
+145	Can add combat	37	add_combat
+146	Can change combat	37	change_combat
+147	Can delete combat	37	delete_combat
+148	Can view combat	37	view_combat
+149	Can add combatant	38	add_combatant
+150	Can change combatant	38	change_combatant
+151	Can delete combatant	38	delete_combatant
+152	Can view combatant	38	view_combatant
+153	Can add combat note	39	add_combatnote
+154	Can change combat note	39	change_combatnote
+155	Can delete combat note	39	delete_combatnote
+156	Can view combat note	39	view_combatnote
+157	Can add hp change	40	add_hpchange
+158	Can change hp change	40	change_hpchange
+159	Can delete hp change	40	delete_hpchange
+160	Can view hp change	40	view_hpchange
+161	Can add audio asset	41	add_audioasset
+162	Can change audio asset	41	change_audioasset
+163	Can delete audio asset	41	delete_audioasset
+164	Can view audio asset	41	view_audioasset
+\.
+
+
+--
+-- Data for Name: campaigns_campaign; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.campaigns_campaign (id, name, slug, description, cover_image, is_active, created_at, updated_at, master_id) FROM stdin;
+2	Os Tambores da Libertação	os-tambores-da-libertacao			t	2026-07-18 20:59:15.716823+00	2026-07-18 20:59:15.716852+00	1
+4	Tambores da Libertação	tambores_libertacao			t	2026-07-18 21:23:03.905976+00	2026-07-18 21:23:03.905991+00	1
+\.
+
+
+--
+-- Data for Name: campaigns_campaign_players; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.campaigns_campaign_players (id, campaign_id, user_id) FROM stdin;
+1	2	3
+2	2	4
+3	2	5
+4	2	6
+5	2	7
+6	2	8
+\.
+
+
+--
+-- Data for Name: characters_background; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_background (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, skill_choice_count, recommended_attribute, special_feature_name, special_feature_description, allows_master_customization) FROM stdin;
+1	player-book-1.5.7	artista	Artista	144-147		t	2026-07-18 21:10:50.461912+00	2026-07-18 21:23:00.871101+00	2	presence	Rock Star	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+2	player-book-1.5.7	criminoso	Criminoso	144-147		t	2026-07-18 21:10:50.4725+00	2026-07-18 21:23:00.878294+00	2	dexterity	Contatos	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+3	player-book-1.5.7	escravo	Escravo	144-147		t	2026-07-18 21:10:50.478516+00	2026-07-18 21:23:00.88525+00	2	constitution	Esperança	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+4	player-book-1.5.7	familia-d	Família D.	144-147		t	2026-07-18 21:10:50.485017+00	2026-07-18 21:23:00.891935+00	2	willpower	Vontade dos D.	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+5	player-book-1.5.7	marinheiro	Marinheiro	144-147		t	2026-07-18 21:10:50.490321+00	2026-07-18 21:23:00.897629+00	2	strength	Carteirada	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+6	player-book-1.5.7	nobre	Nobre	144-147		t	2026-07-18 21:10:50.498361+00	2026-07-18 21:23:00.904573+00	2	wisdom	Influência	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+7	player-book-1.5.7	orfao	Órfão	144-147		t	2026-07-18 21:10:50.50603+00	2026-07-18 21:23:00.910174+00	2	strength	Malandragem	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+8	player-book-1.5.7	politico	Político	144-147		t	2026-07-18 21:10:50.514464+00	2026-07-18 21:23:00.916267+00	2	presence	Discurso	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+9	player-book-1.5.7	revolucionario	Revolucionário	144-147		t	2026-07-18 21:10:50.522124+00	2026-07-18 21:23:00.922455+00	2	dexterity	Herói do Povo	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+10	player-book-1.5.7	sacerdote	Sacerdote	144-147		t	2026-07-18 21:10:50.529491+00	2026-07-18 21:23:00.928433+00	2	wisdom	Fiéis	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+11	player-book-1.5.7	sobrevivente	Sobrevivente	144-147		t	2026-07-18 21:10:50.536388+00	2026-07-18 21:23:00.934592+00	2	willpower	Reputação	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+12	player-book-1.5.7	tenryuubito	Tenryuubito	144-147		t	2026-07-18 21:10:50.544413+00	2026-07-18 21:23:00.940796+00	2	constitution	Costas Quentes	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	t
+13	player-book-1.5.7	estudiosa-de-vila	Estudiosa			t	2026-07-18 21:28:51.602239+00	2026-07-18 21:28:51.602264+00	2	wisdom	Estudiosa de Vila		t
+\.
+
+
+--
+-- Data for Name: characters_background_allowed_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_background_allowed_skills (id, background_id, skill_id) FROM stdin;
+1	1	1
+2	1	5
+3	1	8
+4	1	15
+5	1	16
+6	1	19
+7	2	16
+8	2	9
+9	2	6
+10	2	7
+11	3	10
+12	3	18
+13	3	4
+14	3	14
+15	4	9
+16	4	10
+17	4	20
+18	4	14
+19	5	1
+20	5	18
+21	5	11
+22	5	4
+23	6	8
+24	6	10
+25	6	11
+26	6	13
+27	6	22
+28	7	10
+29	7	18
+30	7	4
+31	7	7
+32	8	5
+33	8	6
+34	8	8
+35	8	10
+36	8	15
+37	8	19
+38	9	8
+39	9	1
+40	9	4
+41	9	15
+42	10	8
+43	10	21
+44	10	14
+45	10	15
+46	11	8
+47	11	10
+48	11	18
+49	11	14
+50	12	8
+51	12	9
+52	12	11
+53	12	13
+54	13	11
+55	13	13
+\.
+
+
+--
+-- Data for Name: characters_character; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_character (id, name, portrait, level, species, profession, combat_style, background, bounty, armor_class, proficiency_bonus, initiative, movement, max_hp, current_hp, max_power_points, current_power_points, strength, dexterity, constitution, intelligence, wisdom, charisma, haki_declared, haki_trained, devil_fruit_name, devil_fruit_available, appearance, personality, dream, notes, created_at, updated_at, campaign_id, user_id, presence, willpower, age, dream_path, height, weight) FROM stdin;
+8	Antonie Dorian Grey	characters/portraits/6f1c6eface48443da821a392299fff19.png	1	Mestiço	Engenheiro	Atirador	Tenryuubito	0	13	2	3	0	21	21	2	2	12	17	14	10	14	10	f	f		f		Haki da observação inato\r\nEspecialista\r\nPatrocinado\r\nGanância\r\nNarcisista\r\nCoração Mole	Vingança e Maestria Tecnológica		2026-07-18 22:17:35.416304+00	2026-07-18 22:42:50.563231+00	2	7	9	10	26	power_strength	1,80	86
+2	MD Chefe		1	Humano (Humanozarrão)	Carpinteiro	Carateca Homem-Peixe	Sobrevivente	0	10	2	0	9	24	24	2	2	16	10	14	10	10	10	f	f		f		Ganância \r\nSingularidade: tesouro precioso.\r\nO anel dado por garuru garante +1 em testes feitos para proteger este item. Se o anel for destruído ou perdido, voce sofre um abalo emocional (letargia).	Conhecer sobre o passado da sua familia, exploraras ilhas do mundo e se vingar dos tenryuubitos.		2026-07-18 21:53:43.533562+00	2026-07-18 22:12:40.666813+00	2	4	13	13	26	knowledge_strength	300cm	373kg
+7	Melina	characters/portraits/a610fcc5d345464e8dc3036256e53487.png	1	Mink (Ágil)	Arqueólogo	Espadachim	Sobrevivente	0	14	2	4	12	24	24	2	2	8	18	14	10	14	10	f	f		f	Melina é uma Mink galgo italiano de 1,80 m, com corpo esguio e atlético, pelagem curta caramelo e cabelos cacheados e volumosos. Seus olhos dourados e orelhas expressivas reforçam sua natureza curiosa e aventureira. Como arqueóloga, veste roupas práticas repletas de bolsas, cintos e ferramentas, carregando sempre sua característica Agulha Gigante.	Singularidades\r\nBom Senso: Melina possui uma mente analítica aguçada, permitindo identificar perigos óbvios e rotas de fuga antes que o caos se instale.\r\nInstintos Animais: Como Mink galgo, sua natureza canina é forte. Regra Específica: Ao avistar objetos esféricos em movimento (bolinhas), Melina deve realizar uma Salvaguarda de Vontade (CD 15). Em caso de falha, ela entra em estado de fixação, perdendo seus turnos para perseguir o objeto até que ele pare ou ela seja distraída.\r\nDefeitos\r\nSinceridade Excessiva: Melina não possui filtro social; ela dirá a verdade mesmo que isso custe uma aliança diplomática ou ofenda um oficial da Marinha.\r\nCoração Mole: Sua empatia é sua fraqueza. Ela tem dificuldade em ignorar pedidos de ajuda, mesmo que pareçam armadilhas evidentes.	Melina vive em uma busca incessante por respostas sobre sua própria origem, utilizando seus vastos conhecimentos em arqueologia para decifrar pistas do passado. Marcada por seu histórico de sobrevivente, ela desenvolveu uma resiliência única que permite transformar os perigos de campo em oportunidades de descoberta. Unindo sua destreza natural à sua profissão, ela dedica seus esforços para localizar a lendária ilha de Zou, esperando que o lar ancestral de seu povo finalmente revele os segredos e a linhagem que ela carrega.		2026-07-18 22:17:21.58803+00	2026-07-18 22:28:02.888724+00	2	6	10	12	20	freedom_companionship	1,80	60
+9	Son Lulu Young	characters/portraits/201819c68b1542ef91068ebf582ebf40.jpeg	1	Humano (Humano Comum)	Cozinheiro	Espadachim	Artista	0	13	2	3	9	21	17	2	2	8	17	13	10	16	10	f	f		f		Muito energética e otimista\r\nAma conhecer novas culturas através da comida\r\nFaz apresentações musicais enquanto cozinha\r\ntrata refeições como obras de arte\r\nSempre tenta resolver conflitos oferecendo comida antes de sacar as espadas\r\nQuando alguém fala mal de Wano ou desperdiça comida, torna-se extremamente séria.	Lulu quer um dia voltar para Wano, reerguer sua casa e abrir  o maior e melhor restaurante do mundo, onde todas as culturas possam se reunir à mesa como amigos.		2026-07-18 22:41:48.634913+00	2026-07-19 00:48:01.523364+00	2	8	10	12	22	knowledge_companionship	1,68	85
+3	Sora	characters/portraits/a852dbe34acd4bb6925e93965c81682f.png	1	Mestiço	Médico	Atirador	Estudiosa	0	12	2	2	0	20	19	2	2	10	14	13	10	17	10	f	f		f					2026-07-18 22:06:28.871171+00	2026-07-19 01:09:18.12614+00	2	5	11	11	20	knowledge_companionship	1,70	65kg
+1	Kuro	characters/portraits/0f544a01720a4ce2b83e69ba698524f6.png	1	Lunariano	Navegador / Timoneiro	Guerreiro-Oni	Sobrevivente	0	12	2	0	9	30	15	2	2	16	10	14	10	14	10	f	f		f			Sonho: Mapear o Mundo.\r\nO que significa: Kuro deseja cartografar cada centímetro dos mares. Para ele, isso não é apenas curiosidade, mas uma missão para encontrar outros sobreviventes da raça Lunariana e restaurar a glória de seu povo através do conhecimento das rotas do mundo (Histórico).		2026-07-18 21:52:39.113548+00	2026-07-19 01:50:39.728907+00	2	3	10	12	20	freedom_strength	3 metros	220
+\.
+
+
+--
+-- Data for Name: characters_characterattribute; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterattribute (id, attribute, base_value, species_bonus, background_bonus, other_bonus, final_value, character_id) FROM stdin;
+1	strength	15	1	0	0	16	1
+2	dexterity	10	0	0	0	10	1
+3	constitution	14	0	0	0	14	1
+4	wisdom	13	1	0	0	14	1
+5	willpower	10	0	2	0	12	1
+6	presence	10	0	0	0	10	1
+7	strength	12	2	2	0	16	2
+8	dexterity	10	0	0	0	10	2
+9	constitution	14	0	0	0	14	2
+10	wisdom	10	0	0	0	10	2
+11	willpower	13	0	0	0	13	2
+12	presence	13	0	0	0	13	2
+13	strength	10	0	0	0	10	3
+14	dexterity	13	1	0	0	14	3
+15	constitution	13	0	0	0	13	3
+16	wisdom	14	1	2	0	17	3
+17	willpower	11	0	0	0	11	3
+18	presence	11	0	0	0	11	3
+37	strength	8	0	0	0	8	7
+38	dexterity	15	2	1	0	18	7
+39	constitution	13	0	1	0	14	7
+40	wisdom	14	0	0	0	14	7
+41	willpower	12	0	0	0	12	7
+42	presence	10	0	0	0	10	7
+43	strength	12	0	0	0	12	8
+44	dexterity	13	2	2	0	17	8
+45	constitution	14	0	0	0	14	8
+46	wisdom	14	0	0	0	14	8
+47	willpower	10	0	0	0	10	8
+48	presence	9	0	0	0	9	8
+49	strength	8	0	0	0	8	9
+50	dexterity	14	2	1	0	17	9
+51	constitution	13	0	0	0	13	9
+52	wisdom	15	0	1	0	16	9
+53	willpower	12	0	0	0	12	9
+54	presence	10	0	0	0	10	9
+\.
+
+
+--
+-- Data for Name: characters_charactercondition; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercondition (id, name, description, is_active, created_at, updated_at, character_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: characters_charactercreation; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation (id, status, current_step, ruleset_version, completed_steps, pending_choices, validation_errors, warnings, approved_by_master, name, concept, appearance, personality, dream, ancestry_text, ancestry_choices, favorite_weapon, innate_ability, equipment_choice, attribute_method, attribute_bases, species_attribute_bonuses, background_attribute_bonuses, other_attribute_bonuses, random_rolls, created_at, updated_at, completed_at, background_id, campaign_id, character_id, user_id, combat_style_id, profession_id, subprofession_id, species_id, species_variant_id, age, dream_path, height, weight) FROM stdin;
+7	draft	concept	player-book-1.5.7	[]	[]	{}	[]	f							{}				point_distribution	{}	{}	{}	{}	[]	2026-07-18 22:52:58.38171+00	2026-07-18 22:52:58.381728+00	\N	\N	2	\N	8	\N	\N	\N	\N	\N				
+5	completed	review	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	Son Lulu Young	Nascida em Wano, cresceu entre festivais show e aromas da culinária tradicional. Ainda criança, precisou fugir da sua terra natal e desde então carrega a saudade de casa. Para manter viva a cultura de seu povo, Lulu transformou a cozinha em um espetáculo. Canta, dança e entretém as pessoas enquanto cozinha pratos incríveis que encantam todos à sua volto. A comida é sua arte. Suas lâminas são sua proteção. E sua vontade é sua maior força.					{"dial": "Heat", "predator": false, "snake_name": "", "expert_skill": "investigacao", "common_traits": [], "marine_ancestry": "", "specific_traits": [], "carnivore_hunter": false, "restricted_skill": ""}	Qualquer arma cortante	Perito em Técnicas		point_distribution	{"wisdom": 15, "presence": 10, "strength": 8, "dexterity": 14, "willpower": 12, "constitution": 13}	{"dexterity": 2}	{"wisdom": 1, "dexterity": 1}	{}	[]	2026-07-18 21:38:35.064475+00	2026-07-18 22:41:48.770519+00	2026-07-18 22:41:48.770336+00	1	2	9	8	4	6	\N	4	4	22	knowledge_companionship	1,68	85
+4	completed	personality	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	Melina	Melina possui um porte físico esguio e elegante, reflexo de sua alta Destreza (18) e Força reduzida (8). Como uma sobrevivente, ela aprendeu que a precisão de sua "Agulha" é mais letal que a força bruta. Sua jornada como arqueóloga é uma busca solitária por identidade, focada em encontrar pistas que a levem de volta à Zou, o lar que ela conhece apenas através de fragmentos de história.	Melina é uma Mink galgo italiano de 1,80 m, com corpo esguio e atlético, pelagem curta caramelo e cabelos cacheados e volumosos. Seus olhos dourados e orelhas expressivas reforçam sua natureza curiosa e aventureira. Como arqueóloga, veste roupas práticas repletas de bolsas, cintos e ferramentas, carregando sempre sua característica Agulha Gigante.	Singularidades\nBom Senso: Melina possui uma mente analítica aguçada, permitindo identificar perigos óbvios e rotas de fuga antes que o caos se instale.\nInstintos Animais: Como Mink galgo, sua natureza canina é forte. Regra Específica: Ao avistar objetos esféricos em movimento (bolinhas), Melina deve realizar uma Salvaguarda de Vontade (CD 15). Em caso de falha, ela entra em estado de fixação, perdendo seus turnos para perseguir o objeto até que ele pare ou ela seja distraída.\nDefeitos\nSinceridade Excessiva: Melina não possui filtro social; ela dirá a verdade mesmo que isso custe uma aliança diplomática ou ofenda um oficial da Marinha.\nCoração Mole: Sua empatia é sua fraqueza. Ela tem dificuldade em ignorar pedidos de ajuda, mesmo que pareçam armadilhas evidentes.	Melina vive em uma busca incessante por respostas sobre sua própria origem, utilizando seus vastos conhecimentos em arqueologia para decifrar pistas do passado. Marcada por seu histórico de sobrevivente, ela desenvolveu uma resiliência única que permite transformar os perigos de campo em oportunidades de descoberta. Unindo sua destreza natural à sua profissão, ela dedica seus esforços para localizar a lendária ilha de Zou, esperando que o lar ancestral de seu povo finalmente revele os segredos e a linhagem que ela carrega.	Galgo Italiano	{"dial": "", "predator": false, "snake_name": "", "expert_skill": "sobrevivencia", "common_traits": ["audicao-agucada"], "marine_ancestry": "", "specific_traits": ["bote"], "carnivore_hunter": false, "restricted_skill": ""}	Qualquer arma cortante	Superando Limites	Agulha	point_distribution	{"wisdom": 14, "presence": 10, "strength": 8, "dexterity": 15, "willpower": 12, "constitution": 13}	{"dexterity": 2}	{"dexterity": 1, "constitution": 1}	{}	[]	2026-07-18 21:01:01.705312+00	2026-07-18 22:17:21.732113+00	2026-07-18 22:17:21.731848+00	11	2	7	6	4	2	\N	7	11	20	freedom_companionship	1,80	60
+6	completed	background	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	Antonie Dorian Grey	Filho de um tenryuubito e uma mãe celestial. Após o assassinato de sua mãe pela Marinha, ele vive como um renegado, buscando o pai e vingança contra o Governo Mundial.		Haki da observação inato\nEspecialista\nPatrocinado\nGanância\nNarcisista\nCoração Mole	Vingança e Maestria Tecnológica		{"dial": "Flame, Flash, Heat, Spark", "predator": false, "snake_name": "", "expert_skill": "", "common_traits": [], "marine_ancestry": "", "specific_traits": ["asas"], "carnivore_hunter": false, "restricted_skill": ""}	Arco	Perito em Técnicas	arco	point_distribution	{"wisdom": 14, "presence": 9, "strength": 12, "dexterity": 13, "willpower": 10, "constitution": 14}	{"dexterity": 2}	{"dexterity": 2}	{}	[]	2026-07-18 21:41:35.499256+00	2026-07-18 22:17:35.561751+00	2026-07-18 22:17:35.561498+00	12	2	8	7	1	7	\N	6	\N	26	power_strength	1,80	86
+2	completed	attributes	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	Sora	Sora cresceu sob os céus gélidos e as histórias de guerra do North Blue. Criada exclusivamente por seu pai humano em uma pequena ilha, ela nunca conheceu a mãe — uma Mink raposa que, por motivos que Sora não se importa em descobrir, deixou o pai logo após o seu nascimento. No entanto, ela reconhece que é graças a esse sangue estrangeiro de Zou que possui seus instintos aguçados e o poder do Electro.\nEnquanto o pai passava as tardes ensinando-a a manusear rifles e pistolas para que ela nunca fosse uma vítima em um mar tão perigoso, Sora passava as noites debruçada sobre livros de anatomia e ervas. Para ela, a medicina nunca foi apenas um dever, mas um enigma fascinante. Aprender a atirar foi uma necessidade prática ensinada por quem a amava, mas sua verdadeira paixão é encontrar a peça que falta para curar uma doença impossível.					{"dial": "", "predator": false, "snake_name": "", "expert_skill": "", "common_traits": [], "marine_ancestry": "", "specific_traits": [], "carnivore_hunter": false, "restricted_skill": ""}	Pistola	Superioridade Absoluta	Pistola	point_distribution	{"wisdom": 14, "presence": 11, "strength": 10, "dexterity": 13, "willpower": 11, "constitution": 13}	{"wisdom": 1, "dexterity": 1}	{"wisdom": 2}	{}	[]	2026-07-18 21:00:41.433634+00	2026-07-18 22:06:29.023753+00	2026-07-18 22:06:29.023486+00	13	2	3	5	1	8	\N	6	\N	20	knowledge_companionship	1,70	65kg
+3	completed	concept	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	MD Chefe	M.D. Chefe nasceu em uma pequenina ilha em West Blue. Aos dois anos de idade, sua\nfamília foi raptada para ser escrava. Seu pai reagiu e acabou morto. M.D. passou cerca de\ncinco a seis anos em Mary Geoise, onde sua mãe também faleceu. Solitário e com medo,\ncriou amizade com outras crianças escravizadas, incluindo um jovem tritão chamado\nGaruru. Mesmo odiando os Tenryuubitos, ficava fascinado pelas joias que eles usavam,\nimaginando-se usando cordões, anéis e pulseiras.\nDurante a invasão de Fisher Tiger em Mary Geoise para libertar os escravos, Garuru foi\nmortalmente ferido. Antes de morrer, entregou um pequeno anel a M.D., que se tornou seu\nbem mais precioso.\nOs pais de Garuru, Harry Kane e Crystal, reconheceram o anel após a fuga e adotaram\nM.D. Criado na Ilha dos Homens-Peixe, aprendeu Karatê Homem-Peixe e carpintaria naval\ncom Harry Kane. Sofreu preconceito por ser humano, mas conquistou seu lugar e viveu\nfeliz, tornando-se forte, excelente nadador e explorador dos arredores da ilha, onde\nencontrava joias e pedras preciosas em naufrágios. Quase ingressou na guarda de\nPoseidon.\nApós acompanhar a Guerra dos Maiorais e ler as notícias, decidiu descobrir a verdade\nsobre o "D." em seu nome, entender seu passado, resolver suas pendências com os\nTenryuubitos e explorar o mundo.\nSeu pai lhe entregou um tridente antigo da guarda de Poseidon, adornado com três pérolas,\nalém de ferramentas de carpinteiro. M.D. usa três anéis na mão esquerda, o anel de Garuru\nna direita, um brinco de diamante e possui uma tatuagem de um tridente no braço direito; no\ncentro do tridente está tatuado o Sol, marca característica dos antigos escravos.\nDecide esconder sua condição de integrante da Família D., seguindo o conselho do seu pai\nadotivo, Harry Kane, e parte sozinho em um pequeno barco. Em determinado momento, um\ncorvo entrega uma carta extremamente curiosa... e sua história segue a partir daí			Conhecer sobre o passado da sua familia, exploraras ilhas do mundo e se vingar dos tenryuubitos.		{"dial": "", "predator": false, "snake_name": "", "expert_skill": "acrobacia", "common_traits": [], "marine_ancestry": "", "specific_traits": [], "carnivore_hunter": false, "restricted_skill": ""}	Tridente	Aprimoramento de Atributo		point_distribution	{"wisdom": 10, "presence": 13, "strength": 12, "dexterity": 10, "willpower": 13, "constitution": 14}	{"strength": 2}	{"strength": 2}	{}	[]	2026-07-18 21:00:51.058205+00	2026-07-18 21:53:43.662131+00	2026-07-18 21:53:43.661849+00	11	2	2	4	2	4	\N	4	5	26	knowledge_strength	300cm	373kg
+1	completed	review	player-book-1.5.7	["concept", "species", "style", "profession", "attributes", "background", "personality", "pending", "equipment", "review"]	[]	{}	[]	f	Kuro	Origem no Topo do Mundo: Kuro nasceu em um enclave isolado no topo da Red Line, em uma região que as lendas chamavam de "Reino dos Deuses"\n. Como um Lunariano, ele cresceu em uma cultura que já foi cultuada como divina, marcada por sua pele morena, cabelos brancos e as majestosas asas negras\n.\nO Grande Desastre (O Sobrevivente): Sua vida mudou drasticamente quando o Governo Mundial promoveu um ataque de extermínio contra o seu povo\n. Kuro presenciou a destruição de seu lar (o evento histórico exigido pelo antecedente Sobrevivente) e foi o único de seu grupo a escapar das chamas e da captura\n.\nA Queda para o South Blue: Para sobreviver, ele saltou para o mar e acabou chegando ao South Blue. Desde então, ele vive sob o peso de ser uma "Cabeça à Prêmio", sabendo que o governo oferece ฿ 100.000.000 por qualquer pista sobre seu paradeiro\n.\nO Disfarce do Navegador: Kuro aprendeu a esconder sua natureza exótica. Ele cobre seu corpo e suas asas com mantos pesados e tenta manter a esfera de fogo em suas costas o mais controlada possível					{"dial": "", "predator": false, "snake_name": "", "expert_skill": "haki", "common_traits": [], "marine_ancestry": "", "specific_traits": [], "carnivore_hunter": false, "restricted_skill": ""}	Kanabo	Corpo de Guerreiro		point_distribution	{"wisdom": 13, "presence": 10, "strength": 15, "dexterity": 10, "willpower": 10, "constitution": 14}	{"wisdom": 1, "strength": 1}	{"willpower": 2}	{}	[]	2026-07-18 21:00:40.000364+00	2026-07-18 21:52:39.349124+00	2026-07-18 21:52:39.348866+00	11	2	1	3	5	10	12	5	\N	20	freedom_strength	3 metros	220
+\.
+
+
+--
+-- Data for Name: characters_charactercreation_background_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation_background_skills (id, charactercreation_id, skill_id) FROM stdin;
+1	3	8
+2	3	14
+3	2	11
+4	2	13
+5	1	8
+6	1	10
+9	6	8
+10	6	13
+11	4	10
+12	4	18
+13	5	8
+14	5	1
+\.
+
+
+--
+-- Data for Name: characters_charactercreation_free_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation_free_skills (id, charactercreation_id, skill_id) FROM stdin;
+1	3	4
+2	1	10
+3	1	15
+5	2	8
+6	6	8
+7	6	14
+8	5	10
+9	5	19
+\.
+
+
+--
+-- Data for Name: characters_charactercreation_mixed_species_origins; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation_mixed_species_origins (id, charactercreation_id, species_id) FROM stdin;
+1	2	4
+2	2	7
+3	6	2
+4	6	4
+\.
+
+
+--
+-- Data for Name: characters_charactercreation_profession_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation_profession_skills (id, charactercreation_id, skill_id) FROM stdin;
+1	3	8
+2	3	11
+3	1	18
+4	1	14
+5	2	11
+6	2	14
+8	4	8
+9	4	11
+10	6	16
+11	6	11
+12	5	16
+13	5	5
+\.
+
+
+--
+-- Data for Name: characters_charactercreation_style_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactercreation_style_skills (id, charactercreation_id, skill_id) FROM stdin;
+1	3	1
+2	3	4
+3	1	9
+4	1	4
+6	4	4
+7	4	14
+8	2	10
+9	2	14
+10	2	7
+11	6	1
+12	6	4
+13	6	7
+18	5	4
+20	5	14
+\.
+
+
+--
+-- Data for Name: characters_characterfeature; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterfeature (id, name, description, source, is_available, sort_order, character_id) FROM stdin;
+1	Asas	Benefício racial cadastrado pelo catálogo.	Espécie: Lunariano	t	10	1
+2	Fogo lunariano	Benefício racial cadastrado pelo catálogo.	Espécie: Lunariano	t	11	1
+3	Resistência	Benefício racial cadastrado pelo catálogo.	Espécie: Lunariano	t	12	1
+4	Chama ativa/inativa	Benefício racial cadastrado pelo catálogo.	Espécie: Lunariano	t	13	1
+5	Grande preconceito	Dificuldade racial cadastrada pelo catálogo.	Espécie: Lunariano	t	30	1
+6	Reputação	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	Antecedente: Sobrevivente	t	0	1
+7	Sangue Oni	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Guerreiro-Oni	t	0	1
+8	Versatilidade por variante	Benefício racial cadastrado pelo catálogo.	Espécie: Humano	t	10	2
+9	size: Grande	Ajuste de variante aplicado ao personagem.	Variante: Humanozarrão	t	40	2
+10	Humanozarrão 1	+2 em salvaguardas de strength.	Variante: Humanozarrão	t	50	2
+11	Reputação	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	Antecedente: Sobrevivente	t	0	2
+12	Caratê Homem-Peixe	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Carateca Homem-Peixe	t	0	2
+13	Benefício de duas origens	Benefício racial cadastrado pelo catálogo.	Espécie: Mestiço	t	10	3
+14	Uma dificuldade das origens	Dificuldade racial cadastrada pelo catálogo.	Espécie: Mestiço	t	30	3
+15	Estudiosa de Vila		Antecedente: Estudiosa	t	0	3
+16	Proficiências do Atirador	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Atirador	t	0	3
+17	Electro	Benefício racial cadastrado pelo catálogo.	Espécie: Mink	t	10	7
+18	Ancestralidade mamífera	Benefício racial cadastrado pelo catálogo.	Espécie: Mink	t	11	7
+19	Instintos Animalescos	Dificuldade racial cadastrada pelo catálogo.	Espécie: Mink	t	30	7
+20	movement: 12	Ajuste de variante aplicado ao personagem.	Variante: Ágil	t	40	7
+21	climb_speed: 9	Ajuste de variante aplicado ao personagem.	Variante: Ágil	t	40	7
+22	Ancestralidade	Ancestral: Galgo Italiano. Traços comuns: audicao-agucada. Traços específicos: bote.	Ancestralidade: espécie	t	70	7
+23	Reputação	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	Antecedente: Sobrevivente	t	0	7
+24	Postura de Espadachim	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Espadachim	t	0	7
+25	Benefício de duas origens	Benefício racial cadastrado pelo catálogo.	Espécie: Mestiço	t	10	8
+26	Uma dificuldade das origens	Dificuldade racial cadastrada pelo catálogo.	Espécie: Mestiço	t	30	8
+27	Dial inicial	Flame, Flash, Heat, Spark	Ancestralidade: Celestial	t	60	8
+28	Ancestralidade	Traços específicos: asas.	Ancestralidade: espécie	t	70	8
+29	Costas Quentes	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	Antecedente: Tenryuubito	t	0	8
+30	Proficiências do Atirador	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Atirador	t	0	8
+31	Versatilidade por variante	Benefício racial cadastrado pelo catálogo.	Espécie: Humano	t	10	9
+32	Humano Comum 1	Escolhe 3 perícia para dobrar o bônus de proficiência.	Variante: Humano Comum	t	50	9
+33	Dial inicial	Heat	Ancestralidade: Celestial	t	60	9
+34	Rock Star	Característica especial do antecedente; uso narrativo resolvido pelo mestre.	Antecedente: Artista	t	0	9
+35	Postura de Espadachim	Característica de 1º nível cadastrada pelo catálogo.	Estilo: Espadachim	t	0	9
+\.
+
+
+--
+-- Data for Name: characters_characterproficiency; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterproficiency (id, source_type, source_object_id, multiplier, is_selected, created_at, character_id, proficiency_id) FROM stdin;
+1	estilo_de_combate	5	1	t	2026-07-18 21:52:39.173217+00	1	1
+2	estilo_de_combate	5	1	t	2026-07-18 21:52:39.187213+00	1	11
+3	profissao	10	1	t	2026-07-18 21:52:39.199253+00	1	16
+4	profissao	10	1	t	2026-07-18 21:52:39.208397+00	1	8
+5	antecedente	11	1	t	2026-07-18 21:52:39.22063+00	1	5
+6	antecedente	11	1	t	2026-07-18 21:52:39.230275+00	1	15
+7	sem_profissao	10	1	t	2026-07-18 21:52:39.244501+00	1	15
+8	sem_profissao	10	1	t	2026-07-18 21:52:39.254652+00	1	12
+9	combat_style	5	1	f	2026-07-18 21:52:39.264325+00	1	32
+10	combat_style	5	1	f	2026-07-18 21:52:39.269017+00	1	31
+11	combat_style	5	1	f	2026-07-18 21:52:39.273707+00	1	35
+12	variante	\N	2	t	2026-07-18 21:52:39.314449+00	1	14
+13	estilo_de_combate	2	1	t	2026-07-18 21:53:43.550914+00	2	2
+14	estilo_de_combate	2	1	t	2026-07-18 21:53:43.55848+00	2	1
+15	profissao	4	1	t	2026-07-18 21:53:43.566313+00	2	5
+16	profissao	4	1	t	2026-07-18 21:53:43.572166+00	2	6
+17	antecedente	11	1	t	2026-07-18 21:53:43.580878+00	2	5
+18	antecedente	11	1	t	2026-07-18 21:53:43.588188+00	2	16
+19	sem_profissao	4	1	t	2026-07-18 21:53:43.598229+00	2	1
+20	combat_style	2	1	f	2026-07-18 21:53:43.605238+00	2	31
+21	combat_style	2	1	f	2026-07-18 21:53:43.608681+00	2	32
+22	combat_style	2	1	f	2026-07-18 21:53:43.612048+00	2	29
+23	combat_style	2	1	f	2026-07-18 21:53:43.615762+00	2	30
+24	variante	5	2	t	2026-07-18 21:53:43.635535+00	2	2
+25	estilo_de_combate	1	1	t	2026-07-18 22:06:28.88633+00	3	3
+26	estilo_de_combate	1	1	t	2026-07-18 22:06:28.895839+00	3	15
+27	estilo_de_combate	1	1	t	2026-07-18 22:06:28.902856+00	3	16
+28	profissao	8	1	t	2026-07-18 22:06:28.912212+00	3	6
+29	profissao	8	1	t	2026-07-18 22:06:28.918918+00	3	16
+30	antecedente	13	1	t	2026-07-18 22:06:28.927535+00	3	6
+31	antecedente	13	1	t	2026-07-18 22:06:28.934614+00	3	7
+32	sem_profissao	8	1	t	2026-07-18 22:06:28.944936+00	3	5
+33	combat_style	1	1	f	2026-07-18 22:06:28.952134+00	3	27
+34	combat_style	1	1	f	2026-07-18 22:06:28.95559+00	3	28
+35	combat_style	1	1	f	2026-07-18 22:06:28.959272+00	3	19
+36	combat_style	1	1	f	2026-07-18 22:06:28.963011+00	3	20
+37	combat_style	1	1	f	2026-07-18 22:06:28.966406+00	3	21
+38	combat_style	1	1	f	2026-07-18 22:06:28.96965+00	3	22
+39	combat_style	1	1	f	2026-07-18 22:06:28.973173+00	3	23
+40	combat_style	1	1	f	2026-07-18 22:06:28.976589+00	3	24
+41	combat_style	1	1	f	2026-07-18 22:06:28.980175+00	3	25
+42	combat_style	1	1	f	2026-07-18 22:06:28.983728+00	3	26
+70	estilo_de_combate	4	1	t	2026-07-18 22:17:21.607512+00	7	1
+71	estilo_de_combate	4	1	t	2026-07-18 22:17:21.61499+00	7	16
+72	profissao	2	1	t	2026-07-18 22:17:21.622841+00	7	5
+73	profissao	2	1	t	2026-07-18 22:17:21.629296+00	7	6
+74	antecedente	11	1	t	2026-07-18 22:17:21.638434+00	7	15
+75	antecedente	11	1	t	2026-07-18 22:17:21.64562+00	7	8
+76	combat_style	4	1	f	2026-07-18 22:17:21.655619+00	7	27
+77	combat_style	4	1	f	2026-07-18 22:17:21.657998+00	7	34
+78	combat_style	4	1	f	2026-07-18 22:17:21.660412+00	7	33
+79	combat_style	4	1	f	2026-07-18 22:17:21.664875+00	7	57
+80	variante	11	2	t	2026-07-18 22:17:21.689613+00	7	8
+81	estilo_de_combate	1	1	t	2026-07-18 22:17:35.435475+00	8	2
+82	estilo_de_combate	1	1	t	2026-07-18 22:17:35.4432+00	8	1
+83	estilo_de_combate	1	1	t	2026-07-18 22:17:35.450593+00	8	3
+84	profissao	7	1	t	2026-07-18 22:17:35.459661+00	8	6
+85	profissao	7	1	t	2026-07-18 22:17:35.464848+00	8	4
+86	antecedente	12	1	t	2026-07-18 22:17:35.471958+00	8	5
+87	antecedente	12	1	t	2026-07-18 22:17:35.478976+00	8	7
+88	sem_profissao	7	1	t	2026-07-18 22:17:35.488313+00	8	5
+89	sem_profissao	7	1	t	2026-07-18 22:17:35.494094+00	8	16
+90	combat_style	1	1	f	2026-07-18 22:17:35.501191+00	8	27
+91	combat_style	1	1	f	2026-07-18 22:17:35.50347+00	8	28
+92	combat_style	1	1	f	2026-07-18 22:17:35.505849+00	8	19
+93	combat_style	1	1	f	2026-07-18 22:17:35.508146+00	8	20
+94	combat_style	1	1	f	2026-07-18 22:17:35.510394+00	8	21
+95	combat_style	1	1	f	2026-07-18 22:17:35.512656+00	8	22
+96	combat_style	1	1	f	2026-07-18 22:17:35.51539+00	8	23
+97	combat_style	1	1	f	2026-07-18 22:17:35.51845+00	8	24
+98	combat_style	1	1	f	2026-07-18 22:17:35.520855+00	8	25
+99	combat_style	1	1	f	2026-07-18 22:17:35.523923+00	8	26
+100	estilo_de_combate	4	1	t	2026-07-18 22:41:48.650608+00	9	1
+101	estilo_de_combate	4	1	t	2026-07-18 22:41:48.658566+00	9	16
+102	profissao	6	1	t	2026-07-18 22:41:48.667116+00	9	9
+103	profissao	6	1	t	2026-07-18 22:41:48.674385+00	9	4
+104	antecedente	1	1	t	2026-07-18 22:41:48.683667+00	9	2
+105	antecedente	1	1	t	2026-07-18 22:41:48.69112+00	9	5
+106	sem_profissao	6	1	t	2026-07-18 22:41:48.700761+00	9	15
+107	sem_profissao	6	1	t	2026-07-18 22:41:48.708155+00	9	13
+108	combat_style	4	1	f	2026-07-18 22:41:48.715443+00	9	27
+109	combat_style	4	1	f	2026-07-18 22:41:48.718881+00	9	34
+110	combat_style	4	1	f	2026-07-18 22:41:48.722487+00	9	33
+111	combat_style	4	1	f	2026-07-18 22:41:48.725924+00	9	57
+112	variante	4	2	t	2026-07-18 22:41:48.743041+00	9	6
+\.
+
+
+--
+-- Data for Name: characters_characterruleexception; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterruleexception (id, ignored_rule, justification, created_at, creation_id, user_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: characters_characterskill; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_characterskill (id, is_proficient, is_expert, custom_bonus, character_id, skill_id) FROM stdin;
+1	t	f	\N	1	4
+2	t	f	\N	1	9
+3	t	f	\N	1	14
+4	t	f	\N	1	18
+5	t	f	\N	1	8
+6	t	f	\N	1	10
+7	t	f	\N	1	15
+8	t	t	\N	1	20
+12	t	f	\N	2	11
+11	t	f	\N	2	8
+13	t	f	\N	2	14
+10	t	f	\N	2	4
+9	t	t	\N	2	1
+14	t	f	\N	3	7
+15	t	f	\N	3	10
+16	t	f	\N	3	14
+17	t	f	\N	3	11
+18	t	f	\N	3	13
+19	t	f	\N	3	8
+38	t	f	\N	7	4
+39	t	f	\N	7	14
+40	t	f	\N	7	8
+41	t	f	\N	7	11
+42	t	f	\N	7	10
+43	t	t	\N	7	18
+44	t	f	\N	8	1
+45	t	f	\N	8	4
+46	t	f	\N	8	7
+47	t	f	\N	8	11
+48	t	f	\N	8	16
+50	t	f	\N	8	13
+49	t	f	\N	8	8
+51	t	f	\N	8	14
+52	t	f	\N	9	4
+53	t	f	\N	9	14
+54	t	f	\N	9	5
+55	t	f	\N	9	16
+56	t	f	\N	9	1
+57	t	f	\N	9	8
+58	t	f	\N	9	10
+59	t	f	\N	9	19
+60	t	t	\N	9	11
+\.
+
+
+--
+-- Data for Name: characters_charactertechnique; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_charactertechnique (id, name, description, action_type, range_text, damage_text, cost, is_available, is_featured, sort_order, created_at, updated_at, character_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: characters_combatstyle; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_combatstyle (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, hit_die, saving_throws, skill_choice_count, any_skill_allowed, weapon_proficiencies, kit_proficiencies, primary_attributes, favorite_weapon_options, innate_ability_options, initial_equipment, initial_money, requirements, level_1_features) FROM stdin;
+2	player-book-1.5.7	carateca-homem-peixe	Carateca Homem-Peixe	31-104		t	2026-07-18 21:10:49.993604+00	2026-07-18 21:23:00.538921+00	12	["constitution", "strength"]	2	f	["Armas Marciais", "Tridente"]	[]	["strength"]	["Tridente", "Corporal"]	["Corpo de Guerreiro", "Aprimoramento de Atributo"]	["Uma arma marcial", "40.000 bellys"]	15d10 x 1.000 bellys	{"species_or_master_exception": ["povo-do-mar"]}	["Caratê Homem-Peixe"]
+3	player-book-1.5.7	ciborgue	Ciborgue	31-104		t	2026-07-18 21:10:50.019432+00	2026-07-18 21:23:00.55987+00	12	["strength", "wisdom"]	2	f	[]	[]	["wisdom", "strength"]	["Bazuca", "Canhão de Mão", "Escopeta", "Metralhadora"]	["Aprendizado Excepcional", "Aprimoramento de Atributo"]	["20 unidades de combustível"]	10d10 x 1.000 bellys	{}	["Corpo Ciborgue"]
+5	player-book-1.5.7	guerreiro-oni	Guerreiro-Oni	31-104		t	2026-07-18 21:10:50.054487+00	2026-07-18 21:23:00.591925+00	12	["strength", "constitution"]	2	f	["Kanabo"]	[]	["strength"]	["Kanabo", "Machado grande", "Martelo de guerra", "Espada montante", "Corporal"]	["Corpo de Guerreiro", "Superioridade Absoluta"]	["1 kanabo"]	6d10 x 1.000 bellys	{"master_exception": true}	["Sangue Oni"]
+6	player-book-1.5.7	guerrilheiro	Guerrilheiro	31-104		t	2026-07-18 21:10:50.074572+00	2026-07-18 21:23:00.610028+00	10	["strength", "dexterity"]	2	f	["Armas Cortantes", "Armas de Fogo", "Armas Especiais", "Armas Marciais"]	["Kit de Escalada", "Kit de Primeiros Socorros"]	["strength", "wisdom"]	["Qualquer arma", "Corporal"]	["Corpo de Guerreiro", "Aprendizado Excepcional"]	["2 pistolas", "1 mosquete e munição", "2 armas cortantes"]	5d10 x 1.000 bellys	{}	["Aptidões Bélicas"]
+7	player-book-1.5.7	lutador	Lutador	31-104		t	2026-07-18 21:10:50.120277+00	2026-07-18 21:23:00.644126+00	12	["constitution", "strength"]	2	f	["Armas Marciais"]	[]	["strength"]	["Uma arma marcial", "Corporal"]	["Corpo de Guerreiro", "Superando Limites"]	["Uma arma marcial", "40.000 bellys"]	15d10 x 1.000 bellys	{}	["Posição de Luta"]
+8	player-book-1.5.7	ninja	Ninja	31-104		t	2026-07-18 21:10:50.141447+00	2026-07-18 21:23:00.658183+00	8	["dexterity", "wisdom"]	2	f	["Katana", "Kunai", "Adaga", "Shuriken", "Foice", "Arco"]	["Kit de Abrir Cadeado", "Kit de Disfarce", "Kit de Escalada", "Kit de Venenos"]	["dexterity"]	["Katana", "Kunai", "Adaga", "Shuriken", "Foice", "Arco"]	["Defesa Ofensiva", "Sortudo"]	["1 katana", "5 kunais", "30 shurikens"]	6d10 x 1.000 bellys	{}	["Arte Ninja"]
+4	player-book-1.5.7	espadachim	Espadachim	31-104		t	2026-07-18 21:10:50.035421+00	2026-07-18 22:04:49.136476+00	10	["dexterity", "willpower"]	2	f	["Armas Cortantes", "Armas Perfurantes"]	[]	["strength", "dexterity"]	["Qualquer arma cortante", "Espada montante", "Agulha"]	["Perito em Técnicas", "Superando Limites"]	["2 sabres", "2 katanas", "1 agulha"]	5d10 x 1.000 bellys	{}	["Postura de Espadachim"]
+1	player-book-1.5.7	atirador	Atirador	31-104		t	2026-07-18 21:10:49.938184+00	2026-07-18 22:06:55.333266+00	8	["dexterity", "wisdom"]	3	t	["Armas de Fogo", "Lançador de Arpão", "Bazuca", "Canhão de Mão", "Armas de Navio"]	["Kit de Abrir Cadeado", "Kit de Escalada", "Kit de Primeiros Socorros"]	["dexterity"]	["Pistola", "Mosquete", "Arco"]	["Superioridade Absoluta", "Aprendizado Excepcional", "Perito em Técnicas"]	["2 pistolas", "1 mosquete", "80 munições esféricas"]	5d10 x 1.000 bellys	{}	["Proficiências do Atirador"]
+9	player-book-1.5.7	okama-kenpo	Okama Kenpo	31-104		t	2026-07-18 21:10:50.216529+00	2026-07-18 21:23:00.706554+00	10	["dexterity", "presence"]	3	f	["Armas Marciais"]	[]	["strength", "presence"]	["Uma arma marcial", "Corporal"]	["Corpo de Guerreiro", "Superando Limites"]	["Uma arma marcial", "40.000 bellys"]	15d10 x 1.000 bellys	{}	["Protegendo um Amigo"]
+10	player-book-1.5.7	usuario-de-rokushiki	Usuário de Rokushiki	31-104		t	2026-07-18 21:10:50.241524+00	2026-07-18 21:23:00.724126+00	10	["dexterity", "strength"]	2	f	["Armas Marciais"]	["Kit de Abrir Cadeado", "Kit de Disfarce", "Kit de Falsificação"]	["strength", "dexterity"]	["Adaga", "Katana", "Bastão", "Corporal"]	["Corpo de Guerreiro", "Perito em Técnicas"]	["Uma arma marcial", "40.000 bellys"]	15d10 x 1.000 bellys	{}	["Soru e Shigan"]
+\.
+
+
+--
+-- Data for Name: characters_combatstyle_allowed_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_combatstyle_allowed_skills (id, combatstyle_id, skill_id) FROM stdin;
+1	1	1
+2	1	4
+3	1	5
+4	1	6
+5	1	7
+6	1	8
+7	1	9
+8	1	10
+9	1	11
+10	1	13
+11	1	14
+12	1	15
+13	1	16
+14	1	18
+15	1	19
+16	1	20
+17	1	21
+18	1	22
+19	2	1
+20	2	4
+21	2	5
+22	2	9
+23	3	16
+24	3	18
+25	3	11
+26	3	4
+27	4	9
+28	4	10
+29	4	4
+30	4	14
+31	5	9
+32	5	18
+33	5	19
+34	5	4
+35	6	1
+36	6	4
+37	6	7
+38	6	8
+39	6	18
+40	7	9
+41	7	18
+42	7	19
+43	7	4
+44	8	16
+45	8	1
+46	8	6
+47	8	7
+48	9	1
+49	9	4
+50	9	5
+51	9	6
+52	9	9
+53	9	10
+54	9	19
+55	10	1
+56	10	4
+57	10	6
+58	10	7
+59	10	8
+60	10	11
+\.
+
+
+--
+-- Data for Name: characters_profession; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_profession (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, is_no_profession, skill_choice_count, special_trade_skill, tools, initial_items, initial_work_knowledges, restrictions, parent_id) FROM stdin;
+4	player-book-1.5.7	carpinteiro	Carpinteiro	105-134		t	2026-07-18 21:10:50.350557+00	2026-07-18 21:23:00.784467+00	f	2	Carpintaria	["Ferramentas de Carpinteiro"]	["Ferramentas de Carpinteiro (amador)", "1 mochila pequena"]	["Construção"]	{}	\N
+5	player-book-1.5.7	combatente	Combatente	105-134		t	2026-07-18 21:10:50.364459+00	2026-07-18 21:23:00.795662+00	f	2	Noção de Batalha	["Ferramentas de Combatente"]	["Ferramentas de Combatente (amador)", "1 mochila pequena"]	["Estratégia"]	{}	\N
+6	player-book-1.5.7	cozinheiro	Cozinheiro	105-134		t	2026-07-18 21:10:50.378404+00	2026-07-18 21:23:00.804684+00	f	2	Gastronomia	["Ferramentas de Cozinheiro"]	["Ferramentas de Cozinheiro (amador)", "1 mochila pequena"]	["Preparar Refeição"]	{}	\N
+7	player-book-1.5.7	engenheiro	Engenheiro	105-134		t	2026-07-18 21:10:50.391704+00	2026-07-18 21:23:00.81316+00	f	2	Engenharia	["Ferramentas de Engenheiro"]	["Ferramentas de Engenheiro (amador)", "1 mochila pequena"]	["Projetar"]	{}	\N
+8	player-book-1.5.7	medico	Médico	105-134		t	2026-07-18 21:10:50.4055+00	2026-07-18 21:23:00.824373+00	f	2	Medicina	["Ferramentas de Médico"]	["Ferramentas de Médico (amador)", "1 mochila pequena"]	["Tratamento"]	{}	\N
+9	player-book-1.5.7	musico	Músico	105-134		t	2026-07-18 21:10:50.419675+00	2026-07-18 21:23:00.834892+00	f	2	Canção	["Ferramentas de Músico"]	["Ferramentas de Músico (amador)", "1 mochila pequena"]	["Performance"]	{}	\N
+10	player-book-1.5.7	navegador	Navegador	105-134		t	2026-07-18 21:10:50.434536+00	2026-07-18 21:23:00.844516+00	f	2	Navegação	["Ferramentas de Navegador"]	["Ferramentas de Navegador (amador)", "1 mochila pequena"]	["Leitura do Clima"]	{}	\N
+11	player-book-1.5.7	sem-profissao	Sem Profissão	106-107		t	2026-07-18 21:10:50.445062+00	2026-07-18 21:23:00.856366+00	t	2		[]	[]	["Ajudante Perfeito", "Foco", "Parceiro de Treino", "Tempo Livre"]	{"forbidden_skills": ["Haki", "Sobrenatural", "Sorte"], "cannot_acquire_professions_later_without_master": true}	\N
+12	player-book-1.5.7	timoneiro	Timoneiro	133-134		t	2026-07-18 21:10:50.454093+00	2026-07-18 21:23:00.863213+00	f	0		[]	[]	["Manobra de Leme", "Controle de Navio"]	{"requires_primary_profession": "navegador"}	10
+1	player-book-1.5.7	adestrador	Adestrador	105-134		t	2026-07-18 21:10:50.286397+00	2026-07-18 21:23:00.75344+00	f	2	Lidar com Animais	["Ferramentas de Adestrador"]	["Ferramentas de Adestrador (amador)", "1 mochila pequena", "30 rações para animais"]	["Adestrar Animais", "Vínculo Animal"]	{}	\N
+2	player-book-1.5.7	arqueologo	Arqueólogo	105-134		t	2026-07-18 21:10:50.323212+00	2026-07-18 21:23:00.76503+00	f	2	História Perdida	["Ferramentas de Arqueólogo"]	["Ferramentas de Arqueólogo (amador)", "1 mochila pequena", "1 lanterna", "1 corda", "1 tenda"]	["Pesquisa Histórica"]	{}	\N
+3	player-book-1.5.7	cacador-de-recompensas	Caçador de Recompensas	105-134		t	2026-07-18 21:10:50.338114+00	2026-07-18 21:23:00.774309+00	f	2	Caça	["Ferramentas de Caçador de Recompensas"]	["Ferramentas de Caçador de Recompensas (amador)", "1 mochila pequena"]	["Marca do Caçador"]	{}	\N
+\.
+
+
+--
+-- Data for Name: characters_profession_allowed_skills; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_profession_allowed_skills (id, profession_id, skill_id) FROM stdin;
+1	1	1
+2	1	5
+3	1	10
+4	1	14
+5	1	15
+6	1	18
+7	2	8
+8	2	10
+9	2	11
+10	2	14
+11	2	15
+12	2	18
+13	3	7
+14	3	9
+15	3	11
+16	3	14
+17	3	15
+18	3	18
+19	4	1
+20	4	4
+21	4	8
+22	4	11
+23	4	15
+24	4	16
+25	5	1
+26	5	4
+27	5	7
+28	5	9
+29	5	18
+30	5	19
+31	6	5
+32	6	10
+33	6	15
+34	6	16
+35	6	18
+36	6	19
+37	7	8
+38	7	10
+39	7	11
+40	7	14
+41	7	16
+42	7	18
+43	8	8
+44	8	10
+45	8	11
+46	8	14
+47	8	16
+48	8	18
+49	9	1
+50	9	5
+51	9	6
+52	9	7
+53	9	9
+54	9	10
+55	9	14
+56	9	15
+57	9	16
+58	9	19
+59	10	6
+60	10	10
+61	10	11
+62	10	14
+63	10	15
+64	10	18
+65	11	1
+66	11	4
+67	11	5
+68	11	6
+69	11	7
+70	11	8
+71	11	9
+72	11	10
+73	11	11
+74	11	13
+75	11	14
+76	11	15
+77	11	16
+78	11	18
+79	11	19
+\.
+
+
+--
+-- Data for Name: characters_ruleattribute; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_ruleattribute (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, key) FROM stdin;
+1	player-book-1.5.7	strength	Força	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.59515+00	2026-07-18 21:23:00.224698+00	strength
+2	player-book-1.5.7	dexterity	Destreza	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.602554+00	2026-07-18 21:23:00.228213+00	dexterity
+3	player-book-1.5.7	constitution	Constituição	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.605874+00	2026-07-18 21:23:00.232198+00	constitution
+4	player-book-1.5.7	wisdom	Sabedoria	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.612224+00	2026-07-18 21:23:00.235604+00	wisdom
+5	player-book-1.5.7	willpower	Vontade	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.616324+00	2026-07-18 21:23:00.240749+00	willpower
+6	player-book-1.5.7	presence	Presença	9-10	Atributo canônico do OP RPG.	t	2026-07-18 21:10:49.620808+00	2026-07-18 21:23:00.243181+00	presence
+\.
+
+
+--
+-- Data for Name: characters_ruleproficiency; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_ruleproficiency (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, category, related_skill_id) FROM stdin;
+57	player-book-1.5.7	arma-armas-perfurantes	Armas Perfurantes			t	2026-07-18 22:17:21.663019+00	2026-07-18 22:17:21.663036+00	weapon	\N
+1	player-book-1.5.7	pericia-atletismo	Atletismo	226-234		t	2026-07-18 21:10:49.640332+00	2026-07-18 21:23:00.251888+00	skill	4
+2	player-book-1.5.7	pericia-acrobacia	Acrobacia	226-234		t	2026-07-18 21:10:49.649936+00	2026-07-18 21:23:00.256561+00	skill	1
+3	player-book-1.5.7	pericia-furtividade	Furtividade	226-234		t	2026-07-18 21:10:49.655208+00	2026-07-18 21:23:00.261114+00	skill	7
+4	player-book-1.5.7	pericia-prestidigitacao	Prestidigitação	226-234		t	2026-07-18 21:10:49.663666+00	2026-07-18 21:23:00.267197+00	skill	16
+5	player-book-1.5.7	pericia-historia	História	226-234		t	2026-07-18 21:10:49.669714+00	2026-07-18 21:23:00.273469+00	skill	8
+6	player-book-1.5.7	pericia-investigacao	Investigação	226-234		t	2026-07-18 21:10:49.674489+00	2026-07-18 21:23:00.279538+00	skill	11
+7	player-book-1.5.7	pericia-natureza	Natureza	226-234		t	2026-07-18 21:10:49.68306+00	2026-07-18 21:23:00.285408+00	skill	13
+8	player-book-1.5.7	pericia-sobrevivencia	Sobrevivência	226-234		t	2026-07-18 21:10:49.687639+00	2026-07-18 21:23:00.291016+00	skill	18
+9	player-book-1.5.7	pericia-atuacao	Atuação	226-234		t	2026-07-18 21:10:49.694326+00	2026-07-18 21:23:00.29713+00	skill	5
+10	player-book-1.5.7	pericia-enganacao	Enganação	226-234		t	2026-07-18 21:10:49.702002+00	2026-07-18 21:23:00.304071+00	skill	6
+11	player-book-1.5.7	pericia-intimidacao	Intimidação	226-234		t	2026-07-18 21:10:49.711121+00	2026-07-18 21:23:00.310572+00	skill	9
+12	player-book-1.5.7	pericia-persuasao	Persuasão	226-234		t	2026-07-18 21:10:49.718933+00	2026-07-18 21:23:00.317611+00	skill	15
+13	player-book-1.5.7	pericia-provocacao	Provocação	226-234		t	2026-07-18 21:10:49.738604+00	2026-07-18 21:23:00.323841+00	skill	19
+14	player-book-1.5.7	pericia-haki	Haki	226-234		t	2026-07-18 21:10:49.74773+00	2026-07-18 21:23:00.330069+00	skill	20
+15	player-book-1.5.7	pericia-intuicao	Intuição	226-234		t	2026-07-18 21:10:49.753083+00	2026-07-18 21:23:00.337129+00	skill	10
+16	player-book-1.5.7	pericia-percepcao	Percepção	226-234		t	2026-07-18 21:10:49.758159+00	2026-07-18 21:23:00.343946+00	skill	14
+17	player-book-1.5.7	pericia-sobrenatural	Sobrenatural	226-234		t	2026-07-18 21:10:49.767036+00	2026-07-18 21:23:00.350697+00	skill	21
+18	player-book-1.5.7	pericia-sorte	Sorte	226-234		t	2026-07-18 21:10:49.772529+00	2026-07-18 21:23:00.359027+00	skill	22
+20	player-book-1.5.7	arma-lancador-de-arpao	Lançador de Arpão	31-104		t	2026-07-18 21:10:49.963023+00	2026-07-18 21:23:00.507981+00	weapon	\N
+21	player-book-1.5.7	arma-bazuca	Bazuca	31-104		t	2026-07-18 21:10:49.966457+00	2026-07-18 21:23:00.511763+00	weapon	\N
+22	player-book-1.5.7	arma-canhao-de-mao	Canhão de Mão	31-104		t	2026-07-18 21:10:49.969539+00	2026-07-18 21:23:00.5151+00	weapon	\N
+23	player-book-1.5.7	arma-armas-de-navio	Armas de Navio	31-104		t	2026-07-18 21:10:49.972383+00	2026-07-18 21:23:00.518349+00	weapon	\N
+55	player-book-1.5.7	ferramenta-ferramentas-de-musico	Ferramentas de Músico	105-134		t	2026-07-18 21:10:50.430586+00	2026-07-18 21:23:00.841136+00	tool	\N
+56	player-book-1.5.7	ferramenta-ferramentas-de-navegador	Ferramentas de Navegador	105-134		t	2026-07-18 21:10:50.441748+00	2026-07-18 21:23:00.851203+00	tool	\N
+30	player-book-1.5.7	arma-tridente	Tridente	31-104		t	2026-07-18 21:10:50.006874+00	2026-07-18 21:23:00.549784+00	weapon	\N
+34	player-book-1.5.7	salvaguarda-willpower	Salvaguarda de Vontade	31-104		t	2026-07-18 21:10:50.051408+00	2026-07-18 21:23:00.587859+00	saving_throw	\N
+35	player-book-1.5.7	arma-kanabo	Kanabo	31-104		t	2026-07-18 21:10:50.062504+00	2026-07-18 21:23:00.598724+00	weapon	\N
+33	player-book-1.5.7	arma-armas-cortantes	Armas Cortantes	31-104		t	2026-07-18 21:10:50.045076+00	2026-07-18 21:23:00.616278+00	weapon	\N
+19	player-book-1.5.7	arma-armas-de-fogo	Armas de Fogo	31-104		t	2026-07-18 21:10:49.957027+00	2026-07-18 21:23:00.619583+00	weapon	\N
+36	player-book-1.5.7	arma-armas-especiais	Armas Especiais	31-104		t	2026-07-18 21:10:50.09541+00	2026-07-18 21:23:00.62329+00	weapon	\N
+26	player-book-1.5.7	kit-kit-de-primeiros-socorros	Kit de Primeiros Socorros	31-104		t	2026-07-18 21:10:49.983618+00	2026-07-18 21:23:00.633558+00	kit	\N
+31	player-book-1.5.7	salvaguarda-constitution	Salvaguarda de Constituição	31-104		t	2026-07-18 21:10:50.012699+00	2026-07-18 21:23:00.651049+00	saving_throw	\N
+37	player-book-1.5.7	arma-katana	Katana	31-104		t	2026-07-18 21:10:50.152565+00	2026-07-18 21:23:00.664685+00	weapon	\N
+38	player-book-1.5.7	arma-kunai	Kunai	31-104		t	2026-07-18 21:10:50.156586+00	2026-07-18 21:23:00.668007+00	weapon	\N
+39	player-book-1.5.7	arma-adaga	Adaga	31-104		t	2026-07-18 21:10:50.162801+00	2026-07-18 21:23:00.671262+00	weapon	\N
+40	player-book-1.5.7	arma-shuriken	Shuriken	31-104		t	2026-07-18 21:10:50.167365+00	2026-07-18 21:23:00.674343+00	weapon	\N
+41	player-book-1.5.7	arma-foice	Foice	31-104		t	2026-07-18 21:10:50.170855+00	2026-07-18 21:23:00.677944+00	weapon	\N
+42	player-book-1.5.7	arma-arco	Arco	31-104		t	2026-07-18 21:10:50.17421+00	2026-07-18 21:23:00.681441+00	weapon	\N
+25	player-book-1.5.7	kit-kit-de-escalada	Kit de Escalada	31-104		t	2026-07-18 21:10:49.980228+00	2026-07-18 21:23:00.691565+00	kit	\N
+44	player-book-1.5.7	kit-kit-de-venenos	Kit de Venenos	31-104		t	2026-07-18 21:10:50.198722+00	2026-07-18 21:23:00.695365+00	kit	\N
+28	player-book-1.5.7	salvaguarda-wisdom	Salvaguarda de Sabedoria	31-104		t	2026-07-18 21:10:49.989304+00	2026-07-18 21:23:00.702651+00	saving_throw	\N
+45	player-book-1.5.7	salvaguarda-presence	Salvaguarda de Presença	31-104		t	2026-07-18 21:10:50.237713+00	2026-07-18 21:23:00.719983+00	saving_throw	\N
+29	player-book-1.5.7	arma-armas-marciais	Armas Marciais	31-104		t	2026-07-18 21:10:50.002811+00	2026-07-18 21:23:00.730566+00	weapon	\N
+24	player-book-1.5.7	kit-kit-de-abrir-cadeado	Kit de Abrir Cadeado	31-104		t	2026-07-18 21:10:49.975586+00	2026-07-18 21:23:00.734426+00	kit	\N
+43	player-book-1.5.7	kit-kit-de-disfarce	Kit de Disfarce	31-104		t	2026-07-18 21:10:50.185245+00	2026-07-18 21:23:00.738116+00	kit	\N
+46	player-book-1.5.7	kit-kit-de-falsificacao	Kit de Falsificação	31-104		t	2026-07-18 21:10:50.268275+00	2026-07-18 21:23:00.741364+00	kit	\N
+27	player-book-1.5.7	salvaguarda-dexterity	Salvaguarda de Destreza	31-104		t	2026-07-18 21:10:49.986514+00	2026-07-18 21:23:00.744672+00	saving_throw	\N
+32	player-book-1.5.7	salvaguarda-strength	Salvaguarda de Força	31-104		t	2026-07-18 21:10:50.016245+00	2026-07-18 21:23:00.748401+00	saving_throw	\N
+47	player-book-1.5.7	ferramenta-ferramentas-de-adestrador	Ferramentas de Adestrador	105-134		t	2026-07-18 21:10:50.319201+00	2026-07-18 21:23:00.76136+00	tool	\N
+48	player-book-1.5.7	ferramenta-ferramentas-de-arqueologo	Ferramentas de Arqueólogo	105-134		t	2026-07-18 21:10:50.334017+00	2026-07-18 21:23:00.770837+00	tool	\N
+49	player-book-1.5.7	ferramenta-ferramentas-de-cacador-de-recompensas	Ferramentas de Caçador de Recompensas	105-134		t	2026-07-18 21:10:50.346617+00	2026-07-18 21:23:00.780384+00	tool	\N
+50	player-book-1.5.7	ferramenta-ferramentas-de-carpinteiro	Ferramentas de Carpinteiro	105-134		t	2026-07-18 21:10:50.35997+00	2026-07-18 21:23:00.791796+00	tool	\N
+51	player-book-1.5.7	ferramenta-ferramentas-de-combatente	Ferramentas de Combatente	105-134		t	2026-07-18 21:10:50.374+00	2026-07-18 21:23:00.801998+00	tool	\N
+52	player-book-1.5.7	ferramenta-ferramentas-de-cozinheiro	Ferramentas de Cozinheiro	105-134		t	2026-07-18 21:10:50.387138+00	2026-07-18 21:23:00.80938+00	tool	\N
+53	player-book-1.5.7	ferramenta-ferramentas-de-engenheiro	Ferramentas de Engenheiro	105-134		t	2026-07-18 21:10:50.400967+00	2026-07-18 21:23:00.820704+00	tool	\N
+54	player-book-1.5.7	ferramenta-ferramentas-de-medico	Ferramentas de Médico	105-134		t	2026-07-18 21:10:50.41445+00	2026-07-18 21:23:00.830471+00	tool	\N
+\.
+
+
+--
+-- Data for Name: characters_skill; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_skill (id, name, slug, related_attribute, description, sort_order, is_active) FROM stdin;
+19	Provocação	provocacao	presence		12	t
+20	Haki	haki	willpower		13	t
+21	Sobrenatural	sobrenatural	willpower		16	t
+22	Sorte	sorte	willpower		17	t
+1	Acrobacia	acrobacia	dexterity		0	t
+2	Adestrar Animais	adestrar-animais	wisdom		1	t
+3	Arcanismo	arcanismo	intelligence		2	t
+4	Atletismo	atletismo	strength		3	t
+5	Atuação	atuacao	charisma		4	t
+6	Enganação	enganacao	charisma		5	t
+7	Furtividade	furtividade	dexterity		6	t
+8	História	historia	intelligence		7	t
+9	Intimidação	intimidacao	charisma		8	t
+10	Intuição	intuicao	wisdom		9	t
+11	Investigação	investigacao	intelligence		10	t
+12	Medicina	medicina	wisdom		11	t
+13	Natureza	natureza	intelligence		12	t
+14	Percepção	percepcao	wisdom		13	t
+15	Persuasão	persuasao	charisma		14	t
+16	Prestidigitação	prestidigitacao	dexterity		15	t
+17	Religião	religiao	intelligence		16	t
+18	Sobrevivência	sobrevivencia	wisdom		17	t
+\.
+
+
+--
+-- Data for Name: characters_species; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_species (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, base_hp, size, movement, swim_speed, prejudice, benefits, difficulties, cultural_traits, ancestry_rules, required_choices) FROM stdin;
+2	player-book-1.5.7	celestial	Celestial	17-18	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.784617+00	2026-07-18 21:23:00.370383+00	10	Médio	12.0	3.0		["Herança Cultural", "Dials"]	[]	["Pontos de Treinamento por Sabedoria"]	{}	["variant", "dial"]
+3	player-book-1.5.7	gigante	Gigante	19-20	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.787609+00	2026-07-18 21:23:00.37422+00	20	Enorme	9.0	3.0		["Armas gigantescas", "Alcance e tamanho ampliados"]	["Limitações de espaço e equipamentos"]	[]	{}	[]
+5	player-book-1.5.7	lunariano	Lunariano	24-25	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.796157+00	2026-07-18 21:23:00.382083+00	16	Médio	9.0	3.0	Perseguição intensa	["Asas", "Fogo lunariano", "Resistência", "Chama ativa/inativa"]	["Grande preconceito"]	[]	{}	[]
+6	player-book-1.5.7	mestico	Mestiço	26-27	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.800887+00	2026-07-18 21:23:00.386146+00	0	Derivado	0.0	0.0		["Benefício de duas origens"]	["Uma dificuldade das origens"]	["Derivado das origens"]	{}	["mixed_origins"]
+7	player-book-1.5.7	mink	Mink	27-28	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.805628+00	2026-07-18 21:23:00.390133+00	12	Pequeno, Médio ou Grande	9.0	4.5		["Electro", "Ancestralidade mamífera"]	["Instintos Animalescos"]	[]	{}	["variant", "ancestry"]
+8	player-book-1.5.7	povo-do-mar	Povo do Mar	29-30	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.812021+00	2026-07-18 21:23:00.39421+00	14	Médio ou Grande	9.0	15.0		["Ancestralidade marinha"]	["Criatura do Mar"]	[]	{}	["variant", "ancestry"]
+4	player-book-1.5.7	humano	Humano	21-23	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.790639+00	2026-07-18 21:33:16.79134+00	10	Médio	9.0	4.5		["Versatilidade por variante"]	[]	[]	{}	["variant"]
+1	player-book-1.5.7	anao	Anão	15-16	Espécie do Capítulo 2 do Livro do Jogador 1.5.7.	t	2026-07-18 21:10:49.778924+00	2026-07-18 21:23:00.365857+00	8	Miúdo	9.0	4.5	Débil	["Corpo Pequeno", "Estômago Pequeno", "Piscar", "Andar das Fadas", "Hóspede Feérico"]	["Ingenuidade Anormal"]	["Pontos de Treinamento por Sabedoria"]	{}	[]
+\.
+
+
+--
+-- Data for Name: characters_speciesvariant; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_speciesvariant (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, overrides, effects, required_choices, species_id) FROM stdin;
+6	player-book-1.5.7	bracos-longos	Braços Longos	21-23		t	2026-07-18 21:10:49.845274+00	2026-07-18 21:23:00.41949+00	{}	[{"text": "3 m com braços", "type": "reach"}, {"type": "skill_bonus", "bonus": 2, "skill": "Prestidigitação"}]	[]	4
+7	player-book-1.5.7	kuja	Kuja	21-23		t	2026-07-18 21:10:49.849284+00	2026-07-18 21:23:00.424526+00	{}	[{"name": "Cobra Bélica", "type": "companion"}]	["snake_name"]	4
+8	player-book-1.5.7	pernas-longas	Pernas Longas	21-23		t	2026-07-18 21:10:49.853908+00	2026-07-18 21:23:00.42814+00	{"movement": 12}	[{"text": "3 m com pernas", "type": "reach"}]	[]	4
+9	player-book-1.5.7	pescoco-de-cobra	Pescoço de Cobra	21-23		t	2026-07-18 21:10:49.858162+00	2026-07-18 21:23:00.431972+00	{}	[{"text": "3 m com cabeça", "type": "reach"}, {"type": "skill_bonus", "bonus": 2, "skill": "Percepção"}]	[]	4
+10	player-book-1.5.7	tres-olhos	Três Olhos	21-23		t	2026-07-18 21:10:49.863586+00	2026-07-18 21:23:00.436023+00	{}	[{"type": "proficiency_choice", "count": 1, "options": ["Haki", "Sobrenatural", "Sorte"]}]	["restricted_skill"]	4
+11	player-book-1.5.7	agil	Ágil	27-28		t	2026-07-18 21:10:49.8671+00	2026-07-18 21:23:00.439543+00	{"movement": 12, "climb_speed": 9}	[]	[]	7
+12	player-book-1.5.7	meao	Meão	27-28		t	2026-07-18 21:10:49.871404+00	2026-07-18 21:23:00.443461+00	{"movement": 18}	[]	[]	7
+13	player-book-1.5.7	robusto	Robusto	27-28		t	2026-07-18 21:10:49.874655+00	2026-07-18 21:23:00.447464+00	{"movement": 12}	[{"type": "ignore_difficult_terrain"}]	[]	7
+14	player-book-1.5.7	homem-peixe	Homem-Peixe	29-30		t	2026-07-18 21:10:49.880427+00	2026-07-18 21:23:00.451273+00	{}	[{"type": "zoan_common_choice", "count": 1}]	["marine_ancestry"]	8
+15	player-book-1.5.7	sireno	Sireno	29-30		t	2026-07-18 21:10:49.883685+00	2026-07-18 21:23:00.455185+00	{"swim_speed": 18}	[{"type": "swim_dash_bonus_action"}]	["marine_ancestry"]	8
+4	player-book-1.5.7	humano-comum	Humano Comum	21-23		t	2026-07-18 21:10:49.836069+00	2026-07-18 21:33:16.793761+00	{}	[{"type": "double_skill_choice", "count": 3}]	["expert_skill"]	4
+1	player-book-1.5.7	birkan	Birkan	17-18		t	2026-07-18 21:10:49.82058+00	2026-07-18 21:23:00.400039+00	{}	[{"type": "skill_bonus", "bonus": 5, "skill": "Atuação"}]	[]	2
+2	player-book-1.5.7	shandian	Shandian	17-18		t	2026-07-18 21:10:49.826667+00	2026-07-18 21:23:00.403984+00	{}	[{"type": "skill_bonus", "bonus": 5, "skill": "Atletismo"}]	[]	2
+3	player-book-1.5.7	skypean	Skypean	17-18		t	2026-07-18 21:10:49.831593+00	2026-07-18 21:23:00.407285+00	{}	[{"type": "skill_bonus", "bonus": 5, "skill": "Persuasão"}]	[]	2
+5	player-book-1.5.7	humanozarrao	Humanozarrão	21-23		t	2026-07-18 21:10:49.840002+00	2026-07-18 21:23:00.414622+00	{"size": "Grande"}	[{"type": "saving_throw_bonus", "bonus": 2, "attribute": "strength"}]	[]	4
+\.
+
+
+--
+-- Data for Name: characters_zoanancestrytrait; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.characters_zoanancestrytrait (id, ruleset_version, slug, name, source_pages, description, is_active, created_at, updated_at, trait_type, requires_master_approval, carnivore_hunter_only) FROM stdin;
+1	player-book-1.5.7	visao-agucada	Visão Aguçada	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.888047+00	2026-07-18 21:23:00.460588+00	common	f	f
+2	player-book-1.5.7	faro-agucado	Faro Aguçado	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.903632+00	2026-07-18 21:23:00.464575+00	common	f	f
+3	player-book-1.5.7	garras	Garras	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.906586+00	2026-07-18 21:23:00.468467+00	common	f	f
+4	player-book-1.5.7	presas	Presas	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.912341+00	2026-07-18 21:23:00.471603+00	common	f	f
+5	player-book-1.5.7	casco-ou-carapaca	Casco ou Carapaça	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.917377+00	2026-07-18 21:23:00.475367+00	specific	t	t
+6	player-book-1.5.7	veneno	Veneno	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.921008+00	2026-07-18 21:23:00.479076+00	specific	t	t
+7	player-book-1.5.7	asas	Asas	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.924728+00	2026-07-18 21:23:00.483721+00	specific	t	t
+8	player-book-1.5.7	predador	Predador	Cap. 6	Referência a traço Zoan usada somente para ancestralidade.	t	2026-07-18 21:10:49.931054+00	2026-07-18 21:23:00.488069+00	predator	t	t
+9	player-book-1.5.7	audicao-agucada	Audição aguçada			t	2026-07-18 21:40:30.755942+00	2026-07-18 21:40:30.755958+00	common	t	f
+10	player-book-1.5.7	bote	Bote			t	2026-07-18 21:47:49.436039+00	2026-07-18 21:47:49.436055+00	specific	f	f
+\.
+
+
+--
+-- Data for Name: combat_combat; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.combat_combat (id, status, mode, track_player_resources, round_number, current_turn_index, started_at, finished_at, updated_at, master_notes, result, final_note, campaign_id, encounter_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: combat_combatant; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.combat_combatant (id, combatant_type, display_name, image, max_hp, current_hp, max_power_points, current_power_points, armor_class, resistance_bonus, initiative, turn_order, narrative_state, custom_narrative_state, is_defeated, is_active, is_boss, master_note, created_at, updated_at, character_id, combat_id, enemy_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: combat_combatnote; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.combat_combatnote (id, note_type, text, created_at, combat_id, combatant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: combat_hpchange; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.combat_hpchange (id, previous_hp, new_hp, created_at, is_reverted, combatant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
+1	2026-07-18 20:50:55.661163+00	1	diogo	2	[{"changed": {"fields": ["password"]}}]	6	2
+2	2026-07-18 20:50:59.676469+00	1	diogo	2	[]	6	2
+3	2026-07-18 20:51:27.326146+00	3	lucas	1	[{"added": {}}]	6	2
+4	2026-07-18 20:51:30.845145+00	3	lucas	2	[]	6	2
+5	2026-07-18 20:51:55.146455+00	4	bernardo	1	[{"added": {}}]	6	2
+6	2026-07-18 20:52:00.492548+00	4	bernardo	2	[]	6	2
+7	2026-07-18 20:53:28.224475+00	5	maria	1	[{"added": {}}]	6	2
+8	2026-07-18 20:53:32.753148+00	5	maria	2	[]	6	2
+9	2026-07-18 20:57:28.440487+00	6	danielly	1	[{"added": {}}]	6	2
+10	2026-07-18 20:57:32.357325+00	6	danielly	2	[]	6	2
+11	2026-07-18 20:58:30.701234+00	7	kaiky	1	[{"added": {}}]	6	2
+12	2026-07-18 20:58:34.083286+00	7	kaiky	2	[]	6	2
+13	2026-07-18 20:58:48.481237+00	8	luisa	1	[{"added": {}}]	6	2
+14	2026-07-18 20:58:51.793534+00	8	luisa	2	[]	6	2
+15	2026-07-18 20:59:15.727029+00	2	Os Tambores da Libertação	1	[{"added": {}}]	7	2
+16	2026-07-18 21:02:35.12454+00	1	Caravela revolucionária de apoio	2	[{"changed": {"fields": ["Campaign"]}}]	27	2
+17	2026-07-18 21:02:46.08253+00	1	Tambores da Libertação	3		7	2
+18	2026-07-18 21:11:46.428848+00	1	diogo	2	[{"changed": {"fields": ["Staff status", "Superuser status"]}}]	6	2
+19	2026-07-18 21:17:38.496185+00	2	Caravela revolucionária de apoio	3		27	2
+20	2026-07-18 21:17:54.566159+00	3	Tambores da Libertação	3		7	2
+21	2026-07-18 21:28:51.610635+00	13	Estudiosa	1	[{"added": {}}]	14	2
+22	2026-07-18 21:33:16.795619+00	4	Humano	2	[{"changed": {"name": "variante", "object": "Humano Comum", "fields": ["Effects"]}}]	23	2
+23	2026-07-18 21:38:31.693706+00	1	Caravela revolucionária de apoio	2	[{"changed": {"fields": ["Pertence \\u00e0 tripula\\u00e7\\u00e3o"]}}]	27	1
+24	2026-07-18 21:40:30.757737+00	9	Audição aguçada	1	[{"added": {}}]	25	1
+25	2026-07-18 21:47:49.437523+00	10	Bote	1	[{"added": {}}]	25	2
+26	2026-07-18 22:03:57.884961+00	1	Atirador	2	[{"changed": {"fields": ["Favorite weapon options"]}}]	18	2
+27	2026-07-18 22:04:49.141636+00	4	Espadachim	2	[{"changed": {"fields": ["Weapon proficiencies", "Favorite weapon options", "Initial equipment"]}}]	18	2
+28	2026-07-18 22:06:55.339913+00	1	Atirador	2	[{"changed": {"fields": ["Innate ability options"]}}]	18	2
+29	2026-07-18 22:26:33.421304+00	8	Antonie Dorian Grey	2	[{"changed": {"fields": ["PP m\\u00e1ximo", "PP atual"]}}]	8	1
+30	2026-07-18 22:27:21.956966+00	1	Kuro	2	[{"changed": {"fields": ["CR"]}}]	8	1
+31	2026-07-18 22:38:22.362588+00	3	Sora	2	[{"changed": {"fields": ["PP m\\u00e1ximo", "PP atual"]}}]	8	1
+32	2026-07-18 22:42:50.570038+00	8	Antonie Dorian Grey	2	[{"changed": {"fields": ["PV m\\u00e1ximo", "PV atual"]}}]	8	1
+\.
+
+
+--
+-- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.django_content_type (id, app_label, model) FROM stdin;
+1	admin	logentry
+2	auth	permission
+3	auth	group
+4	contenttypes	contenttype
+5	sessions	session
+6	accounts	user
+7	campaigns	campaign
+8	characters	character
+9	characters	skill
+10	characters	charactercondition
+11	characters	characterfeature
+12	characters	charactertechnique
+13	characters	characterskill
+14	characters	background
+15	characters	characterattribute
+16	characters	charactercreation
+17	characters	characterruleexception
+18	characters	combatstyle
+19	characters	profession
+20	characters	ruleattribute
+21	characters	ruleproficiency
+22	characters	characterproficiency
+23	characters	species
+24	characters	speciesvariant
+25	characters	zoanancestrytrait
+26	inventory	inventoryitem
+27	ships	ship
+28	maps	campaignmap
+29	history	sessionrecord
+30	enemies	enemy
+31	enemies	enemyfaction
+32	enemies	enemyaction
+33	enemies	enemyfeature
+34	encounters	encounter
+35	encounters	encounterenemy
+36	encounters	encounterparticipant
+37	combat	combat
+38	combat	combatant
+39	combat	combatnote
+40	combat	hpchange
+41	audio_panel	audioasset
+\.
+
+
+--
+-- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.django_migrations (id, app, name, applied) FROM stdin;
+1	contenttypes	0001_initial	2026-07-18 20:00:25.34042+00
+2	contenttypes	0002_remove_content_type_name	2026-07-18 20:00:25.354737+00
+3	auth	0001_initial	2026-07-18 20:00:25.441949+00
+4	auth	0002_alter_permission_name_max_length	2026-07-18 20:00:25.449265+00
+5	auth	0003_alter_user_email_max_length	2026-07-18 20:00:25.462056+00
+6	auth	0004_alter_user_username_opts	2026-07-18 20:00:25.46928+00
+7	auth	0005_alter_user_last_login_null	2026-07-18 20:00:25.480407+00
+8	auth	0006_require_contenttypes_0002	2026-07-18 20:00:25.483586+00
+9	auth	0007_alter_validators_add_error_messages	2026-07-18 20:00:25.494853+00
+10	auth	0008_alter_user_username_max_length	2026-07-18 20:00:25.508598+00
+11	auth	0009_alter_user_last_name_max_length	2026-07-18 20:00:25.518106+00
+12	auth	0010_alter_group_name_max_length	2026-07-18 20:00:25.533801+00
+13	auth	0011_update_proxy_permissions	2026-07-18 20:00:25.542385+00
+14	auth	0012_alter_user_first_name_max_length	2026-07-18 20:00:25.552566+00
+15	accounts	0001_initial	2026-07-18 20:00:25.651054+00
+16	accounts	0002_alter_user_groups	2026-07-18 20:00:25.664065+00
+17	admin	0001_initial	2026-07-18 20:00:25.701835+00
+18	admin	0002_logentry_remove_auto_add	2026-07-18 20:00:25.718835+00
+19	admin	0003_logentry_add_action_flag_choices	2026-07-18 20:00:25.73164+00
+20	campaigns	0001_initial	2026-07-18 20:00:25.805864+00
+21	audio_panel	0001_initial	2026-07-18 20:00:25.883462+00
+22	characters	0001_initial	2026-07-18 20:00:26.123082+00
+23	characters	0002_rename_characters__campaig_773e62_idx_characters__campaig_ad3c95_idx_and_more	2026-07-18 20:00:26.78918+00
+24	characters	0003_character_presence_character_willpower_and_more	2026-07-18 20:00:28.492768+00
+25	characters	0004_alter_charactercreation_attribute_method	2026-07-18 20:00:28.578761+00
+26	characters	0005_character_age_character_dream_path_character_height_and_more	2026-07-18 20:00:28.914851+00
+27	enemies	0001_initial	2026-07-18 20:00:29.130225+00
+28	encounters	0001_initial	2026-07-18 20:00:29.570549+00
+29	combat	0001_initial	2026-07-18 20:00:30.152291+00
+30	history	0001_initial	2026-07-18 20:00:30.297515+00
+31	history	0002_rename_history_ses_campaig_7214fe_idx_history_ses_campaig_1a7d24_idx_and_more	2026-07-18 20:00:30.376019+00
+32	inventory	0001_initial	2026-07-18 20:00:30.604804+00
+33	inventory	0002_rename_inventory_i_charact_8f5b83_idx_inventory_i_charact_f76f88_idx_and_more	2026-07-18 20:00:30.828858+00
+34	maps	0001_initial	2026-07-18 20:00:31.003791+00
+35	maps	0002_rename_maps_campai_campaig_a103ab_idx_maps_campai_campaig_267d5d_idx_and_more	2026-07-18 20:00:31.089532+00
+36	sessions	0001_initial	2026-07-18 20:00:31.134656+00
+37	ships	0001_initial	2026-07-18 20:00:31.271281+00
+38	ships	0002_rename_ships_ship_campaig_6f18bc_idx_ships_ship_campaig_7859b9_idx	2026-07-18 20:00:31.309182+00
+39	ships	0003_alter_ship_options_and_more	2026-07-18 20:00:31.578437+00
+\.
+
+
+--
+-- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
+hwibkfvej8ol0vog3mrxqvrvssi8odxp	.eJxVjDsOwjAQRO_iGlnxf01JnzNYu_7gAHKkOKkQdyeRUkA3mvdm3izgttaw9byEKbErU-zy2xHGZ24HSA9s95nHua3LRPxQ-Ek7H-eUX7fT_Tuo2Ou-RunQJQDtpRego8uIoLI2brCGBqvIW2sLCUEebCxGkSwRQEaxZ3Ts8wXKszdb:1wlC2b:RZ_1Bc8ulFlhIOmo-y7_TzbtXtxqs59Rxr-X_uaB2f8	2026-07-19 02:53:45.184711+00
+nez05havrpg0msbkfi0irgenf0s1fsdt	.eJxVjMsOwiAQRf-FtSFQGGBcuvcbyPCSqoGktCvjv2uTLnR7zzn3xTxta_XbyIufEzszyU6_W6D4yG0H6U7t1nnsbV3mwHeFH3Twa0_5eTncv4NKo35rZ0DZoBVCButSFJiEKeAcYjBTzGAmsloZLS0KykoWKIICRhkloJbs_QG3pTbM:1wlC5o:AJ_uSASgV0blK3pHFIXvlX4ohC1WV4Z118hvI-bl718	2026-07-19 02:57:04.116169+00
+yj2qyryx07q5tc5tz4k77un073mt2uin	.eJxVjDsOwjAQRO_iGlnxf01JnzNYu_7gAHKkOKkQdyeRUkA3mvdm3izgttaw9byEKbErU-zy2xHGZ24HSA9s95nHua3LRPxQ-Ek7H-eUX7fT_Tuo2Ou-RunQJQDtpRego8uIoLI2brCGBqvIW2sLCUEebCxGkSwRQEaxZ3Ts8wXKszdb:1wlC5z:1y_oI2IhHfhDuwZoioHwWxUHmGXhbHsOaeQhEyB5NN4	2026-07-19 02:57:15.65272+00
+qbfqebknj4otuyoc408bue53xdwpmht9	.eJxVjEEOgjAQRe_StWlmWgvUpXvO0Ew7M4IaSCisjHdXEha6_e-9_zKJtnVIW5UljWwuJpjT75apPGTaAd9pus22zNO6jNnuij1otf3M8rwe7t_BQHX41updgIjCoNCS04ioSkGD9xoJCzSCbaHctSLOE2cGBBchS4PnzpN5fwDtGTgY:1wlC67:wUVqR-2vckZoheApUFVKPsYeJLrOv0eD_wFVnL7YNig	2026-07-19 02:57:23.110713+00
+dsyk4sy1n1ivu1p1n5yhr1em0bkewwh5	.eJxVjMsOwiAQRf-FtSG0wzDg0r3fQBgeUjU0Ke3K-O_apAvd3nPOfQkftrX6refFT0mchRan341DfOS2g3QP7TbLOLd1mVjuijxol9c55eflcP8Oauj1WzNlRItKuxKIDOFoQUPkQm5Ug2Eg1hkU0KCRo2UDQM5iiQldSRnE-wO3tTcE:1wlC6P:E_XwXyKOxs6XTDrU0NjQ1djASqvqUyLcX5aHUOjZ0U4	2026-07-19 02:57:41.136405+00
+ijlo8ashbmhy578uyq2u7e8xtg5yma1m	.eJxVjMsOgjAQAP-lZ9OwS58evfMNzba7WNRAQuFk_HdDwkGvM5N5q0T7VtPeZE0Tq6ty6vLLMpWnzIfgB833RZdl3tYp6yPRp216WFhet7P9G1Rq9dia3loyBZhsNB2MRqIFFvQBLcLoXIgQOSOKG9Ghj8Fjn4k7ALEG1ecLuUg2iw:1wlCcY:sl7VwFp9qMRi-GYzIeos1Ta6dqCmzsTjrqiu5iI1on4	2026-07-19 03:30:54.288737+00
+84p97eyrnl24ii0bqssf3o3cxmrw4bfx	.eJxVjMsOgjAQAP-lZ9OwS58evfMNzba7WNRAQuFk_HdDwkGvM5N5q0T7VtPeZE0Tq6ty6vLLMpWnzIfgB833RZdl3tYp6yPRp216WFhet7P9G1Rq9dia3loyBZhsNB2MRqIFFvQBLcLoXIgQOSOKG9Ghj8Fjn4k7ALEG1ecLuUg2iw:1wlCdQ:P6OOzxao0JmeNdBa3SM2WM3VOzdjWMw4UCM3yfwth-c	2026-07-19 03:31:48.677459+00
+knb673xs88020r5plszlwx0tu7whn2bt	.eJxVjMsOgjAQAP-lZ9OwS58evfMNzba7WNRAQuFk_HdDwkGvM5N5q0T7VtPeZE0Tq6ty6vLLMpWnzIfgB833RZdl3tYp6yPRp216WFhet7P9G1Rq9dia3loyBZhsNB2MRqIFFvQBLcLoXIgQOSOKG9Ghj8Fjn4k7ALEG1ecLuUg2iw:1wlCgJ:lWOfrZmeCDwPPoe5fGnCT2Mjlt_Mcoa6fGE_1SZfZoE	2026-07-19 03:34:47.489019+00
+p0h8w1ep23g5h5ztxpu1io0fhyhgt646	.eJxVjDEOwjAMRe-SGUUB0jhmZO8ZIttxSQGlUtNOiLtDpQ6w_vfef5lE61LS2nROYzYXE83hd2OSh9YN5DvV22Rlqss8st0Uu9Nm-ynr87q7fweFWvnWQRyKHIE6L6i-c6czAqsGJDcwKToHkbMOwFEyhRiZkQAygBChN-8P_Gk43w:1wlCji:Xn_JenVNaQF3WdqaEJP94kGsQPNr8PSFMj5n1FC6m6Y	2026-07-19 03:38:18.098577+00
+1dnkvhbeowdggr32istj8watndiqf5lz	.eJxVjMsOwiAQRf-FtSFQGGBcuvcbyPCSqoGktCvjv2uTLnR7zzn3xTxta_XbyIufEzszyU6_W6D4yG0H6U7t1nnsbV3mwHeFH3Twa0_5eTncv4NKo35rZ0DZoBVCButSFJiEKeAcYjBTzGAmsloZLS0KykoWKIICRhkloJbs_QG3pTbM:1wlDP2:7Gf08sFRIQTRAyipjrGilruH2_MJUky0lzbp0Iz5kqU	2026-07-19 04:21:00.118934+00
+upk5u9i0bf86xwb7ihs8c4vuv65w21mc	.eJxVjDEOwjAMRe-SGUUB0jhmZO8ZIttxSQGlUtNOiLtDpQ6w_vfef5lE61LS2nROYzYXE83hd2OSh9YN5DvV22Rlqss8st0Uu9Nm-ynr87q7fweFWvnWQRyKHIE6L6i-c6czAqsGJDcwKToHkbMOwFEyhRiZkQAygBChN-8P_Gk43w:1wlDSq:qLPpMOrPmOhSG5Rvuvw01-L7dKExkmbs9xM_jN30HA0	2026-07-19 04:24:56.580001+00
+6c9ezlu18q5n79jow8vkufz3g960xp8l	.eJxVjMEOwiAQBf-FsyHAQgGP3v0GwgIrVQNJaU_Gf9cmPej1zcx7sRC3tYZtlCXMmZ2ZZaffDWN6lLaDfI_t1nnqbV1m5LvCDzr4tefyvBzu30GNo35roJyMSUjaeUuT0wk0KiE9ARgQFpQ2QmLJjiQpzEapVCwSeMAJomXvD95xN6g:1wlDtN:qYuNCGdxBeonmoJXTLh7pxbBZKXJnU0pEm95EdD_Mmw	2026-07-19 04:52:21.187069+00
+\.
+
+
+--
+-- Data for Name: encounters_encounter; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.encounters_encounter (id, name, difficulty, status, has_boss, environment, estimated_difficulty, estimated_threat, operational_load, generator_notes, master_notes, generation_parameters, created_at, updated_at, started_at, finished_at, campaign_id, created_by_id, faction_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: encounters_encounterenemy; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.encounters_encounterenemy (id, display_name, quantity, max_hp_override, armor_class_override, resistance_bonus_override, is_boss, sort_order, master_note, encounter_id, enemy_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: encounters_encounterparticipant; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.encounters_encounterparticipant (id, is_active, character_id, encounter_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: enemies_enemy; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.enemies_enemy (id, name, slug, image, description, category, environment, difficulty_tier, challenge_rating, recommended_min_level, recommended_max_level, max_hp, armor_class, resistance_bonus, initiative, movement, strength, dexterity, constitution, intelligence, wisdom, charisma, is_boss, is_named_character, is_canon_character, operational_complexity, encounter_mode, threat_score_override, is_available_for_generator, is_active, combat_behavior, retreat_condition, surrender_condition, master_tips, notes, created_at, updated_at, faction_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: enemies_enemyaction; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.enemies_enemyaction (id, name, description, action_type, attack_bonus, save_dc, save_attribute, range_text, target_text, damage_text, effect_text, resource_cost, recharge_text, is_limited, uses_per_encounter, sort_order, is_active, created_at, updated_at, enemy_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: enemies_enemyfaction; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.enemies_enemyfaction (id, name, slug, description, is_active) FROM stdin;
+\.
+
+
+--
+-- Data for Name: enemies_enemyfeature; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.enemies_enemyfeature (id, name, description, feature_type, sort_order, is_active, enemy_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: history_sessionrecord; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.history_sessionrecord (id, session_number, title, session_date, cover_image, summary, audio_file, transcription, ai_summary, ai_decisions, ai_detected_items, ai_processed_at, is_published, published_at, created_at, updated_at, campaign_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: inventory_inventoryitem; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.inventory_inventoryitem (id, name, description, image, file, quantity, master_note, is_visible, is_active, created_at, updated_at, character_id) FROM stdin;
+1	1 kanabo	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:52:39.33954+00	2026-07-18 21:52:39.339561+00	1
+2	Ferramentas de Navegador (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:52:39.344073+00	2026-07-18 21:52:39.344101+00	1
+3	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:52:39.347697+00	2026-07-18 21:52:39.347717+00	1
+4	Uma arma marcial	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:53:43.649821+00	2026-07-18 21:53:43.649847+00	2
+5	40.000 bellys	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:53:43.653458+00	2026-07-18 21:53:43.653477+00	2
+6	Ferramentas de Carpinteiro (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:53:43.656923+00	2026-07-18 21:53:43.656943+00	2
+7	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 21:53:43.660584+00	2026-07-18 21:53:43.660604+00	2
+8	2 pistolas	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:06:29.009484+00	2026-07-18 22:06:29.009501+00	3
+9	1 mosquete	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:06:29.013108+00	2026-07-18 22:06:29.013124+00	3
+10	80 munições esféricas	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:06:29.016233+00	2026-07-18 22:06:29.016248+00	3
+11	Ferramentas de Médico (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:06:29.019291+00	2026-07-18 22:06:29.019306+00	3
+12	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:06:29.02239+00	2026-07-18 22:06:29.022406+00	3
+15	1 agulha	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.715213+00	2026-07-18 22:17:21.715229+00	7
+16	Ferramentas de Arqueólogo (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.718169+00	2026-07-18 22:17:21.71819+00	7
+17	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.721341+00	2026-07-18 22:17:21.721358+00	7
+18	1 lanterna	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.724274+00	2026-07-18 22:17:21.724289+00	7
+19	1 corda	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.727402+00	2026-07-18 22:17:21.727419+00	7
+20	1 tenda	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:21.730705+00	2026-07-18 22:17:21.730725+00	7
+21	2 pistolas	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:35.547937+00	2026-07-18 22:17:35.547952+00	8
+22	1 mosquete	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:35.551552+00	2026-07-18 22:17:35.551567+00	8
+23	80 munições esféricas	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:35.55487+00	2026-07-18 22:17:35.554901+00	8
+24	Ferramentas de Engenheiro (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:35.557618+00	2026-07-18 22:17:35.557633+00	8
+25	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:17:35.560468+00	2026-07-18 22:17:35.560484+00	8
+26	Agulha Gigante	Uma agulha de um gigante.			1		t	t	2026-07-18 22:34:59.225969+00	2026-07-18 22:34:59.225996+00	7
+13	2 sabres	Equipamento inicial do assistente de criação.			1		t	f	2026-07-18 22:17:21.707095+00	2026-07-18 22:35:05.506756+00	7
+14	2 katanas	Equipamento inicial do assistente de criação.			1		t	f	2026-07-18 22:17:21.711661+00	2026-07-18 22:35:06.947224+00	7
+27	2 sabres	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:41:48.760187+00	2026-07-18 22:41:48.760201+00	9
+28	2 katanas	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:41:48.762761+00	2026-07-18 22:41:48.762796+00	9
+29	1 agulha	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:41:48.765062+00	2026-07-18 22:41:48.765075+00	9
+30	Ferramentas de Cozinheiro (amador)	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:41:48.767296+00	2026-07-18 22:41:48.767308+00	9
+31	1 mochila pequena	Equipamento inicial do assistente de criação.			1		t	t	2026-07-18 22:41:48.769551+00	2026-07-18 22:41:48.769564+00	9
+\.
+
+
+--
+-- Data for Name: maps_campaignmap; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.maps_campaignmap (id, title, description, map_type, image, file, is_visible_to_players, is_featured, is_active, created_at, updated_at, campaign_id, related_inventory_item_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: maps_campaignmap_visible_to_users; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.maps_campaignmap_visible_to_users (id, campaignmap_id, user_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: ships_ship; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.ships_ship (id, name, image, category, description, max_hp, current_hp, resistance_class, resistance_bonus, speed, max_crew, current_crew, navigation_resources, cannons, facilities, notes, is_active, created_at, updated_at, campaign_id, belongs_to_crew) FROM stdin;
+1	Caravela revolucionária de apoio		small	Dimensões aproximadas: 6 m de largura × 15 m de comprimento × 18 m de altura\r\nDeques: 1\r\nVelocidade sugerida: 8 nós, aproximadamente 16 km/h\r\nVelocidade mínima após danos severos: 4 nós, aproximadamente 8 km/h\r\nMunição inicial: 5 bolas de chumbo	150	150	10	10	8	20	6	adequate	1	Cabine coletiva: seis redes ou beliches apertados.\r\nEnfermaria improvisada: pequena mesa, armário e dois leitos.\r\nOficina e depósito: ferramentas, madeira e peças de reposição.\r\nCozinha e despensa: provisões e água.	Estado inicial: funcional, mas antiga e com manutenção atrasada.\r\nCapacidade de provisões: 8 dias para seis pessoas.	t	2026-07-18 20:00:36.646771+00	2026-07-18 21:38:31.69168+00	2	f
+3	Caravela revolucionária de apoio		small	Dimensões aproximadas: 6 m de largura × 15 m de comprimento × 18 m de altura\r\nDeques: 1\r\nVelocidade sugerida: 8 nós, aproximadamente 16 km/h\r\nVelocidade mínima após danos severos: 4 nós, aproximadamente 8 km/h\r\nMunição inicial: 5 bolas de chumbo	150	150	10	10	8	20	6	adequate	1	Cabine coletiva: seis redes ou beliches apertados.\r\nEnfermaria improvisada: pequena mesa, armário e dois leitos.\r\nOficina e depósito: ferramentas, madeira e peças de reposição.\r\nCozinha e despensa: provisões e água.	Estado inicial: funcional, mas antiga e com manutenção atrasada.\r\nCapacidade de provisões: 8 dias para seis pessoas.	t	2026-07-18 21:23:03.91794+00	2026-07-18 23:03:27.345124+00	4	t
+\.
+
+
+--
+-- Name: accounts_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.accounts_user_groups_id_seq', 1, false);
+
+
+--
+-- Name: accounts_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.accounts_user_id_seq', 8, true);
+
+
+--
+-- Name: accounts_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.accounts_user_user_permissions_id_seq', 1, false);
+
+
+--
+-- Name: audio_panel_audioasset_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.audio_panel_audioasset_id_seq', 1, false);
+
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.auth_group_id_seq', 1, false);
+
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
+
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 164, true);
+
+
+--
+-- Name: campaigns_campaign_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.campaigns_campaign_id_seq', 4, true);
+
+
+--
+-- Name: campaigns_campaign_players_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.campaigns_campaign_players_id_seq', 6, true);
+
+
+--
+-- Name: characters_background_allowed_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_background_allowed_skills_id_seq', 55, true);
+
+
+--
+-- Name: characters_background_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_background_id_seq', 13, true);
+
+
+--
+-- Name: characters_character_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_character_id_seq', 9, true);
+
+
+--
+-- Name: characters_characterattribute_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterattribute_id_seq', 54, true);
+
+
+--
+-- Name: characters_charactercondition_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercondition_id_seq', 1, false);
+
+
+--
+-- Name: characters_charactercreation_background_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_background_skills_id_seq', 14, true);
+
+
+--
+-- Name: characters_charactercreation_free_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_free_skills_id_seq', 9, true);
+
+
+--
+-- Name: characters_charactercreation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_id_seq', 8, true);
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_mixed_species_origins_id_seq', 4, true);
+
+
+--
+-- Name: characters_charactercreation_profession_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_profession_skills_id_seq', 14, true);
+
+
+--
+-- Name: characters_charactercreation_style_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactercreation_style_skills_id_seq', 20, true);
+
+
+--
+-- Name: characters_characterfeature_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterfeature_id_seq', 35, true);
+
+
+--
+-- Name: characters_characterproficiency_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterproficiency_id_seq', 112, true);
+
+
+--
+-- Name: characters_characterruleexception_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterruleexception_id_seq', 1, false);
+
+
+--
+-- Name: characters_characterskill_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_characterskill_id_seq', 60, true);
+
+
+--
+-- Name: characters_charactertechnique_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_charactertechnique_id_seq', 1, false);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_combatstyle_allowed_skills_id_seq', 60, true);
+
+
+--
+-- Name: characters_combatstyle_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_combatstyle_id_seq', 10, true);
+
+
+--
+-- Name: characters_profession_allowed_skills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_profession_allowed_skills_id_seq', 79, true);
+
+
+--
+-- Name: characters_profession_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_profession_id_seq', 12, true);
+
+
+--
+-- Name: characters_ruleattribute_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_ruleattribute_id_seq', 6, true);
+
+
+--
+-- Name: characters_ruleproficiency_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_ruleproficiency_id_seq', 57, true);
+
+
+--
+-- Name: characters_skill_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_skill_id_seq', 22, true);
+
+
+--
+-- Name: characters_species_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_species_id_seq', 8, true);
+
+
+--
+-- Name: characters_speciesvariant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_speciesvariant_id_seq', 15, true);
+
+
+--
+-- Name: characters_zoanancestrytrait_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.characters_zoanancestrytrait_id_seq', 10, true);
+
+
+--
+-- Name: combat_combat_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.combat_combat_id_seq', 1, false);
+
+
+--
+-- Name: combat_combatant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.combat_combatant_id_seq', 1, false);
+
+
+--
+-- Name: combat_combatnote_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.combat_combatnote_id_seq', 1, false);
+
+
+--
+-- Name: combat_hpchange_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.combat_hpchange_id_seq', 1, false);
+
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 32, true);
+
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 41, true);
+
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 39, true);
+
+
+--
+-- Name: encounters_encounter_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.encounters_encounter_id_seq', 1, false);
+
+
+--
+-- Name: encounters_encounterenemy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.encounters_encounterenemy_id_seq', 1, false);
+
+
+--
+-- Name: encounters_encounterparticipant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.encounters_encounterparticipant_id_seq', 1, false);
+
+
+--
+-- Name: enemies_enemy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.enemies_enemy_id_seq', 1, false);
+
+
+--
+-- Name: enemies_enemyaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.enemies_enemyaction_id_seq', 1, false);
+
+
+--
+-- Name: enemies_enemyfaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.enemies_enemyfaction_id_seq', 1, false);
+
+
+--
+-- Name: enemies_enemyfeature_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.enemies_enemyfeature_id_seq', 1, false);
+
+
+--
+-- Name: history_sessionrecord_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.history_sessionrecord_id_seq', 1, false);
+
+
+--
+-- Name: inventory_inventoryitem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.inventory_inventoryitem_id_seq', 31, true);
+
+
+--
+-- Name: maps_campaignmap_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.maps_campaignmap_id_seq', 1, false);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.maps_campaignmap_visible_to_users_id_seq', 1, false);
+
+
+--
+-- Name: ships_ship_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.ships_ship_id_seq', 3, true);
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_user_id_group_id_59c0b32f_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_user_id_group_id_59c0b32f_uniq UNIQUE (user_id, group_id);
+
+
+--
+-- Name: accounts_user accounts_user_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user
+    ADD CONSTRAINT accounts_user_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq UNIQUE (user_id, permission_id);
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_user accounts_user_username_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user
+    ADD CONSTRAINT accounts_user_username_key UNIQUE (username);
+
+
+--
+-- Name: audio_panel_audioasset audio_panel_audioasset_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_panel_audioasset
+    ADD CONSTRAINT audio_panel_audioasset_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_name_key UNIQUE (name);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq UNIQUE (group_id, permission_id);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq UNIQUE (content_type_id, codename);
+
+
+--
+-- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: campaigns_campaign campaigns_campaign_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign
+    ADD CONSTRAINT campaigns_campaign_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: campaigns_campaign_players campaigns_campaign_players_campaign_id_user_id_0eb0e0da_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign_players
+    ADD CONSTRAINT campaigns_campaign_players_campaign_id_user_id_0eb0e0da_uniq UNIQUE (campaign_id, user_id);
+
+
+--
+-- Name: campaigns_campaign_players campaigns_campaign_players_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign_players
+    ADD CONSTRAINT campaigns_campaign_players_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: campaigns_campaign campaigns_campaign_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign
+    ADD CONSTRAINT campaigns_campaign_slug_key UNIQUE (slug);
+
+
+--
+-- Name: characters_background_allowed_skills characters_background_al_background_id_skill_id_4e1ac5a1_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background_allowed_skills
+    ADD CONSTRAINT characters_background_al_background_id_skill_id_4e1ac5a1_uniq UNIQUE (background_id, skill_id);
+
+
+--
+-- Name: characters_background_allowed_skills characters_background_allowed_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background_allowed_skills
+    ADD CONSTRAINT characters_background_allowed_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_background characters_background_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background
+    ADD CONSTRAINT characters_background_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_background characters_background_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background
+    ADD CONSTRAINT characters_background_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_character characters_character_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_character
+    ADD CONSTRAINT characters_character_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterattribute characters_characterattribute_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterattribute
+    ADD CONSTRAINT characters_characterattribute_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercondition characters_charactercondition_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercondition
+    ADD CONSTRAINT characters_charactercondition_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation_free_skills characters_charactercrea_charactercreation_id_ski_2e1f0bd3_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_free_skills
+    ADD CONSTRAINT characters_charactercrea_charactercreation_id_ski_2e1f0bd3_uniq UNIQUE (charactercreation_id, skill_id);
+
+
+--
+-- Name: characters_charactercreation_background_skills characters_charactercrea_charactercreation_id_ski_752d4876_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_background_skills
+    ADD CONSTRAINT characters_charactercrea_charactercreation_id_ski_752d4876_uniq UNIQUE (charactercreation_id, skill_id);
+
+
+--
+-- Name: characters_charactercreation_profession_skills characters_charactercrea_charactercreation_id_ski_bb030549_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_profession_skills
+    ADD CONSTRAINT characters_charactercrea_charactercreation_id_ski_bb030549_uniq UNIQUE (charactercreation_id, skill_id);
+
+
+--
+-- Name: characters_charactercreation_style_skills characters_charactercrea_charactercreation_id_ski_d5bc21ee_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_style_skills
+    ADD CONSTRAINT characters_charactercrea_charactercreation_id_ski_d5bc21ee_uniq UNIQUE (charactercreation_id, skill_id);
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins characters_charactercrea_charactercreation_id_spe_ab706246_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_mixed_species_origins
+    ADD CONSTRAINT characters_charactercrea_charactercreation_id_spe_ab706246_uniq UNIQUE (charactercreation_id, species_id);
+
+
+--
+-- Name: characters_charactercreation_background_skills characters_charactercreation_background_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_background_skills
+    ADD CONSTRAINT characters_charactercreation_background_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation characters_charactercreation_character_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_charactercreation_character_id_key UNIQUE (character_id);
+
+
+--
+-- Name: characters_charactercreation_free_skills characters_charactercreation_free_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_free_skills
+    ADD CONSTRAINT characters_charactercreation_free_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins characters_charactercreation_mixed_species_origins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_mixed_species_origins
+    ADD CONSTRAINT characters_charactercreation_mixed_species_origins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation characters_charactercreation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_charactercreation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation_profession_skills characters_charactercreation_profession_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_profession_skills
+    ADD CONSTRAINT characters_charactercreation_profession_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactercreation_style_skills characters_charactercreation_style_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_style_skills
+    ADD CONSTRAINT characters_charactercreation_style_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterfeature characters_characterfeature_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterfeature
+    ADD CONSTRAINT characters_characterfeature_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterproficiency characters_characterproficiency_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterproficiency
+    ADD CONSTRAINT characters_characterproficiency_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterruleexception characters_characterruleexception_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterruleexception
+    ADD CONSTRAINT characters_characterruleexception_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_characterskill characters_characterskill_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterskill
+    ADD CONSTRAINT characters_characterskill_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_charactertechnique characters_charactertechnique_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactertechnique
+    ADD CONSTRAINT characters_charactertechnique_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills characters_combatstyle_a_combatstyle_id_skill_id_cc76ade0_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle_allowed_skills
+    ADD CONSTRAINT characters_combatstyle_a_combatstyle_id_skill_id_cc76ade0_uniq UNIQUE (combatstyle_id, skill_id);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills characters_combatstyle_allowed_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle_allowed_skills
+    ADD CONSTRAINT characters_combatstyle_allowed_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_combatstyle characters_combatstyle_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle
+    ADD CONSTRAINT characters_combatstyle_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_combatstyle characters_combatstyle_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle
+    ADD CONSTRAINT characters_combatstyle_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_profession_allowed_skills characters_profession_al_profession_id_skill_id_d656483a_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession_allowed_skills
+    ADD CONSTRAINT characters_profession_al_profession_id_skill_id_d656483a_uniq UNIQUE (profession_id, skill_id);
+
+
+--
+-- Name: characters_profession_allowed_skills characters_profession_allowed_skills_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession_allowed_skills
+    ADD CONSTRAINT characters_profession_allowed_skills_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_profession characters_profession_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession
+    ADD CONSTRAINT characters_profession_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_profession characters_profession_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession
+    ADD CONSTRAINT characters_profession_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_ruleattribute characters_ruleattribute_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_ruleattribute
+    ADD CONSTRAINT characters_ruleattribute_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_ruleattribute characters_ruleattribute_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_ruleattribute
+    ADD CONSTRAINT characters_ruleattribute_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_ruleproficiency characters_ruleproficiency_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_ruleproficiency
+    ADD CONSTRAINT characters_ruleproficiency_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_ruleproficiency characters_ruleproficiency_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_ruleproficiency
+    ADD CONSTRAINT characters_ruleproficiency_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_skill characters_skill_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_skill
+    ADD CONSTRAINT characters_skill_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_skill characters_skill_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_skill
+    ADD CONSTRAINT characters_skill_slug_key UNIQUE (slug);
+
+
+--
+-- Name: characters_species characters_species_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_species
+    ADD CONSTRAINT characters_species_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_species characters_species_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_species
+    ADD CONSTRAINT characters_species_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_speciesvariant characters_speciesvariant_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_speciesvariant
+    ADD CONSTRAINT characters_speciesvariant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_speciesvariant characters_speciesvariant_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_speciesvariant
+    ADD CONSTRAINT characters_speciesvariant_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: characters_zoanancestrytrait characters_zoanancestrytrait_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_zoanancestrytrait
+    ADD CONSTRAINT characters_zoanancestrytrait_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: characters_zoanancestrytrait characters_zoanancestrytrait_ruleset_slug_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_zoanancestrytrait
+    ADD CONSTRAINT characters_zoanancestrytrait_ruleset_slug_unique UNIQUE (ruleset_version, slug);
+
+
+--
+-- Name: combat_combat combat_combat_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combat
+    ADD CONSTRAINT combat_combat_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: combat_combatant combat_combatant_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatant
+    ADD CONSTRAINT combat_combatant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: combat_combatnote combat_combatnote_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatnote
+    ADD CONSTRAINT combat_combatnote_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: combat_hpchange combat_hpchange_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_hpchange
+    ADD CONSTRAINT combat_hpchange_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq UNIQUE (app_label, model);
+
+
+--
+-- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_migrations
+    ADD CONSTRAINT django_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_session
+    ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- Name: encounters_encounter encounters_encounter_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounter
+    ADD CONSTRAINT encounters_encounter_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: encounters_encounterenemy encounters_encounterenemy_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterenemy
+    ADD CONSTRAINT encounters_encounterenemy_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: encounters_encounterparticipant encounters_encounterparticipant_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterparticipant
+    ADD CONSTRAINT encounters_encounterparticipant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: enemies_enemy enemies_enemy_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemy
+    ADD CONSTRAINT enemies_enemy_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: enemies_enemy enemies_enemy_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemy
+    ADD CONSTRAINT enemies_enemy_slug_key UNIQUE (slug);
+
+
+--
+-- Name: enemies_enemyaction enemies_enemyaction_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyaction
+    ADD CONSTRAINT enemies_enemyaction_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: enemies_enemyfaction enemies_enemyfaction_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyfaction
+    ADD CONSTRAINT enemies_enemyfaction_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: enemies_enemyfaction enemies_enemyfaction_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyfaction
+    ADD CONSTRAINT enemies_enemyfaction_slug_key UNIQUE (slug);
+
+
+--
+-- Name: enemies_enemyfeature enemies_enemyfeature_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyfeature
+    ADD CONSTRAINT enemies_enemyfeature_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: history_sessionrecord history_sessionrecord_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.history_sessionrecord
+    ADD CONSTRAINT history_sessionrecord_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inventory_inventoryitem inventory_inventoryitem_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inventory_inventoryitem
+    ADD CONSTRAINT inventory_inventoryitem_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: maps_campaignmap maps_campaignmap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap
+    ADD CONSTRAINT maps_campaignmap_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users maps_campaignmap_visible_campaignmap_id_user_id_cd8e0be9_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap_visible_to_users
+    ADD CONSTRAINT maps_campaignmap_visible_campaignmap_id_user_id_cd8e0be9_uniq UNIQUE (campaignmap_id, user_id);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users maps_campaignmap_visible_to_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap_visible_to_users
+    ADD CONSTRAINT maps_campaignmap_visible_to_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ships_ship ships_ship_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ships_ship
+    ADD CONSTRAINT ships_ship_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: audio_panel_audioasset unique_audio_slug_per_campaign; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_panel_audioasset
+    ADD CONSTRAINT unique_audio_slug_per_campaign UNIQUE (campaign_id, slug);
+
+
+--
+-- Name: characters_characterattribute unique_character_attribute_breakdown; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterattribute
+    ADD CONSTRAINT unique_character_attribute_breakdown UNIQUE (character_id, attribute);
+
+
+--
+-- Name: characters_character unique_character_per_campaign_user; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_character
+    ADD CONSTRAINT unique_character_per_campaign_user UNIQUE (campaign_id, user_id);
+
+
+--
+-- Name: characters_characterproficiency unique_character_proficiency_source; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterproficiency
+    ADD CONSTRAINT unique_character_proficiency_source UNIQUE (character_id, proficiency_id, source_type, source_object_id);
+
+
+--
+-- Name: characters_characterskill unique_character_skill; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterskill
+    ADD CONSTRAINT unique_character_skill UNIQUE (character_id, skill_id);
+
+
+--
+-- Name: encounters_encounterparticipant unique_encounter_participant; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterparticipant
+    ADD CONSTRAINT unique_encounter_participant UNIQUE (encounter_id, character_id);
+
+
+--
+-- Name: history_sessionrecord unique_session_number_per_campaign; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.history_sessionrecord
+    ADD CONSTRAINT unique_session_number_per_campaign UNIQUE (campaign_id, session_number);
+
+
+--
+-- Name: accounts_user_groups_group_id_bd11a704; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_groups_group_id_bd11a704 ON public.accounts_user_groups USING btree (group_id);
+
+
+--
+-- Name: accounts_user_groups_user_id_52b62117; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_groups_user_id_52b62117 ON public.accounts_user_groups USING btree (user_id);
+
+
+--
+-- Name: accounts_user_user_permissions_permission_id_113bb443; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_user_permissions_permission_id_113bb443 ON public.accounts_user_user_permissions USING btree (permission_id);
+
+
+--
+-- Name: accounts_user_user_permissions_user_id_e4f0a161; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_user_permissions_user_id_e4f0a161 ON public.accounts_user_user_permissions USING btree (user_id);
+
+
+--
+-- Name: accounts_user_username_6088629e_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_username_6088629e_like ON public.accounts_user USING btree (username varchar_pattern_ops);
+
+
+--
+-- Name: audio_panel_audioasset_campaign_id_55076906; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_audioasset_campaign_id_55076906 ON public.audio_panel_audioasset USING btree (campaign_id);
+
+
+--
+-- Name: audio_panel_audioasset_slug_c02ef1f3; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_audioasset_slug_c02ef1f3 ON public.audio_panel_audioasset USING btree (slug);
+
+
+--
+-- Name: audio_panel_audioasset_slug_c02ef1f3_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_audioasset_slug_c02ef1f3_like ON public.audio_panel_audioasset USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: audio_panel_campaig_1f11ee_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_1f11ee_idx ON public.audio_panel_audioasset USING btree (campaign_id, is_active, is_favorite);
+
+
+--
+-- Name: audio_panel_campaig_31262c_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_31262c_idx ON public.audio_panel_audioasset USING btree (campaign_id, default_channel);
+
+
+--
+-- Name: audio_panel_campaig_73d0f7_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_73d0f7_idx ON public.audio_panel_audioasset USING btree (campaign_id, is_featured);
+
+
+--
+-- Name: audio_panel_campaig_765f4b_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_765f4b_idx ON public.audio_panel_audioasset USING btree (campaign_id, play_count);
+
+
+--
+-- Name: audio_panel_campaig_e90e98_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_e90e98_idx ON public.audio_panel_audioasset USING btree (campaign_id, is_active, category);
+
+
+--
+-- Name: audio_panel_campaig_fa8237_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX audio_panel_campaig_fa8237_idx ON public.audio_panel_audioasset USING btree (campaign_id, last_played_at);
+
+
+--
+-- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permissions USING btree (group_id);
+
+
+--
+-- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_permissions USING btree (permission_id);
+
+
+--
+-- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission USING btree (content_type_id);
+
+
+--
+-- Name: campaigns_campaign_master_id_eec50fbc; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX campaigns_campaign_master_id_eec50fbc ON public.campaigns_campaign USING btree (master_id);
+
+
+--
+-- Name: campaigns_campaign_players_campaign_id_f0e4df59; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX campaigns_campaign_players_campaign_id_f0e4df59 ON public.campaigns_campaign_players USING btree (campaign_id);
+
+
+--
+-- Name: campaigns_campaign_players_user_id_81102d8f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX campaigns_campaign_players_user_id_81102d8f ON public.campaigns_campaign_players USING btree (user_id);
+
+
+--
+-- Name: campaigns_campaign_slug_08eb9673_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX campaigns_campaign_slug_08eb9673_like ON public.campaigns_campaign USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters__campaig_ad3c95_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters__campaig_ad3c95_idx ON public.characters_character USING btree (campaign_id, user_id);
+
+
+--
+-- Name: characters_background_allowed_skills_background_id_dd45f90e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_allowed_skills_background_id_dd45f90e ON public.characters_background_allowed_skills USING btree (background_id);
+
+
+--
+-- Name: characters_background_allowed_skills_skill_id_2749c577; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_allowed_skills_skill_id_2749c577 ON public.characters_background_allowed_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_background_is_active_a3c198e7; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_is_active_a3c198e7 ON public.characters_background USING btree (is_active);
+
+
+--
+-- Name: characters_background_ruleset_version_f51bd8af; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_ruleset_version_f51bd8af ON public.characters_background USING btree (ruleset_version);
+
+
+--
+-- Name: characters_background_ruleset_version_f51bd8af_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_ruleset_version_f51bd8af_like ON public.characters_background USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_background_slug_f394a2d4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_slug_f394a2d4 ON public.characters_background USING btree (slug);
+
+
+--
+-- Name: characters_background_slug_f394a2d4_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_background_slug_f394a2d4_like ON public.characters_background USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_character_campaign_id_53a808c0; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_character_campaign_id_53a808c0 ON public.characters_character USING btree (campaign_id);
+
+
+--
+-- Name: characters_character_user_id_6d9c54fd; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_character_user_id_6d9c54fd ON public.characters_character USING btree (user_id);
+
+
+--
+-- Name: characters_characterattribute_character_id_b0886605; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterattribute_character_id_b0886605 ON public.characters_characterattribute USING btree (character_id);
+
+
+--
+-- Name: characters_charactercondition_character_id_690483bc; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercondition_character_id_690483bc ON public.characters_charactercondition USING btree (character_id);
+
+
+--
+-- Name: characters_charactercondition_is_active_578aaf32; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercondition_is_active_578aaf32 ON public.characters_charactercondition USING btree (is_active);
+
+
+--
+-- Name: characters_charactercreati_charactercreation_id_06c2f609; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_charactercreation_id_06c2f609 ON public.characters_charactercreation_mixed_species_origins USING btree (charactercreation_id);
+
+
+--
+-- Name: characters_charactercreati_charactercreation_id_5653541e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_charactercreation_id_5653541e ON public.characters_charactercreation_background_skills USING btree (charactercreation_id);
+
+
+--
+-- Name: characters_charactercreati_charactercreation_id_89094d6d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_charactercreation_id_89094d6d ON public.characters_charactercreation_profession_skills USING btree (charactercreation_id);
+
+
+--
+-- Name: characters_charactercreati_charactercreation_id_8b3c0d56; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_charactercreation_id_8b3c0d56 ON public.characters_charactercreation_style_skills USING btree (charactercreation_id);
+
+
+--
+-- Name: characters_charactercreati_charactercreation_id_c3b783a1; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_charactercreation_id_c3b783a1 ON public.characters_charactercreation_free_skills USING btree (charactercreation_id);
+
+
+--
+-- Name: characters_charactercreati_skill_id_2730b6af; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_skill_id_2730b6af ON public.characters_charactercreation_background_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_charactercreati_skill_id_3e4218c6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_skill_id_3e4218c6 ON public.characters_charactercreation_profession_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_charactercreati_species_id_5640923c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreati_species_id_5640923c ON public.characters_charactercreation_mixed_species_origins USING btree (species_id);
+
+
+--
+-- Name: characters_charactercreation_background_id_c1e1dfbe; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_background_id_c1e1dfbe ON public.characters_charactercreation USING btree (background_id);
+
+
+--
+-- Name: characters_charactercreation_campaign_id_432868e5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_campaign_id_432868e5 ON public.characters_charactercreation USING btree (campaign_id);
+
+
+--
+-- Name: characters_charactercreation_combat_style_id_ca817e1e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_combat_style_id_ca817e1e ON public.characters_charactercreation USING btree (combat_style_id);
+
+
+--
+-- Name: characters_charactercreation_free_skills_skill_id_440f977c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_free_skills_skill_id_440f977c ON public.characters_charactercreation_free_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_charactercreation_profession_id_134d16c5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_profession_id_134d16c5 ON public.characters_charactercreation USING btree (profession_id);
+
+
+--
+-- Name: characters_charactercreation_ruleset_version_b554e2c4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_ruleset_version_b554e2c4 ON public.characters_charactercreation USING btree (ruleset_version);
+
+
+--
+-- Name: characters_charactercreation_ruleset_version_b554e2c4_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_ruleset_version_b554e2c4_like ON public.characters_charactercreation USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_charactercreation_species_id_dca3b634; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_species_id_dca3b634 ON public.characters_charactercreation USING btree (species_id);
+
+
+--
+-- Name: characters_charactercreation_species_variant_id_29dce720; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_species_variant_id_29dce720 ON public.characters_charactercreation USING btree (species_variant_id);
+
+
+--
+-- Name: characters_charactercreation_status_7fab41ee; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_status_7fab41ee ON public.characters_charactercreation USING btree (status);
+
+
+--
+-- Name: characters_charactercreation_status_7fab41ee_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_status_7fab41ee_like ON public.characters_charactercreation USING btree (status varchar_pattern_ops);
+
+
+--
+-- Name: characters_charactercreation_style_skills_skill_id_83896d57; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_style_skills_skill_id_83896d57 ON public.characters_charactercreation_style_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_charactercreation_subprofession_id_dc5ab25a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_subprofession_id_dc5ab25a ON public.characters_charactercreation USING btree (subprofession_id);
+
+
+--
+-- Name: characters_charactercreation_user_id_c452ec7d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactercreation_user_id_c452ec7d ON public.characters_charactercreation USING btree (user_id);
+
+
+--
+-- Name: characters_characterfeature_character_id_5837a53e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterfeature_character_id_5837a53e ON public.characters_characterfeature USING btree (character_id);
+
+
+--
+-- Name: characters_characterproficiency_character_id_8a197b9d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterproficiency_character_id_8a197b9d ON public.characters_characterproficiency USING btree (character_id);
+
+
+--
+-- Name: characters_characterproficiency_proficiency_id_6b4d5406; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterproficiency_proficiency_id_6b4d5406 ON public.characters_characterproficiency USING btree (proficiency_id);
+
+
+--
+-- Name: characters_characterruleexception_creation_id_6b17a625; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterruleexception_creation_id_6b17a625 ON public.characters_characterruleexception USING btree (creation_id);
+
+
+--
+-- Name: characters_characterruleexception_user_id_366b2554; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterruleexception_user_id_366b2554 ON public.characters_characterruleexception USING btree (user_id);
+
+
+--
+-- Name: characters_characterskill_character_id_296af121; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterskill_character_id_296af121 ON public.characters_characterskill USING btree (character_id);
+
+
+--
+-- Name: characters_characterskill_skill_id_4e360f73; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_characterskill_skill_id_4e360f73 ON public.characters_characterskill USING btree (skill_id);
+
+
+--
+-- Name: characters_charactertechnique_character_id_47775325; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_charactertechnique_character_id_47775325 ON public.characters_charactertechnique USING btree (character_id);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills_combatstyle_id_be8d9424; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_allowed_skills_combatstyle_id_be8d9424 ON public.characters_combatstyle_allowed_skills USING btree (combatstyle_id);
+
+
+--
+-- Name: characters_combatstyle_allowed_skills_skill_id_efd3369e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_allowed_skills_skill_id_efd3369e ON public.characters_combatstyle_allowed_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_combatstyle_is_active_b5888ac6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_is_active_b5888ac6 ON public.characters_combatstyle USING btree (is_active);
+
+
+--
+-- Name: characters_combatstyle_ruleset_version_7876cb29; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_ruleset_version_7876cb29 ON public.characters_combatstyle USING btree (ruleset_version);
+
+
+--
+-- Name: characters_combatstyle_ruleset_version_7876cb29_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_ruleset_version_7876cb29_like ON public.characters_combatstyle USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_combatstyle_slug_1d130fdd; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_slug_1d130fdd ON public.characters_combatstyle USING btree (slug);
+
+
+--
+-- Name: characters_combatstyle_slug_1d130fdd_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_combatstyle_slug_1d130fdd_like ON public.characters_combatstyle USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_profession_allowed_skills_profession_id_5ffd92d7; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_allowed_skills_profession_id_5ffd92d7 ON public.characters_profession_allowed_skills USING btree (profession_id);
+
+
+--
+-- Name: characters_profession_allowed_skills_skill_id_987d9bc9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_allowed_skills_skill_id_987d9bc9 ON public.characters_profession_allowed_skills USING btree (skill_id);
+
+
+--
+-- Name: characters_profession_is_active_76946e9d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_is_active_76946e9d ON public.characters_profession USING btree (is_active);
+
+
+--
+-- Name: characters_profession_parent_id_ce94306b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_parent_id_ce94306b ON public.characters_profession USING btree (parent_id);
+
+
+--
+-- Name: characters_profession_ruleset_version_193ba2c1; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_ruleset_version_193ba2c1 ON public.characters_profession USING btree (ruleset_version);
+
+
+--
+-- Name: characters_profession_ruleset_version_193ba2c1_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_ruleset_version_193ba2c1_like ON public.characters_profession USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_profession_slug_bd414ffa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_slug_bd414ffa ON public.characters_profession USING btree (slug);
+
+
+--
+-- Name: characters_profession_slug_bd414ffa_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_profession_slug_bd414ffa_like ON public.characters_profession USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_ruleattribute_is_active_fccec6cb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleattribute_is_active_fccec6cb ON public.characters_ruleattribute USING btree (is_active);
+
+
+--
+-- Name: characters_ruleattribute_ruleset_version_8381d3e4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleattribute_ruleset_version_8381d3e4 ON public.characters_ruleattribute USING btree (ruleset_version);
+
+
+--
+-- Name: characters_ruleattribute_ruleset_version_8381d3e4_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleattribute_ruleset_version_8381d3e4_like ON public.characters_ruleattribute USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_ruleattribute_slug_80baab8f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleattribute_slug_80baab8f ON public.characters_ruleattribute USING btree (slug);
+
+
+--
+-- Name: characters_ruleattribute_slug_80baab8f_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleattribute_slug_80baab8f_like ON public.characters_ruleattribute USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_ruleproficiency_is_active_2d3a71c0; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_is_active_2d3a71c0 ON public.characters_ruleproficiency USING btree (is_active);
+
+
+--
+-- Name: characters_ruleproficiency_related_skill_id_5421827a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_related_skill_id_5421827a ON public.characters_ruleproficiency USING btree (related_skill_id);
+
+
+--
+-- Name: characters_ruleproficiency_ruleset_version_8b81cd92; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_ruleset_version_8b81cd92 ON public.characters_ruleproficiency USING btree (ruleset_version);
+
+
+--
+-- Name: characters_ruleproficiency_ruleset_version_8b81cd92_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_ruleset_version_8b81cd92_like ON public.characters_ruleproficiency USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_ruleproficiency_slug_f26268cc; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_slug_f26268cc ON public.characters_ruleproficiency USING btree (slug);
+
+
+--
+-- Name: characters_ruleproficiency_slug_f26268cc_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_ruleproficiency_slug_f26268cc_like ON public.characters_ruleproficiency USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_skill_is_active_683507b3; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_skill_is_active_683507b3 ON public.characters_skill USING btree (is_active);
+
+
+--
+-- Name: characters_skill_slug_9a85d061_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_skill_slug_9a85d061_like ON public.characters_skill USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_species_is_active_594ab533; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_species_is_active_594ab533 ON public.characters_species USING btree (is_active);
+
+
+--
+-- Name: characters_species_ruleset_version_96865588; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_species_ruleset_version_96865588 ON public.characters_species USING btree (ruleset_version);
+
+
+--
+-- Name: characters_species_ruleset_version_96865588_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_species_ruleset_version_96865588_like ON public.characters_species USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_species_slug_3a57f58c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_species_slug_3a57f58c ON public.characters_species USING btree (slug);
+
+
+--
+-- Name: characters_species_slug_3a57f58c_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_species_slug_3a57f58c_like ON public.characters_species USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_speciesvariant_is_active_295c07f9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_is_active_295c07f9 ON public.characters_speciesvariant USING btree (is_active);
+
+
+--
+-- Name: characters_speciesvariant_ruleset_version_8ea0da35; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_ruleset_version_8ea0da35 ON public.characters_speciesvariant USING btree (ruleset_version);
+
+
+--
+-- Name: characters_speciesvariant_ruleset_version_8ea0da35_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_ruleset_version_8ea0da35_like ON public.characters_speciesvariant USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_speciesvariant_slug_7d3e306b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_slug_7d3e306b ON public.characters_speciesvariant USING btree (slug);
+
+
+--
+-- Name: characters_speciesvariant_slug_7d3e306b_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_slug_7d3e306b_like ON public.characters_speciesvariant USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: characters_speciesvariant_species_id_94ab4833; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_speciesvariant_species_id_94ab4833 ON public.characters_speciesvariant USING btree (species_id);
+
+
+--
+-- Name: characters_zoanancestrytrait_is_active_3f61c97f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_zoanancestrytrait_is_active_3f61c97f ON public.characters_zoanancestrytrait USING btree (is_active);
+
+
+--
+-- Name: characters_zoanancestrytrait_ruleset_version_da441738; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_zoanancestrytrait_ruleset_version_da441738 ON public.characters_zoanancestrytrait USING btree (ruleset_version);
+
+
+--
+-- Name: characters_zoanancestrytrait_ruleset_version_da441738_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_zoanancestrytrait_ruleset_version_da441738_like ON public.characters_zoanancestrytrait USING btree (ruleset_version varchar_pattern_ops);
+
+
+--
+-- Name: characters_zoanancestrytrait_slug_d2713982; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_zoanancestrytrait_slug_d2713982 ON public.characters_zoanancestrytrait USING btree (slug);
+
+
+--
+-- Name: characters_zoanancestrytrait_slug_d2713982_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX characters_zoanancestrytrait_slug_d2713982_like ON public.characters_zoanancestrytrait USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: combat_combat_campaign_id_91b1d47f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combat_campaign_id_91b1d47f ON public.combat_combat USING btree (campaign_id);
+
+
+--
+-- Name: combat_combat_encounter_id_e425ea50; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combat_encounter_id_e425ea50 ON public.combat_combat USING btree (encounter_id);
+
+
+--
+-- Name: combat_combat_status_76dc5241; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combat_status_76dc5241 ON public.combat_combat USING btree (status);
+
+
+--
+-- Name: combat_combat_status_76dc5241_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combat_status_76dc5241_like ON public.combat_combat USING btree (status varchar_pattern_ops);
+
+
+--
+-- Name: combat_combatant_character_id_ca824c94; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combatant_character_id_ca824c94 ON public.combat_combatant USING btree (character_id);
+
+
+--
+-- Name: combat_combatant_combat_id_62e82e27; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combatant_combat_id_62e82e27 ON public.combat_combatant USING btree (combat_id);
+
+
+--
+-- Name: combat_combatant_enemy_id_db936517; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combatant_enemy_id_db936517 ON public.combat_combatant USING btree (enemy_id);
+
+
+--
+-- Name: combat_combatnote_combat_id_b1b6ed11; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combatnote_combat_id_b1b6ed11 ON public.combat_combatnote USING btree (combat_id);
+
+
+--
+-- Name: combat_combatnote_combatant_id_5c4d5ba7; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_combatnote_combatant_id_5c4d5ba7 ON public.combat_combatnote USING btree (combatant_id);
+
+
+--
+-- Name: combat_hpchange_combatant_id_9572524c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX combat_hpchange_combatant_id_9572524c ON public.combat_hpchange USING btree (combatant_id);
+
+
+--
+-- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_log USING btree (content_type_id);
+
+
+--
+-- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING btree (user_id);
+
+
+--
+-- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING btree (expire_date);
+
+
+--
+-- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session USING btree (session_key varchar_pattern_ops);
+
+
+--
+-- Name: encounters__campaig_3f10c4_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters__campaig_3f10c4_idx ON public.encounters_encounter USING btree (campaign_id, status);
+
+
+--
+-- Name: encounters_encounter_campaign_id_4851c66b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_campaign_id_4851c66b ON public.encounters_encounter USING btree (campaign_id);
+
+
+--
+-- Name: encounters_encounter_created_at_804af9d7; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_created_at_804af9d7 ON public.encounters_encounter USING btree (created_at);
+
+
+--
+-- Name: encounters_encounter_created_by_id_9124e8f3; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_created_by_id_9124e8f3 ON public.encounters_encounter USING btree (created_by_id);
+
+
+--
+-- Name: encounters_encounter_faction_id_1cd4c01e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_faction_id_1cd4c01e ON public.encounters_encounter USING btree (faction_id);
+
+
+--
+-- Name: encounters_encounter_status_4eb20092; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_status_4eb20092 ON public.encounters_encounter USING btree (status);
+
+
+--
+-- Name: encounters_encounter_status_4eb20092_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounter_status_4eb20092_like ON public.encounters_encounter USING btree (status varchar_pattern_ops);
+
+
+--
+-- Name: encounters_encounterenemy_encounter_id_25e180f2; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounterenemy_encounter_id_25e180f2 ON public.encounters_encounterenemy USING btree (encounter_id);
+
+
+--
+-- Name: encounters_encounterenemy_enemy_id_aa6d052c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounterenemy_enemy_id_aa6d052c ON public.encounters_encounterenemy USING btree (enemy_id);
+
+
+--
+-- Name: encounters_encounterparticipant_character_id_fd89e08d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounterparticipant_character_id_fd89e08d ON public.encounters_encounterparticipant USING btree (character_id);
+
+
+--
+-- Name: encounters_encounterparticipant_encounter_id_5dadca25; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX encounters_encounterparticipant_encounter_id_5dadca25 ON public.encounters_encounterparticipant USING btree (encounter_id);
+
+
+--
+-- Name: enemies_enemy_category_c1d9b222; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_category_c1d9b222 ON public.enemies_enemy USING btree (category);
+
+
+--
+-- Name: enemies_enemy_category_c1d9b222_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_category_c1d9b222_like ON public.enemies_enemy USING btree (category varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemy_created_at_d36148d6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_created_at_d36148d6 ON public.enemies_enemy USING btree (created_at);
+
+
+--
+-- Name: enemies_enemy_encounter_mode_fd2646c8; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_encounter_mode_fd2646c8 ON public.enemies_enemy USING btree (encounter_mode);
+
+
+--
+-- Name: enemies_enemy_encounter_mode_fd2646c8_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_encounter_mode_fd2646c8_like ON public.enemies_enemy USING btree (encounter_mode varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemy_environment_4cc8079d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_environment_4cc8079d ON public.enemies_enemy USING btree (environment);
+
+
+--
+-- Name: enemies_enemy_environment_4cc8079d_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_environment_4cc8079d_like ON public.enemies_enemy USING btree (environment varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemy_faction_id_d56fecfe; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_faction_id_d56fecfe ON public.enemies_enemy USING btree (faction_id);
+
+
+--
+-- Name: enemies_enemy_is_active_828caee9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_is_active_828caee9 ON public.enemies_enemy USING btree (is_active);
+
+
+--
+-- Name: enemies_enemy_is_available_for_generator_c15cfacd; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_is_available_for_generator_c15cfacd ON public.enemies_enemy USING btree (is_available_for_generator);
+
+
+--
+-- Name: enemies_enemy_is_boss_0a7b87b9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_is_boss_0a7b87b9 ON public.enemies_enemy USING btree (is_boss);
+
+
+--
+-- Name: enemies_enemy_operational_complexity_9268d92a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_operational_complexity_9268d92a ON public.enemies_enemy USING btree (operational_complexity);
+
+
+--
+-- Name: enemies_enemy_operational_complexity_9268d92a_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_operational_complexity_9268d92a_like ON public.enemies_enemy USING btree (operational_complexity varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemy_slug_d44a084d_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemy_slug_d44a084d_like ON public.enemies_enemy USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemyaction_enemy_id_461d4a61; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemyaction_enemy_id_461d4a61 ON public.enemies_enemyaction USING btree (enemy_id);
+
+
+--
+-- Name: enemies_enemyfaction_slug_dc8cd8f0_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemyfaction_slug_dc8cd8f0_like ON public.enemies_enemyfaction USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: enemies_enemyfeature_enemy_id_3216cacc; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX enemies_enemyfeature_enemy_id_3216cacc ON public.enemies_enemyfeature USING btree (enemy_id);
+
+
+--
+-- Name: history_ses_campaig_1a7d24_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX history_ses_campaig_1a7d24_idx ON public.history_sessionrecord USING btree (campaign_id, is_published, session_date);
+
+
+--
+-- Name: history_ses_campaig_d85dc3_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX history_ses_campaig_d85dc3_idx ON public.history_sessionrecord USING btree (campaign_id, session_number);
+
+
+--
+-- Name: history_sessionrecord_campaign_id_37dc18b0; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX history_sessionrecord_campaign_id_37dc18b0 ON public.history_sessionrecord USING btree (campaign_id);
+
+
+--
+-- Name: inventory_i_charact_f76f88_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX inventory_i_charact_f76f88_idx ON public.inventory_inventoryitem USING btree (character_id, is_active, is_visible);
+
+
+--
+-- Name: inventory_inventoryitem_character_id_120413db; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX inventory_inventoryitem_character_id_120413db ON public.inventory_inventoryitem USING btree (character_id);
+
+
+--
+-- Name: inventory_inventoryitem_is_active_435aae93; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX inventory_inventoryitem_is_active_435aae93 ON public.inventory_inventoryitem USING btree (is_active);
+
+
+--
+-- Name: inventory_inventoryitem_is_visible_9ba522a5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX inventory_inventoryitem_is_visible_9ba522a5 ON public.inventory_inventoryitem USING btree (is_visible);
+
+
+--
+-- Name: maps_campai_campaig_267d5d_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campai_campaig_267d5d_idx ON public.maps_campaignmap USING btree (campaign_id, is_active, is_visible_to_players);
+
+
+--
+-- Name: maps_campai_campaig_d7d1c7_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campai_campaig_d7d1c7_idx ON public.maps_campaignmap USING btree (campaign_id, is_featured, created_at);
+
+
+--
+-- Name: maps_campaignmap_campaign_id_7b555659; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campaignmap_campaign_id_7b555659 ON public.maps_campaignmap USING btree (campaign_id);
+
+
+--
+-- Name: maps_campaignmap_related_inventory_item_id_5948db95; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campaignmap_related_inventory_item_id_5948db95 ON public.maps_campaignmap USING btree (related_inventory_item_id);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users_campaignmap_id_5bd5d79c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campaignmap_visible_to_users_campaignmap_id_5bd5d79c ON public.maps_campaignmap_visible_to_users USING btree (campaignmap_id);
+
+
+--
+-- Name: maps_campaignmap_visible_to_users_user_id_f4d4e2f7; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX maps_campaignmap_visible_to_users_user_id_f4d4e2f7 ON public.maps_campaignmap_visible_to_users USING btree (user_id);
+
+
+--
+-- Name: one_active_combat_per_campaign; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX one_active_combat_per_campaign ON public.combat_combat USING btree (campaign_id) WHERE ((status)::text = 'active'::text);
+
+
+--
+-- Name: one_active_combat_per_encounter; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX one_active_combat_per_encounter ON public.combat_combat USING btree (encounter_id) WHERE ((status)::text = 'active'::text);
+
+
+--
+-- Name: one_crew_ship_per_campaign; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX one_crew_ship_per_campaign ON public.ships_ship USING btree (campaign_id) WHERE (belongs_to_crew AND is_active);
+
+
+--
+-- Name: ships_ship_belongs_to_crew_cb6868b9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ships_ship_belongs_to_crew_cb6868b9 ON public.ships_ship USING btree (belongs_to_crew);
+
+
+--
+-- Name: ships_ship_campaig_4936e2_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ships_ship_campaig_4936e2_idx ON public.ships_ship USING btree (campaign_id, is_active, belongs_to_crew);
+
+
+--
+-- Name: ships_ship_campaign_id_2fd61bc8; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ships_ship_campaign_id_2fd61bc8 ON public.ships_ship USING btree (campaign_id);
+
+
+--
+-- Name: unique_active_character_creation_per_campaign_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_active_character_creation_per_campaign_user ON public.characters_charactercreation USING btree (campaign_id, user_id) WHERE ((status)::text = ANY ((ARRAY['draft'::character varying, 'ready'::character varying, 'reopened'::character varying])::text[]));
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_group_id_bd11a704_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_group_id_bd11a704_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_user_id_52b62117_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_user_id_52b62117_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_p_permission_id_113bb443_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_p_permission_id_113bb443_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_p_user_id_e4f0a161_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_p_user_id_e4f0a161_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: audio_panel_audioasset audio_panel_audioass_campaign_id_55076906_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_panel_audioasset
+    ADD CONSTRAINT audio_panel_audioass_campaign_id_55076906_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: campaigns_campaign campaigns_campaign_master_id_eec50fbc_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign
+    ADD CONSTRAINT campaigns_campaign_master_id_eec50fbc_fk_accounts_user_id FOREIGN KEY (master_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: campaigns_campaign_players campaigns_campaign_p_campaign_id_f0e4df59_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign_players
+    ADD CONSTRAINT campaigns_campaign_p_campaign_id_f0e4df59_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: campaigns_campaign_players campaigns_campaign_players_user_id_81102d8f_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.campaigns_campaign_players
+    ADD CONSTRAINT campaigns_campaign_players_user_id_81102d8f_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_background_allowed_skills characters_backgroun_background_id_dd45f90e_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background_allowed_skills
+    ADD CONSTRAINT characters_backgroun_background_id_dd45f90e_fk_character FOREIGN KEY (background_id) REFERENCES public.characters_background(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_background_allowed_skills characters_backgroun_skill_id_2749c577_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_background_allowed_skills
+    ADD CONSTRAINT characters_backgroun_skill_id_2749c577_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_background_id_c1e1dfbe_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_background_id_c1e1dfbe_fk_character FOREIGN KEY (background_id) REFERENCES public.characters_background(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_campaign_id_432868e5_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_campaign_id_432868e5_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_character characters_character_campaign_id_53a808c0_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_character
+    ADD CONSTRAINT characters_character_campaign_id_53a808c0_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterskill characters_character_character_id_296af121_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterskill
+    ADD CONSTRAINT characters_character_character_id_296af121_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactertechnique characters_character_character_id_47775325_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactertechnique
+    ADD CONSTRAINT characters_character_character_id_47775325_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterfeature characters_character_character_id_5837a53e_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterfeature
+    ADD CONSTRAINT characters_character_character_id_5837a53e_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercondition characters_character_character_id_690483bc_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercondition
+    ADD CONSTRAINT characters_character_character_id_690483bc_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterproficiency characters_character_character_id_8a197b9d_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterproficiency
+    ADD CONSTRAINT characters_character_character_id_8a197b9d_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_character_id_9b1335ca_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_character_id_9b1335ca_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterattribute characters_character_character_id_b0886605_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterattribute
+    ADD CONSTRAINT characters_character_character_id_b0886605_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins characters_character_charactercreation_id_06c2f609_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_mixed_species_origins
+    ADD CONSTRAINT characters_character_charactercreation_id_06c2f609_fk_character FOREIGN KEY (charactercreation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_background_skills characters_character_charactercreation_id_5653541e_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_background_skills
+    ADD CONSTRAINT characters_character_charactercreation_id_5653541e_fk_character FOREIGN KEY (charactercreation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_profession_skills characters_character_charactercreation_id_89094d6d_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_profession_skills
+    ADD CONSTRAINT characters_character_charactercreation_id_89094d6d_fk_character FOREIGN KEY (charactercreation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_style_skills characters_character_charactercreation_id_8b3c0d56_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_style_skills
+    ADD CONSTRAINT characters_character_charactercreation_id_8b3c0d56_fk_character FOREIGN KEY (charactercreation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_free_skills characters_character_charactercreation_id_c3b783a1_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_free_skills
+    ADD CONSTRAINT characters_character_charactercreation_id_c3b783a1_fk_character FOREIGN KEY (charactercreation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_combat_style_id_ca817e1e_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_combat_style_id_ca817e1e_fk_character FOREIGN KEY (combat_style_id) REFERENCES public.characters_combatstyle(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterruleexception characters_character_creation_id_6b17a625_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterruleexception
+    ADD CONSTRAINT characters_character_creation_id_6b17a625_fk_character FOREIGN KEY (creation_id) REFERENCES public.characters_charactercreation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_profession_id_134d16c5_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_profession_id_134d16c5_fk_character FOREIGN KEY (profession_id) REFERENCES public.characters_profession(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterproficiency characters_character_proficiency_id_6b4d5406_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterproficiency
+    ADD CONSTRAINT characters_character_proficiency_id_6b4d5406_fk_character FOREIGN KEY (proficiency_id) REFERENCES public.characters_ruleproficiency(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_background_skills characters_character_skill_id_2730b6af_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_background_skills
+    ADD CONSTRAINT characters_character_skill_id_2730b6af_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_profession_skills characters_character_skill_id_3e4218c6_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_profession_skills
+    ADD CONSTRAINT characters_character_skill_id_3e4218c6_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_free_skills characters_character_skill_id_440f977c_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_free_skills
+    ADD CONSTRAINT characters_character_skill_id_440f977c_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterskill characters_character_skill_id_4e360f73_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterskill
+    ADD CONSTRAINT characters_character_skill_id_4e360f73_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_style_skills characters_character_skill_id_83896d57_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_style_skills
+    ADD CONSTRAINT characters_character_skill_id_83896d57_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation_mixed_species_origins characters_character_species_id_5640923c_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation_mixed_species_origins
+    ADD CONSTRAINT characters_character_species_id_5640923c_fk_character FOREIGN KEY (species_id) REFERENCES public.characters_species(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_species_id_dca3b634_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_species_id_dca3b634_fk_character FOREIGN KEY (species_id) REFERENCES public.characters_species(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_species_variant_id_29dce720_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_species_variant_id_29dce720_fk_character FOREIGN KEY (species_variant_id) REFERENCES public.characters_speciesvariant(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_subprofession_id_dc5ab25a_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_subprofession_id_dc5ab25a_fk_character FOREIGN KEY (subprofession_id) REFERENCES public.characters_profession(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_characterruleexception characters_character_user_id_366b2554_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_characterruleexception
+    ADD CONSTRAINT characters_character_user_id_366b2554_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_character characters_character_user_id_6d9c54fd_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_character
+    ADD CONSTRAINT characters_character_user_id_6d9c54fd_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_charactercreation characters_character_user_id_c452ec7d_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_charactercreation
+    ADD CONSTRAINT characters_character_user_id_c452ec7d_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_combatstyle_allowed_skills characters_combatsty_combatstyle_id_be8d9424_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle_allowed_skills
+    ADD CONSTRAINT characters_combatsty_combatstyle_id_be8d9424_fk_character FOREIGN KEY (combatstyle_id) REFERENCES public.characters_combatstyle(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_combatstyle_allowed_skills characters_combatsty_skill_id_efd3369e_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_combatstyle_allowed_skills
+    ADD CONSTRAINT characters_combatsty_skill_id_efd3369e_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_profession characters_professio_parent_id_ce94306b_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession
+    ADD CONSTRAINT characters_professio_parent_id_ce94306b_fk_character FOREIGN KEY (parent_id) REFERENCES public.characters_profession(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_profession_allowed_skills characters_professio_profession_id_5ffd92d7_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession_allowed_skills
+    ADD CONSTRAINT characters_professio_profession_id_5ffd92d7_fk_character FOREIGN KEY (profession_id) REFERENCES public.characters_profession(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_profession_allowed_skills characters_professio_skill_id_987d9bc9_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_profession_allowed_skills
+    ADD CONSTRAINT characters_professio_skill_id_987d9bc9_fk_character FOREIGN KEY (skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_ruleproficiency characters_ruleprofi_related_skill_id_5421827a_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_ruleproficiency
+    ADD CONSTRAINT characters_ruleprofi_related_skill_id_5421827a_fk_character FOREIGN KEY (related_skill_id) REFERENCES public.characters_skill(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: characters_speciesvariant characters_speciesva_species_id_94ab4833_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.characters_speciesvariant
+    ADD CONSTRAINT characters_speciesva_species_id_94ab4833_fk_character FOREIGN KEY (species_id) REFERENCES public.characters_species(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combat combat_combat_campaign_id_91b1d47f_fk_campaigns_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combat
+    ADD CONSTRAINT combat_combat_campaign_id_91b1d47f_fk_campaigns_campaign_id FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combat combat_combat_encounter_id_e425ea50_fk_encounters_encounter_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combat
+    ADD CONSTRAINT combat_combat_encounter_id_e425ea50_fk_encounters_encounter_id FOREIGN KEY (encounter_id) REFERENCES public.encounters_encounter(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combatant combat_combatant_character_id_ca824c94_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatant
+    ADD CONSTRAINT combat_combatant_character_id_ca824c94_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combatant combat_combatant_combat_id_62e82e27_fk_combat_combat_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatant
+    ADD CONSTRAINT combat_combatant_combat_id_62e82e27_fk_combat_combat_id FOREIGN KEY (combat_id) REFERENCES public.combat_combat(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combatant combat_combatant_enemy_id_db936517_fk_enemies_enemy_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatant
+    ADD CONSTRAINT combat_combatant_enemy_id_db936517_fk_enemies_enemy_id FOREIGN KEY (enemy_id) REFERENCES public.enemies_enemy(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combatnote combat_combatnote_combat_id_b1b6ed11_fk_combat_combat_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatnote
+    ADD CONSTRAINT combat_combatnote_combat_id_b1b6ed11_fk_combat_combat_id FOREIGN KEY (combat_id) REFERENCES public.combat_combat(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_combatnote combat_combatnote_combatant_id_5c4d5ba7_fk_combat_combatant_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_combatnote
+    ADD CONSTRAINT combat_combatnote_combatant_id_5c4d5ba7_fk_combat_combatant_id FOREIGN KEY (combatant_id) REFERENCES public.combat_combatant(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: combat_hpchange combat_hpchange_combatant_id_9572524c_fk_combat_combatant_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.combat_hpchange
+    ADD CONSTRAINT combat_hpchange_combatant_id_9572524c_fk_combat_combatant_id FOREIGN KEY (combatant_id) REFERENCES public.combat_combatant(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounter encounters_encounter_campaign_id_4851c66b_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounter
+    ADD CONSTRAINT encounters_encounter_campaign_id_4851c66b_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounterparticipant encounters_encounter_character_id_fd89e08d_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterparticipant
+    ADD CONSTRAINT encounters_encounter_character_id_fd89e08d_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounter encounters_encounter_created_by_id_9124e8f3_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounter
+    ADD CONSTRAINT encounters_encounter_created_by_id_9124e8f3_fk_accounts_user_id FOREIGN KEY (created_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounterenemy encounters_encounter_encounter_id_25e180f2_fk_encounter; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterenemy
+    ADD CONSTRAINT encounters_encounter_encounter_id_25e180f2_fk_encounter FOREIGN KEY (encounter_id) REFERENCES public.encounters_encounter(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounterparticipant encounters_encounter_encounter_id_5dadca25_fk_encounter; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterparticipant
+    ADD CONSTRAINT encounters_encounter_encounter_id_5dadca25_fk_encounter FOREIGN KEY (encounter_id) REFERENCES public.encounters_encounter(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounter encounters_encounter_faction_id_1cd4c01e_fk_enemies_e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounter
+    ADD CONSTRAINT encounters_encounter_faction_id_1cd4c01e_fk_enemies_e FOREIGN KEY (faction_id) REFERENCES public.enemies_enemyfaction(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: encounters_encounterenemy encounters_encounterenemy_enemy_id_aa6d052c_fk_enemies_enemy_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.encounters_encounterenemy
+    ADD CONSTRAINT encounters_encounterenemy_enemy_id_aa6d052c_fk_enemies_enemy_id FOREIGN KEY (enemy_id) REFERENCES public.enemies_enemy(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: enemies_enemy enemies_enemy_faction_id_d56fecfe_fk_enemies_enemyfaction_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemy
+    ADD CONSTRAINT enemies_enemy_faction_id_d56fecfe_fk_enemies_enemyfaction_id FOREIGN KEY (faction_id) REFERENCES public.enemies_enemyfaction(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: enemies_enemyaction enemies_enemyaction_enemy_id_461d4a61_fk_enemies_enemy_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyaction
+    ADD CONSTRAINT enemies_enemyaction_enemy_id_461d4a61_fk_enemies_enemy_id FOREIGN KEY (enemy_id) REFERENCES public.enemies_enemy(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: enemies_enemyfeature enemies_enemyfeature_enemy_id_3216cacc_fk_enemies_enemy_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.enemies_enemyfeature
+    ADD CONSTRAINT enemies_enemyfeature_enemy_id_3216cacc_fk_enemies_enemy_id FOREIGN KEY (enemy_id) REFERENCES public.enemies_enemy(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: history_sessionrecord history_sessionrecor_campaign_id_37dc18b0_fk_campaigns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.history_sessionrecord
+    ADD CONSTRAINT history_sessionrecor_campaign_id_37dc18b0_fk_campaigns FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: inventory_inventoryitem inventory_inventoryi_character_id_120413db_fk_character; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inventory_inventoryitem
+    ADD CONSTRAINT inventory_inventoryi_character_id_120413db_fk_character FOREIGN KEY (character_id) REFERENCES public.characters_character(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: maps_campaignmap maps_campaignmap_campaign_id_7b555659_fk_campaigns_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap
+    ADD CONSTRAINT maps_campaignmap_campaign_id_7b555659_fk_campaigns_campaign_id FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: maps_campaignmap maps_campaignmap_related_inventory_it_5948db95_fk_inventory; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap
+    ADD CONSTRAINT maps_campaignmap_related_inventory_it_5948db95_fk_inventory FOREIGN KEY (related_inventory_item_id) REFERENCES public.inventory_inventoryitem(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: maps_campaignmap_visible_to_users maps_campaignmap_vis_campaignmap_id_5bd5d79c_fk_maps_camp; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap_visible_to_users
+    ADD CONSTRAINT maps_campaignmap_vis_campaignmap_id_5bd5d79c_fk_maps_camp FOREIGN KEY (campaignmap_id) REFERENCES public.maps_campaignmap(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: maps_campaignmap_visible_to_users maps_campaignmap_vis_user_id_f4d4e2f7_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maps_campaignmap_visible_to_users
+    ADD CONSTRAINT maps_campaignmap_vis_user_id_f4d4e2f7_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: ships_ship ships_ship_campaign_id_2fd61bc8_fk_campaigns_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ships_ship
+    ADD CONSTRAINT ships_ship_campaign_id_2fd61bc8_fk_campaigns_campaign_id FOREIGN KEY (campaign_id) REFERENCES public.campaigns_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
