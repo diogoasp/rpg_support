@@ -122,7 +122,8 @@ class CharacterTechnique(models.Model):
     ATTACK_TYPES=(TechniqueType.UNARMED,TechniqueType.BASIC,TechniqueType.INNATE,TechniqueType.COMBAT)
     SUPPORT_TYPES=(TechniqueType.BUFF,TechniqueType.HEAL)
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='techniques',db_index=True)
-    name=models.CharField(max_length=150); description=models.TextField(blank=True)
+    name=models.CharField(max_length=150)
+    description=models.TextField(blank=True)
     action_type=models.CharField(max_length=20,choices=ACTIONS,default='action')
     range_text=models.CharField(max_length=100,blank=True)
     damage_text=models.CharField(max_length=150,blank=True)
@@ -135,7 +136,8 @@ class CharacterTechnique(models.Model):
     is_available=models.BooleanField(default=True)
     is_featured=models.BooleanField(default=False)
     sort_order=models.PositiveSmallIntegerField(default=0)
-    created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
     class Meta: 
         ordering=('sort_order','name')
