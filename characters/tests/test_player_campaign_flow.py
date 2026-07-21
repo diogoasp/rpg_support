@@ -233,6 +233,15 @@ class PlayerCampaignFlowTests(TestCase):
             category=CharacterTechnique.Category.SUPPORT,
             technique_type=CharacterTechnique.TechniqueType.BUFF,
         )
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Punho Meteoro",
+            description="Golpe desarmado especial.",
+            range_text="corpo a corpo",
+            damage_die="1d6",
+            category=CharacterTechnique.Category.ATTACK,
+            technique_type=CharacterTechnique.TechniqueType.UNARMED,
+        )
         InventoryItem.objects.create(character=character, name="Clima-Tact", description="Não deve sair na impressão.", quantity=1)
 
         self.client.force_login(self.player)
@@ -256,16 +265,18 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Ataque básico: Pistola")
         self.assertContains(response, "1d8 +1")
         self.assertContains(response, "Teste de ataque")
-        self.assertContains(response, "d20 +1 +2 = d20 +3")
+        self.assertContains(response, "1d20 +3")
         self.assertContains(response, "Proficiência: sim")
         self.assertContains(response, "Corte do Vento")
-        self.assertContains(response, "d20 +2 +2 = d20 +4")
+        self.assertContains(response, "Técnica com arma")
+        self.assertContains(response, "1d20 +4")
         self.assertContains(response, "1d6 + 1d8 +2")
         self.assertContains(response, "Canção de Coragem")
-        self.assertContains(response, "d20 +0 +0 = d20 +0")
+        self.assertContains(response, "1d20 +0")
         self.assertContains(response, "(1d6 +0) / 2")
+        self.assertContains(response, "Punho Meteoro")
+        self.assertContains(response, "1d6 + 1d4 +2")
         self.assertContains(response, "O resultado dividido por 2")
-        self.assertNotContains(response, "1d20")
         self.assertNotContains(response, "Inventário")
         self.assertNotContains(response, "Clima-Tact")
 

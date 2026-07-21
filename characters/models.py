@@ -116,7 +116,7 @@ class CharacterTechnique(models.Model):
         UNARMED='unarmed','Desarmado'
         BASIC='basic','Básico'
         INNATE='innate','Técnica inata'
-        COMBAT='combat','Técnica de combate'
+        COMBAT='combat','Técnica com arma'
         BUFF='buff','Buff'
         HEAL='heal','Cura'
     ATTACK_TYPES=(TechniqueType.UNARMED,TechniqueType.BASIC,TechniqueType.INNATE,TechniqueType.COMBAT)
@@ -142,7 +142,7 @@ class CharacterTechnique(models.Model):
 
     def clean(self):
         if self.category==self.Category.ATTACK and self.technique_type not in self.ATTACK_TYPES:
-            raise ValidationError({'technique_type':'Ataques aceitam apenas Desarmado, Básico, Técnica inata ou Técnica de combate.'})
+            raise ValidationError({'technique_type':'Ataques aceitam apenas Desarmado, Básico, Técnica inata ou Técnica com arma.'})
         if self.category==self.Category.SUPPORT and self.technique_type not in self.SUPPORT_TYPES:
             raise ValidationError({'technique_type':'Suportes aceitam apenas Buff ou Cura.'})
         if self.technique_type in (self.TechniqueType.BASIC,self.TechniqueType.COMBAT) and not self.required_weapon_type:

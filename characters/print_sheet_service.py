@@ -41,6 +41,17 @@ def attack_test_label(modifier, proficiency_bonus, is_proficient):
     return f"1d20 {signed(total)}"
 
 
+def unarmed_damage_die(level):
+    level = int(level)
+    if level <= 5:
+        return "1d4"
+    if level <= 10:
+        return "1d6"
+    if level <= 15:
+        return "1d8"
+    return "1d10"
+
+
 def printable_attribute_rows(character):
     return [
         {
@@ -138,8 +149,9 @@ def printable_technique_row(character, technique, weapon=None):
         result_label = "Buff"
 
     if technique.technique_type == CharacterTechnique.TechniqueType.UNARMED:
-        die = technique_die
-        formula = f"{technique_die} {signed(character.strength_modifier)}"
+        unarmed_die = unarmed_damage_die(character.level)
+        die = f"{technique_die} + {unarmed_die}"
+        formula = f"{technique_die} + {unarmed_die} {signed(character.strength_modifier)}"
         attribute = "Força"
         modifier_label = signed(character.strength_modifier)
     elif technique.technique_type == CharacterTechnique.TechniqueType.BASIC:
