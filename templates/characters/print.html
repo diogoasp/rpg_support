@@ -136,6 +136,10 @@
           <div class="combat-card">
             <h3>{{ technique.name }} <span class="muted">({{ technique.action }})</span></h3>
             <p><strong>{{ technique.category }}</strong> · {{ technique.technique_type }} · <strong>PP:</strong> {{ technique.cost }}</p>
+            <div class="attack-test-box">
+              <strong>Teste de ataque</strong>
+              {{ technique.attack_test }} · Proficiência: {% if technique.is_proficient %}sim{% else %}não{% endif %}
+            </div>
             <div class="combat-meta">
               <span><strong>Atributo</strong><br>{{ technique.attribute }}</span>
               <span><strong>Alcance</strong><br>{{ technique.range }}</span>

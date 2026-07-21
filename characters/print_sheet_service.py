@@ -35,6 +35,12 @@ def signed(value):
     return f"{value:+d}"
 
 
+def attack_test_label(modifier, proficiency_bonus, is_proficient):
+    proficiency = int(proficiency_bonus) if is_proficient else 0
+    total = int(modifier) + proficiency
+    return f"1d20 {signed(total)}"
+
+
 def printable_attribute_rows(character):
     return [
         {
@@ -78,7 +84,6 @@ def printable_attack_rows(character):
     rows = []
     for weapon in character.weapons.filter(is_available=True).order_by("sort_order", "name"):
         modifier = character.attribute_modifier(weapon.attribute_modifier)
-        attack_bonus = modifier + (character.proficiency_bonus if weapon.is_proficient else 0)
         rows.append(
             {
                 "name": f"Ataque básico: {weapon.name}",
@@ -87,7 +92,7 @@ def printable_attack_rows(character):
                 "die": weapon.damage_die or "Conforme arma",
                 "modifier": signed(modifier),
                 "is_proficient": weapon.is_proficient,
-                "attack_test": f"d20 {signed(modifier)} {'%+d' % character.proficiency_bonus if weapon.is_proficient else '+0'} = d20 {signed(attack_bonus)}",
+                "attack_test": attack_test_label(modifier, character.proficiency_bonus, weapon.is_proficient),
                 "result_label": "Dano",
                 "formula": f"{weapon.damage_die or 'dado da arma'} {signed(modifier)}",
                 "notes": f"Tipo da arma: {weapon.weapon_type}. O dano usa apenas o modificador do atributo.",
@@ -121,6 +126,7 @@ def printable_technique_row(character, technique, weapon=None):
     modifier_key = "strength" if technique.technique_type == CharacterTechnique.TechniqueType.UNARMED else technique.attribute_modifier
     modifier = character.attribute_modifier(modifier_key)
     modifier_label = signed(modifier)
+    is_proficient = bool(weapon and weapon.is_proficient)
     technique_die = technique.damage_die or split_damage_text(technique.damage_text)[0]
     weapon_die = weapon.damage_die if weapon else "dado da arma"
     category_label = technique.get_category_display()
@@ -169,6 +175,8 @@ def printable_technique_row(character, technique, weapon=None):
         "range": technique.range_text or "-",
         "die": die,
         "modifier": modifier_label,
+        "is_proficient": is_proficient,
+        "attack_test": attack_test_label(modifier, character.proficiency_bonus, is_proficient),
         "formula": formula,
         "result_label": result_label,
         "required_weapon_type": technique.required_weapon_type or "-",
