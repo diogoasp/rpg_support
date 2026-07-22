@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Passagem de nível{% endblock %}
+{% block page_heading %}Passagem de nível{% endblock %}
+{% block content %}
+<section class="parchment-card p-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-primary fw-bold mb-1">{{ campaign.name }}</p>
+      <h2 class="h3 mb-1">{{ character.name }}</h2>
+      <p class="mb-0">Nível {{ process.from_level }} → {{ process.to_level }} · {{ character.combat_style }}</p>
+    </div>
+    <a class="btn btn-outline-secondary align-self-start" href="{% url 'characters:dashboard' campaign.slug %}">Voltar</a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <section class="col-lg-6">
+      <h3 class="h5">Ganhos automáticos</h3>
+      <ul>
+        <li>PP máximo: {{ requirements.style_level.power_points }}</li>
+        <li>Bônus de proficiência permanece +{{ requirements.style_level.proficiency_bonus }}</li>
+        <li>+1 Dado de Vida d{{ requirements.style.hit_die }}</li>
+        <li>PV por método fixo, sem rolagem.</li>
+        {% for feature in requirements.automatic_features %}
+          <li><strong>{{ feature.name }}</strong>: {{ feature.description|truncatewords:24 }}</li>
+        {% endfor %}
+        {% if requirements.profession_progression %}
+          <li>Profissão: {{ requirements.profession_progression.grade }} — {{ requirements.profession_progression.subdivision }}</li>
+        {% endif %}
+      </ul>
+    </section>
+    <section class="col-lg-6">
+      <h3 class="h5">Escolhas necessárias</h3>
+      <ul>
+        {% if requirements.grants_basic_ability %}<li>Habilidade Básica.</li>{% endif %}
+        {% if requirements.grants_techniques %}<li>Técnicas previstas para o estilo.</li>{% endif %}
+        {% if requirements.grants_attribute_increase %}<li>Aumento no Valor de Atributo.</li>{% endif %}
+        {% for group in requirements.choice_groups %}<li>{{ group.name }}.</li>{% endfor %}
+        <li>Arma favorita.</li>
+      </ul>
+    </section>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    {% if requirements.grants_basic_ability %}
+      <fieldset class="mb-3">
+        <legend class="h5">Habilidade Básica</legend>
+        {{ form.basic_ability.errors }}
+        {{ form.basic_ability }}
+      </fieldset>
+    {% endif %}
+
+    {% if requirements.grants_techniques %}
+      <fieldset class="mb-3">
+        <legend class="h5">Técnicas</legend>
+        {{ form.techniques.errors }}
+        {{ form.techniques }}
+      </fieldset>
+    {% endif %}
+
+    {% if requirements.grants_attribute_increase %}
+      <fieldset class="mb-3">
+        <legend class="h5">Aumento no Valor de Atributo</legend>
+        {{ form.ava_mode.errors }}
+        {{ form.ava_mode }}
+        <div class="row g-2 mt-2">
+          {% for field in ava_fields %}
+            <div class="col-6 col-md-2">
+              <label class="form-label small">{{ field.label }}</label>
+              {{ field }}
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    {% endif %}
+
+    <fieldset class="mb-3">
+      <legend class="h5">Arma favorita</legend>
+      <div class="form-check">
+        {{ form.keep_favorite_weapon }}
+        <label class="form-check-label" for="{{ form.keep_favorite_weapon.id_for_label }}">Deseja manter sua arma favorita atual?</label>
+      </div>
+      <p class="small text-muted mb-1">Atual: {{ character.favorite_weapon|default:"não registrada" }}</p>
+      {{ form.favorite_weapon.errors }}
+      {{ form.favorite_weapon }}
+    </fieldset>
+
+    {% include 'characters/level_up/partials/preview.html' %}
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <button class="btn btn-outline-primary" type="button" hx-post="{% url 'characters:level_up_preview' campaign.slug %}" hx-target="#level-up-preview" hx-swap="outerHTML" hx-include="closest form">Atualizar prévia</button>
+      <button class="btn btn-secondary" type="submit">Salvar rascunho</button>
+      <button class="btn btn-primary" type="submit" name="confirm" value="1">Confirmar passagem de nível</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

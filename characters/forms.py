@@ -1,7 +1,7 @@
 from django import forms
 from .character_calculation_service import ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, POINT_DISTRIBUTION_MAX, POINT_DISTRIBUTION_MIN, POINT_DISTRIBUTION_TOTAL, remaining_attribute_points
 from .creation_catalog_service import allowed_background_skills, allowed_profession_skills, allowed_style_skills
-from .models import Background, CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CombatStyle, Profession, Skill, Species, SpeciesVariant, ZoanAncestryTrait
+from .models import Background, BasicAbility, CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CombatStyle, CombatStyleTechniqueOption, Profession, Skill, Species, SpeciesVariant, ZoanAncestryTrait
 
 class CharacterForm(forms.ModelForm):
     class Meta:
@@ -23,6 +23,42 @@ class CharacterHpActionForm(forms.Form):
     amount=forms.IntegerField(min_value=1,label='Quantidade')
 class ConditionForm(forms.ModelForm):
     class Meta: model=CharacterCondition; fields=('name','description')
+
+class LevelUpAuthorizationForm(forms.Form):
+    master_note=forms.CharField(label="Observação do mestre",required=False,widget=forms.Textarea(attrs={"rows":3}))
+
+class LevelUpDraftForm(forms.Form):
+    basic_ability=forms.ModelChoiceField(label="Habilidade Básica",queryset=BasicAbility.objects.none(),required=False)
+    techniques=forms.ModelMultipleChoiceField(label="Técnicas",queryset=CombatStyleTechniqueOption.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
+    ava_mode=forms.ChoiceField(label="Aumento no Valor de Atributo",choices=(("", "---------"),("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=False)
+    keep_favorite_weapon=forms.BooleanField(label="Deseja manter sua arma favorita atual?",required=False,initial=True)
+    favorite_weapon=forms.ChoiceField(label="Nova arma favorita",choices=(),required=False)
+    for key,label in CANONICAL_ATTRIBUTES:
+        locals()[f"ava_{key}"]=forms.IntegerField(label=label,min_value=0,max_value=2,required=False,initial=0)
+
+    def __init__(self,*args,character=None,requirements=None,available_basic_abilities=None,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.character=character
+        self.requirements=requirements or {}
+        self.fields["basic_ability"].queryset=available_basic_abilities or BasicAbility.objects.none()
+        style_level=self.requirements.get("style_level")
+        self.fields["techniques"].queryset=style_level.technique_options.all() if style_level else CombatStyleTechniqueOption.objects.none()
+        self.fields["techniques"].required=bool(style_level and style_level.grants_techniques)
+        self.fields["basic_ability"].required=bool(self.requirements.get("grants_basic_ability"))
+        self.fields["ava_mode"].required=bool(style_level and style_level.grants_attribute_increase)
+        for key in ATTRIBUTE_KEYS:
+            self.fields[f"ava_{key}"].required=False
+            self.fields[f"ava_{key}"].widget.attrs.update({"class":"form-control form-control-sm"})
+        favorite_options=self.requirements.get("favorite_weapon_options") or []
+        self.fields["favorite_weapon"].choices=[("", "---------")]+[(option,option) for option in favorite_options]
+        if character and character.favorite_weapon:
+            self.fields["keep_favorite_weapon"].initial=True
+
+    def selected_attribute_increases(self):
+        return {
+            "mode": self.cleaned_data.get("ava_mode"),
+            **{key:self.cleaned_data.get(f"ava_{key}") or 0 for key in ATTRIBUTE_KEYS},
+        }
 
 class CharacterCreationConceptForm(forms.ModelForm):
     class Meta:

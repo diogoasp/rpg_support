@@ -1,0 +1,11 @@
+<div id="level-up-preview" class="border rounded p-3 bg-light">
+  <h3 class="h5">Prévia da ficha resultante</h3>
+  <div class="row g-2">
+    <div class="col-md-3"><small class="text-muted">PV</small><strong class="d-block">{{ preview.old_current_hp }}/{{ preview.old_max_hp }} → {{ preview.new_current_hp }}/{{ preview.new_max_hp }}</strong></div>
+    <div class="col-md-3"><small class="text-muted">PP</small><strong class="d-block">{{ preview.old_current_power_points }}/{{ preview.old_max_power_points }} → {{ preview.new_current_power_points }}/{{ preview.new_max_power_points }}</strong></div>
+    <div class="col-md-3"><small class="text-muted">Constituição</small><strong class="d-block">{{ preview.old_constitution }} → {{ preview.new_constitution }}</strong></div>
+    <div class="col-md-3"><small class="text-muted">Proficiência</small><strong class="d-block">+{{ preview.proficiency_bonus }}</strong></div>
+  </div>
+  <p class="small mb-0 mt-2">PV usa método fixo: d{{ preview.hit_die_type }} = {{ preview.fixed_hp_value }}, modificador de Constituição {{ preview.new_constitution_modifier|stringformat:'+d' }}. Ajuste retroativo de Constituição: {{ preview.constitution_retroactive_adjustment|stringformat:'+d' }}.</p>
+  <p class="small mb-0">Dados de Vida totais: {{ preview.total_hit_dice }}d{{ preview.hit_die_type }}. Arma favorita: {{ preview.favorite_weapon|default:"-" }}.</p>
+</div>

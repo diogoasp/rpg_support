@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
-from characters.models import Character, CharacterCreation
+from characters.models import Character, CharacterCreation, CharacterLevelUpAuthorization, CharacterLevelUpHistory
 from django.db.models import Prefetch, Q
 from ships.models import Ship
 from maps.models import CampaignMap
@@ -32,7 +32,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["campaigns"] = Campaign.objects.filter(master=self.request.user).prefetch_related(
             "players", Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
-            Prefetch("characters", Character.objects.select_related("user").prefetch_related("inventory_items"), to_attr="dashboard_characters"),
+            Prefetch("characters", Character.objects.select_related("user").prefetch_related("inventory_items", Prefetch("level_up_authorizations", CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING, CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by("-created_at"), to_attr="active_level_up_authorizations"), Prefetch("level_up_history", CharacterLevelUpHistory.objects.order_by("-created_at"), to_attr="recent_level_up_history")), to_attr="dashboard_characters"),
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
@@ -49,7 +49,7 @@ class PlayerDashboardView(PlayerRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         visible_maps = CampaignMap.objects.filter(is_active=True, is_visible_to_players=True).filter(Q(visible_to_users=self.request.user) | Q(visible_to_users__isnull=True)).distinct()
         context["campaigns"] = self.request.user.campaigns.select_related("master").prefetch_related(
-            Prefetch("characters", Character.objects.filter(user=self.request.user), to_attr="player_characters"),
+            Prefetch("characters", Character.objects.filter(user=self.request.user).prefetch_related(Prefetch("level_up_authorizations", CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING, CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by("-created_at"), to_attr="active_level_up_authorizations")), to_attr="player_characters"),
             Prefetch("character_creations", CharacterCreation.objects.filter(user=self.request.user, status__in=(CharacterCreation.Status.DRAFT, CharacterCreation.Status.READY, CharacterCreation.Status.REOPENED)), to_attr="player_character_creations"),
             Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
             Prefetch("maps", visible_maps, to_attr="dashboard_maps"),

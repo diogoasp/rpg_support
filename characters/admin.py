@@ -6,13 +6,25 @@ from .models import (
     CharacterCondition,
     CharacterCreation,
     CharacterFeature,
+    CharacterHitPointComponent,
+    CharacterLevelUp,
+    CharacterLevelUpAuthorization,
+    CharacterLevelUpCorrection,
+    CharacterLevelUpHistory,
     CharacterProficiency,
     CharacterRuleException,
     CharacterSkill,
     CharacterTechnique,
     CharacterWeapon,
     CombatStyle,
+    CombatStyleLevel,
+    CombatStyleLevelFeature,
+    CombatStyleTechniqueOption,
+    BasicAbility,
+    CharacterBasicAbility,
+    LevelChoiceGroup,
     Profession,
+    ProfessionProgression,
     RuleAttribute,
     RuleProficiency,
     Skill,
@@ -26,9 +38,10 @@ class SkillInline(admin.TabularInline): model=CharacterSkill; extra=0; autocompl
 class AttributeInline(admin.TabularInline): model=CharacterAttribute; extra=0; readonly_fields=('final_value',)
 class WeaponInline(admin.StackedInline): model=CharacterWeapon; extra=0
 class TechniqueInline(admin.StackedInline): model=CharacterTechnique; extra=0
+class HitPointComponentInline(admin.TabularInline): model=CharacterHitPointComponent; extra=0; readonly_fields=('created_at',)
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    list_display=('name','campaign','user','level','species','combat_style','profession','current_hp','current_power_points'); list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available'); search_fields=('name','user__username','campaign__name','species','profession','combat_style'); autocomplete_fields=('campaign','user'); list_select_related=('campaign','user'); readonly_fields=('created_at','updated_at'); inlines=(AttributeInline,SkillInline,WeaponInline,TechniqueInline,)
+    list_display=('name','campaign','user','level','species','combat_style','profession','current_hp','current_power_points'); list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available'); search_fields=('name','user__username','campaign__name','species','profession','combat_style'); autocomplete_fields=('campaign','user'); list_select_related=('campaign','user'); readonly_fields=('created_at','updated_at'); inlines=(AttributeInline,SkillInline,WeaponInline,TechniqueInline,HitPointComponentInline,)
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin): search_fields=('name','slug'); list_filter=('related_attribute','is_active'); prepopulated_fields={'slug':('name',)}
@@ -59,6 +72,28 @@ class ZoanAncestryTraitAdmin(admin.ModelAdmin):
 @admin.register(CombatStyle)
 class CombatStyleAdmin(admin.ModelAdmin):
     list_display=('name','ruleset_version','hit_die','skill_choice_count','any_skill_allowed','is_active'); list_filter=('ruleset_version','hit_die','any_skill_allowed','is_active'); search_fields=('name','slug'); filter_horizontal=('allowed_skills',); prepopulated_fields={'slug':('name',)}
+
+class CombatStyleLevelFeatureInline(admin.TabularInline): model=CombatStyleLevelFeature; extra=0
+class CombatStyleTechniqueOptionInline(admin.TabularInline): model=CombatStyleTechniqueOption; extra=0
+class LevelChoiceGroupInline(admin.TabularInline): model=LevelChoiceGroup; extra=0
+@admin.register(CombatStyleLevel)
+class CombatStyleLevelAdmin(admin.ModelAdmin):
+    list_display=('combat_style','level','proficiency_bonus','power_points','grants_basic_ability','grants_attribute_increase','grants_techniques','ruleset_version')
+    list_filter=('ruleset_version','level','grants_basic_ability','grants_attribute_increase','grants_techniques')
+    autocomplete_fields=('combat_style',)
+    inlines=(CombatStyleLevelFeatureInline,CombatStyleTechniqueOptionInline,LevelChoiceGroupInline)
+
+@admin.register(BasicAbility)
+class BasicAbilityAdmin(admin.ModelAdmin):
+    list_display=('name','category','repeatable','ruleset_version','is_active')
+    list_filter=('category','repeatable','ruleset_version','is_active')
+    search_fields=('name','slug')
+    prepopulated_fields={'slug':('name',)}
+
+@admin.register(ProfessionProgression)
+class ProfessionProgressionAdmin(admin.ModelAdmin):
+    list_display=('level','grade','subdivision','grants_professional_feature','ruleset_version')
+    list_filter=('ruleset_version','level','grade')
 
 @admin.register(Profession)
 class ProfessionAdmin(admin.ModelAdmin):
@@ -99,4 +134,29 @@ class CharacterTechniqueAdmin(admin.ModelAdmin):
     autocomplete_fields=('character',)
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
 
-for model in (CharacterSkill,CharacterFeature,CharacterCondition): admin.site.register(model)
+@admin.register(CharacterLevelUpAuthorization)
+class CharacterLevelUpAuthorizationAdmin(admin.ModelAdmin):
+    list_display=('character','campaign','from_level','to_level','status','authorized_by','created_at','completed_at','cancelled_at')
+    list_filter=('status','ruleset_version','from_level','to_level')
+    search_fields=('character__name','campaign__name','authorized_by__username')
+    autocomplete_fields=('character','campaign','authorized_by')
+    readonly_fields=('created_at','started_at','completed_at','cancelled_at')
+
+@admin.register(CharacterLevelUp)
+class CharacterLevelUpAdmin(admin.ModelAdmin):
+    list_display=('character','from_level','to_level','status','fixed_hp_value','old_max_hp','new_max_hp','created_at','completed_at')
+    list_filter=('status','from_level','to_level')
+    search_fields=('character__name','authorization__character__name')
+    autocomplete_fields=('authorization','character','combat_style','selected_basic_ability')
+    filter_horizontal=('selected_techniques',)
+    readonly_fields=('created_at','completed_at')
+
+@admin.register(CharacterLevelUpHistory)
+class CharacterLevelUpHistoryAdmin(admin.ModelAdmin):
+    list_display=('character','from_level','to_level','authorized_by','completed_by','created_at')
+    list_filter=('from_level','to_level','created_at')
+    autocomplete_fields=('authorization','level_up','character','authorized_by','completed_by','basic_ability')
+    filter_horizontal=('techniques',)
+    readonly_fields=('created_at',)
+
+for model in (CharacterSkill,CharacterFeature,CharacterCondition,CharacterBasicAbility,CharacterLevelUpCorrection): admin.site.register(model)

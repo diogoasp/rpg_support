@@ -1,1 +1,30 @@
-{% extends 'base.html' %}{% block content %}{% include 'characters/partials/character_card.html' %}<div class="mt-3"><a class="btn btn-primary" href="{% url 'characters:edit' character.pk %}">Editar ficha</a> <a class="btn btn-outline-primary" href="{% url 'inventory:master' character.pk %}">Inventário</a></div>{% include 'characters/partials/resource_card.html' %}{% include 'characters/partials/condition_list.html' %}{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+{% include 'characters/partials/character_card.html' %}
+
+<section class="card shadow-sm mt-3">
+  <div class="card-body">
+    <h2 class="h5">Passagem de nível</h2>
+    {% if level_up_authorization %}
+      <p class="mb-2">Autorização para o nível {{ level_up_authorization.to_level }}: {{ level_up_authorization.get_status_display }}.</p>
+      <form method="post" action="{% url 'characters:level_up_cancel' level_up_authorization.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger" type="submit">Cancelar autorização</button>
+      </form>
+    {% else %}
+      {% if character.level < 4 %}
+        <a class="btn btn-primary" href="{% url 'characters:level_up_authorize' character.pk %}">Autorizar passagem de nível</a>
+      {% else %}
+        <p class="text-muted mb-0">Passagem acima do 4º nível não está implementada.</p>
+      {% endif %}
+    {% endif %}
+    {% if last_level_up %}
+      <p class="small text-muted mt-2 mb-0">Última passagem: nível {{ last_level_up.from_level }} → {{ last_level_up.to_level }} em {{ last_level_up.created_at|date:"d/m/Y H:i" }}.</p>
+    {% endif %}
+  </div>
+</section>
+
+<div class="mt-3"><a class="btn btn-primary" href="{% url 'characters:edit' character.pk %}">Editar ficha</a> <a class="btn btn-outline-primary" href="{% url 'inventory:master' character.pk %}">Inventário</a></div>
+{% include 'characters/partials/resource_card.html' %}
+{% include 'characters/partials/condition_list.html' %}
+{% endblock %}

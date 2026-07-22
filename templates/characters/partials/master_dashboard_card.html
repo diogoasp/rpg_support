@@ -38,12 +38,31 @@
     </div>
 
     <p class="small mb-2">{{ character.species|default:"Espécie não definida" }} · {{ character.combat_style|default:"Sem estilo" }}</p>
+    {% with authorization=character.active_level_up_authorizations.0 last=character.recent_level_up_history.0 %}
+      <div class="small mb-2">
+        <span class="badge text-bg-light border">Nível {{ character.level }}</span>
+        {% if authorization %}
+          <span class="badge bg-warning text-dark">{% if authorization.status == 'in_progress' %}Processo em andamento{% else %}Aguardando jogador{% endif %}</span>
+        {% endif %}
+        {% if last %}<span class="badge bg-success">Última: {{ last.from_level }}→{{ last.to_level }}</span>{% endif %}
+      </div>
+    {% endwith %}
 
     <div class="d-flex flex-wrap gap-2">
       <button class="btn btn-sm btn-danger" hx-get="{% url 'characters:damage' character.pk %}" hx-target="#modal-content">Causar dano</button>
       <button class="btn btn-sm btn-success" hx-get="{% url 'characters:heal' character.pk %}" hx-target="#modal-content">Curar</button>
       <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'inventory:add' character.pk %}" hx-target="#modal-content">Alterar inventário</button>
       <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'characters:condition_add' character.pk %}" hx-target="#modal-content">Condição</button>
+      {% with authorization=character.active_level_up_authorizations.0 %}
+        {% if authorization %}
+          <form method="post" action="{% url 'characters:level_up_cancel' authorization.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger" type="submit">Cancelar nível</button>
+          </form>
+        {% elif character.level < 4 %}
+          <a class="btn btn-sm btn-primary" href="{% url 'characters:level_up_authorize' character.pk %}">Autorizar passagem de nível</a>
+        {% endif %}
+      {% endwith %}
     </div>
   </div>
 </article>

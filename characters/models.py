@@ -39,6 +39,12 @@ class Character(models.Model):
     initiative=models.SmallIntegerField('iniciativa',default=0); movement=models.PositiveSmallIntegerField('deslocamento',default=9)
     max_hp=models.PositiveIntegerField('PV máximo',default=1); current_hp=models.PositiveIntegerField('PV atual',default=1)
     max_power_points=models.PositiveIntegerField('PP máximo',default=0); current_power_points=models.PositiveIntegerField('PP atual',default=0)
+    hit_die_type=models.PositiveSmallIntegerField('tipo de dado de vida',default=0)
+    total_hit_dice=models.PositiveSmallIntegerField('dados de vida totais',default=1)
+    used_hit_dice=models.PositiveSmallIntegerField('dados de vida gastos',default=0)
+    favorite_weapon=models.CharField('arma favorita',max_length=120,blank=True,default='')
+    profession_grade=models.CharField('graduação profissional',max_length=40,blank=True,default='')
+    profession_subdivision=models.CharField('subdivisão profissional',max_length=40,blank=True,default='')
     strength=models.PositiveSmallIntegerField('força',default=10,validators=attribute_validators); dexterity=models.PositiveSmallIntegerField('destreza',default=10,validators=attribute_validators)
     constitution=models.PositiveSmallIntegerField('constituição',default=10,validators=attribute_validators); intelligence=models.PositiveSmallIntegerField('inteligência',default=10,validators=attribute_validators)
     wisdom=models.PositiveSmallIntegerField('sabedoria',default=10,validators=attribute_validators); charisma=models.PositiveSmallIntegerField('carisma',default=10,validators=attribute_validators)
@@ -62,6 +68,8 @@ class Character(models.Model):
     def modifier(value): return (value-10)//2
     strength_modifier=property(lambda s:s.modifier(s.strength)); dexterity_modifier=property(lambda s:s.modifier(s.dexterity)); constitution_modifier=property(lambda s:s.modifier(s.constitution)); intelligence_modifier=property(lambda s:s.modifier(s.intelligence)); wisdom_modifier=property(lambda s:s.modifier(s.wisdom)); charisma_modifier=property(lambda s:s.modifier(s.charisma)); willpower_modifier=property(lambda s:s.modifier(s.willpower)); presence_modifier=property(lambda s:s.modifier(s.presence))
     def attribute_modifier(self,key): return self.modifier(getattr(self,key))
+    @property
+    def available_hit_dice(self): return max(0,self.total_hit_dice-self.used_hit_dice)
 
 class Skill(models.Model):
     ATTRIBUTES=list(CANONICAL_ATTRIBUTES)+[('intelligence','Inteligência legada'),('charisma','Carisma legado')]
@@ -246,6 +254,112 @@ class CombatStyle(RuleCatalogMixin):
     level_1_features=models.JSONField(default=list,blank=True)
     class Meta(RuleCatalogMixin.Meta): verbose_name='estilo de combate'; verbose_name_plural='estilos de combate'
 
+class BasicAbility(RuleCatalogMixin):
+    class Category(models.TextChoices):
+        GENERAL='general','Geral'
+        WARRIOR='warrior','Guerreiro'
+        SPECIALIST='specialist','Especialista'
+        DIVERGENT='divergent','Divergente'
+    category=models.CharField(max_length=20,choices=Category.choices,default=Category.GENERAL)
+    repeatable=models.BooleanField(default=False)
+    effects=models.JSONField(default=dict,blank=True)
+    class Meta(RuleCatalogMixin.Meta): verbose_name='habilidade básica'; verbose_name_plural='habilidades básicas'
+
+class CharacterBasicAbility(models.Model):
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='basic_abilities',db_index=True)
+    ability=models.ForeignKey(BasicAbility,on_delete=models.PROTECT,related_name='character_grants')
+    source_type=models.CharField(max_length=60)
+    source_level=models.PositiveSmallIntegerField(default=1)
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering=('source_level','ability__name')
+        constraints=[models.UniqueConstraint(fields=('character','ability'),name='unique_basic_ability_per_character')]
+
+class CombatStyleLevel(models.Model):
+    combat_style=models.ForeignKey(CombatStyle,on_delete=models.CASCADE,related_name='levels')
+    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(4)])
+    proficiency_bonus=models.PositiveSmallIntegerField(default=2)
+    power_points=models.PositiveSmallIntegerField()
+    hit_die_gain=models.BooleanField(default=True)
+    grants_basic_ability=models.BooleanField(default=False)
+    grants_attribute_increase=models.BooleanField(default=False)
+    grants_techniques=models.BooleanField(default=False)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering=('combat_style__name','level')
+        constraints=[models.UniqueConstraint(fields=('combat_style','level','ruleset_version'),name='unique_combat_style_level_ruleset')]
+    def __str__(self): return f'{self.combat_style.name} nível {self.level}'
+
+class CombatStyleLevelFeature(models.Model):
+    class FeatureType(models.TextChoices):
+        PASSIVE='passive','Passiva'
+        ACTION='action','Ação'
+        TECHNIQUE='technique','Técnica'
+        ATTRIBUTE_INCREASE='attribute_increase','Aumento de atributo'
+        CHOICE='choice','Escolha'
+        PROFESSION='profession','Profissão'
+    combat_style_level=models.ForeignKey(CombatStyleLevel,on_delete=models.CASCADE,related_name='features')
+    name=models.CharField(max_length=150)
+    description=models.TextField(blank=True)
+    reference_text=models.TextField(blank=True)
+    feature_type=models.CharField(max_length=30,choices=FeatureType.choices,default=FeatureType.PASSIVE)
+    is_automatic=models.BooleanField(default=True)
+    requires_choice=models.BooleanField(default=False)
+    choice_group=models.CharField(max_length=120,blank=True)
+    allowed_options=models.JSONField(default=list,blank=True)
+    effects=models.JSONField(default=dict,blank=True)
+    source_pages=models.CharField(max_length=40,blank=True)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    sort_order=models.PositiveSmallIntegerField(default=0)
+    class Meta:
+        ordering=('combat_style_level__combat_style__name','combat_style_level__level','sort_order','name')
+        constraints=[models.UniqueConstraint(fields=('combat_style_level','name'),name='unique_style_level_feature_name')]
+    def __str__(self): return f'{self.combat_style_level}: {self.name}'
+
+class LevelChoiceGroup(models.Model):
+    combat_style_level=models.ForeignKey(CombatStyleLevel,on_delete=models.CASCADE,related_name='choice_groups')
+    name=models.CharField(max_length=120)
+    minimum_choices=models.PositiveSmallIntegerField(default=0)
+    maximum_choices=models.PositiveSmallIntegerField(default=1)
+    allowed_options=models.JSONField(default=list,blank=True)
+    prerequisite=models.JSONField(default=dict,blank=True)
+    effect_type=models.CharField(max_length=60,blank=True)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    class Meta:
+        ordering=('combat_style_level__level','name')
+        constraints=[models.UniqueConstraint(fields=('combat_style_level','name'),name='unique_level_choice_group_name')]
+
+class CombatStyleTechniqueOption(models.Model):
+    class TechniqueKind(models.TextChoices):
+        COMBAT='combat','Técnica de Combate'
+        AUXILIARY='auxiliary','Técnica Auxiliar'
+    combat_style_level=models.ForeignKey(CombatStyleLevel,on_delete=models.CASCADE,related_name='technique_options')
+    name=models.CharField(max_length=150)
+    technique_kind=models.CharField(max_length=20,choices=TechniqueKind.choices)
+    grade=models.PositiveSmallIntegerField(default=1)
+    is_predefined=models.BooleanField(default=True)
+    description=models.TextField(blank=True)
+    effects=models.JSONField(default=dict,blank=True)
+    source_pages=models.CharField(max_length=40,blank=True)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    class Meta:
+        ordering=('combat_style_level__combat_style__name','combat_style_level__level','technique_kind','name')
+        constraints=[models.UniqueConstraint(fields=('combat_style_level','name','technique_kind'),name='unique_style_level_technique_option')]
+
+class ProfessionProgression(models.Model):
+    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(4)])
+    grade=models.CharField(max_length=40)
+    subdivision=models.CharField(max_length=40)
+    grants_professional_feature=models.BooleanField(default=False)
+    feature_name=models.CharField(max_length=150,blank=True)
+    feature_description=models.TextField(blank=True)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    class Meta:
+        ordering=('level',)
+        constraints=[models.UniqueConstraint(fields=('level','ruleset_version'),name='unique_profession_progression_level_ruleset')]
+
 class Profession(RuleCatalogMixin):
     parent=models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True,related_name='subprofessions')
     is_no_profession=models.BooleanField(default=False)
@@ -257,6 +371,127 @@ class Profession(RuleCatalogMixin):
     initial_work_knowledges=models.JSONField(default=list,blank=True)
     restrictions=models.JSONField(default=dict,blank=True)
     class Meta(RuleCatalogMixin.Meta): verbose_name='profissão'; verbose_name_plural='profissões'
+
+class CharacterHitPointComponent(models.Model):
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='hp_components',db_index=True)
+    source_type=models.CharField(max_length=60)
+    source_level=models.PositiveSmallIntegerField()
+    fixed_hit_die_value=models.SmallIntegerField(default=0)
+    constitution_modifier_at_calculation=models.SmallIntegerField(default=0)
+    other_bonus=models.SmallIntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering=('source_level','created_at')
+        constraints=[models.UniqueConstraint(fields=('character','source_type','source_level'),name='unique_character_hp_component_source_level')]
+
+class CharacterLevelUpAuthorization(models.Model):
+    class Status(models.TextChoices):
+        PENDING='pending','Pendente'
+        IN_PROGRESS='in_progress','Em andamento'
+        COMPLETED='completed','Concluída'
+        CANCELLED='cancelled','Cancelada'
+        EXPIRED='expired','Expirada'
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='level_up_authorizations',db_index=True)
+    campaign=models.ForeignKey('campaigns.Campaign',on_delete=models.CASCADE,related_name='level_up_authorizations',db_index=True)
+    authorized_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='authorized_level_ups')
+    from_level=models.PositiveSmallIntegerField()
+    to_level=models.PositiveSmallIntegerField()
+    status=models.CharField(max_length=20,choices=Status.choices,default=Status.PENDING,db_index=True)
+    master_note=models.TextField(blank=True)
+    ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    started_at=models.DateTimeField(null=True,blank=True)
+    completed_at=models.DateTimeField(null=True,blank=True)
+    cancelled_at=models.DateTimeField(null=True,blank=True)
+    class Meta:
+        ordering=('-created_at',)
+        constraints=[
+            models.UniqueConstraint(fields=('character',),condition=models.Q(status__in=('pending','in_progress')),name='unique_active_level_up_authorization_per_character'),
+            models.CheckConstraint(check=models.Q(to_level=models.F('from_level')+1),name='level_up_authorization_single_level'),
+            models.CheckConstraint(check=models.Q(to_level__lte=4),name='level_up_authorization_max_level_4'),
+        ]
+    def clean(self):
+        errors={}
+        if self.character_id and self.campaign_id and self.character.campaign_id!=self.campaign_id:
+            errors['campaign']='A campanha da autorização deve ser a campanha do personagem.'
+        if self.from_level and self.to_level and self.to_level!=self.from_level+1:
+            errors['to_level']='A passagem deve avançar exatamente um nível.'
+        if self.to_level and self.to_level>4:
+            errors['to_level']='A passagem de nível acima do 4º nível não está implementada.'
+        if errors: raise ValidationError(errors)
+
+class CharacterLevelUp(models.Model):
+    class Status(models.TextChoices):
+        DRAFT='draft','Rascunho'
+        COMPLETED='completed','Concluído'
+        CANCELLED='cancelled','Cancelado'
+    authorization=models.OneToOneField(CharacterLevelUpAuthorization,on_delete=models.CASCADE,related_name='process')
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='level_ups',db_index=True)
+    from_level=models.PositiveSmallIntegerField()
+    to_level=models.PositiveSmallIntegerField()
+    combat_style=models.ForeignKey(CombatStyle,on_delete=models.PROTECT)
+    fixed_hp_value=models.SmallIntegerField(default=0)
+    old_constitution=models.SmallIntegerField(default=10)
+    new_constitution=models.SmallIntegerField(default=10)
+    old_constitution_modifier=models.SmallIntegerField(default=0)
+    new_constitution_modifier=models.SmallIntegerField(default=0)
+    old_max_hp=models.PositiveIntegerField(default=0)
+    new_max_hp=models.PositiveIntegerField(default=0)
+    old_max_power_points=models.PositiveIntegerField(default=0)
+    new_max_power_points=models.PositiveIntegerField(default=0)
+    selected_basic_ability=models.ForeignKey(BasicAbility,on_delete=models.PROTECT,null=True,blank=True)
+    selected_techniques=models.ManyToManyField(CombatStyleTechniqueOption,blank=True,related_name='level_up_processes')
+    selected_attribute_increases=models.JSONField(default=dict,blank=True)
+    selected_style_choices=models.JSONField(default=dict,blank=True)
+    selected_profession_choices=models.JSONField(default=dict,blank=True)
+    favorite_weapon_changed=models.BooleanField(default=False)
+    selected_favorite_weapon=models.CharField(max_length=120,blank=True)
+    status=models.CharField(max_length=20,choices=Status.choices,default=Status.DRAFT,db_index=True)
+    snapshot_before=models.JSONField(default=dict,blank=True)
+    snapshot_after=models.JSONField(default=dict,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    completed_at=models.DateTimeField(null=True,blank=True)
+    class Meta:
+        ordering=('-created_at',)
+
+class CharacterLevelUpHistory(models.Model):
+    authorization=models.OneToOneField(CharacterLevelUpAuthorization,on_delete=models.PROTECT,related_name='history')
+    level_up=models.OneToOneField(CharacterLevelUp,on_delete=models.PROTECT,related_name='history')
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='level_up_history')
+    authorized_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='level_up_history_authorized')
+    completed_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='level_up_history_completed')
+    from_level=models.PositiveSmallIntegerField()
+    to_level=models.PositiveSmallIntegerField()
+    old_hp=models.PositiveIntegerField()
+    new_hp=models.PositiveIntegerField()
+    old_max_hp=models.PositiveIntegerField()
+    new_max_hp=models.PositiveIntegerField()
+    fixed_hp_value=models.SmallIntegerField()
+    constitution_modifier=models.SmallIntegerField()
+    constitution_retroactive_adjustment=models.SmallIntegerField(default=0)
+    old_power_points=models.PositiveIntegerField()
+    new_power_points=models.PositiveIntegerField()
+    old_max_power_points=models.PositiveIntegerField()
+    new_max_power_points=models.PositiveIntegerField()
+    basic_ability=models.ForeignKey(BasicAbility,on_delete=models.PROTECT,null=True,blank=True)
+    techniques=models.ManyToManyField(CombatStyleTechniqueOption,blank=True,related_name='history_entries')
+    attribute_increases=models.JSONField(default=dict,blank=True)
+    features_received=models.JSONField(default=list,blank=True)
+    profession_progression=models.JSONField(default=dict,blank=True)
+    favorite_weapon=models.CharField(max_length=120,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering=('-created_at',)
+
+class CharacterLevelUpCorrection(models.Model):
+    history=models.ForeignKey(CharacterLevelUpHistory,on_delete=models.PROTECT,related_name='corrections')
+    reason=models.TextField()
+    old_values=models.JSONField(default=dict,blank=True)
+    new_values=models.JSONField(default=dict,blank=True)
+    master=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='level_up_corrections')
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering=('-created_at',)
 
 class Background(RuleCatalogMixin):
     skill_choice_count=models.PositiveSmallIntegerField(default=2)

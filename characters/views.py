@@ -24,15 +24,27 @@ from .forms import (
     CharacterHpActionForm,
     CharacterForm,
     ConditionForm,
+    LevelUpAuthorizationForm,
+    LevelUpDraftForm,
     PlayerCharacterSheetForm,
     ResourceForm,
 )
-from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
+from .level_up_service import (
+    authorize_level_up,
+    available_basic_abilities,
+    cancel_level_up_authorization,
+    complete_level_up,
+    get_level_up_requirements,
+    preview_level_up,
+    save_level_up_draft,
+    start_level_up,
+)
+from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
 from .print_sheet_service import print_sheet_context
 from .services import add_character_condition, damage_character, deactivate_character_condition, heal_character, update_character_resources
 
 def rich_queryset():
-    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('weapons',queryset=CharacterWeapon.objects.filter(is_available=True).order_by('sort_order','name')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
+    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('weapons',queryset=CharacterWeapon.objects.filter(is_available=True).order_by('sort_order','name')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)),Prefetch('level_up_authorizations',queryset=CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by('-created_at'),to_attr='active_level_up_authorizations'),Prefetch('level_up_history',queryset=CharacterLevelUpHistory.objects.order_by('-created_at'),to_attr='recent_level_up_history'), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
 def own_character(request,slug=None):
     q=rich_queryset().filter(user=request.user,campaign__players=request.user)
     if slug:q=q.filter(campaign__slug=slug)
@@ -59,6 +71,8 @@ class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
         c['character']=character
         c['campaign']=character.campaign
         c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True,belongs_to_crew=True).first()
+        c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
+        c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)
         return c
 class CharacterSheetView(PlayerCharacterView):
     template_name='characters/sheet.html'
@@ -69,6 +83,8 @@ class CharacterSheetView(PlayerCharacterView):
         c['featured_item']=next(iter(character.inventory_items.all()),None)
         c['featured_techniques']=[tech for tech in character.techniques.all() if tech.is_featured]
         c['sheet_form']=kw.get('sheet_form') or PlayerCharacterSheetForm(instance=character)
+        c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
+        c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)
         return c
     def post(self,request,*args,**kwargs):
         character=own_character(request,self.kwargs.get('slug'))
@@ -190,7 +206,13 @@ class MasterCharacterListView(MasterRequiredMixin,TemplateView):
     def get_context_data(self,**kw): c=super().get_context_data(**kw); c['characters']=rich_queryset().filter(campaign__master=self.request.user); return c
 class MasterCharacterDetailView(MasterRequiredMixin,TemplateView):
     template_name='characters/master_detail.html'
-    def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=master_character(self.request,self.kwargs['pk']); return c
+    def get_context_data(self,**kw):
+        c=super().get_context_data(**kw)
+        character=master_character(self.request,self.kwargs['pk'])
+        c['character']=character
+        c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
+        c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)
+        return c
 class MasterCharacterUpdateView(MasterRequiredMixin,UpdateView):
     model=Character; form_class=CharacterForm; template_name='characters/form.html'
     def get_queryset(self): return Character.objects.filter(campaign__master=self.request.user)
@@ -251,3 +273,97 @@ class ConditionAddView(MasterRequiredMixin,View):
 class ConditionDeactivateView(MasterRequiredMixin,View):
     def post(self,r,pk):
         cond=get_object_or_404(CharacterCondition.objects.select_related('character__campaign'),pk=pk,character__campaign__master=r.user); deactivate_character_condition(actor=r.user,condition=cond); return render(r,'characters/partials/condition_list.html',{'character':master_character(r,cond.character_id)})
+
+class MasterLevelUpAuthorizeView(MasterRequiredMixin,View):
+    template_name='characters/level_up/authorize.html'
+    def get(self,request,pk):
+        character=master_character(request,pk)
+        form=LevelUpAuthorizationForm()
+        try:
+            requirements=get_level_up_requirements(character)
+        except ValidationError as exc:
+            messages.error(request,exc.messages[0] if hasattr(exc,'messages') else str(exc))
+            return redirect('characters:master_detail',pk=character.pk)
+        return render(request,self.template_name,{'character':character,'form':form,'requirements':requirements,'multi_style_warning':'Multiestilo não está disponível nesta implementação.'})
+    def post(self,request,pk):
+        character=master_character(request,pk)
+        form=LevelUpAuthorizationForm(request.POST)
+        if form.is_valid():
+            try:
+                authorization=authorize_level_up(request.user,character,form.cleaned_data['master_note'])
+                messages.success(request,f'Passagem para o {authorization.to_level}º nível autorizada.')
+                return redirect('characters:master_detail',pk=character.pk)
+            except (ValidationError,PermissionDenied) as exc:
+                form.add_error(None,exc.messages[0] if hasattr(exc,'messages') else str(exc))
+        requirements=get_level_up_requirements(character)
+        return render(request,self.template_name,{'character':character,'form':form,'requirements':requirements,'multi_style_warning':'Multiestilo não está disponível nesta implementação.'},status=422)
+
+class MasterLevelUpCancelView(MasterRequiredMixin,View):
+    def post(self,request,pk):
+        authorization=get_object_or_404(CharacterLevelUpAuthorization.objects.select_related('character__campaign'),pk=pk,character__campaign__master=request.user)
+        try:
+            cancel_level_up_authorization(request.user,authorization)
+            messages.success(request,'Autorização de passagem de nível cancelada.')
+        except ValidationError as exc:
+            messages.error(request,exc.messages[0])
+        return redirect('characters:master_detail',pk=authorization.character_id)
+
+class PlayerLevelUpWizardView(PlayerRequiredMixin,View):
+    template_name='characters/level_up/wizard.html'
+    def _authorization(self,request,slug):
+        character=own_character(request,slug)
+        return get_object_or_404(CharacterLevelUpAuthorization.objects.select_related('character__campaign').filter(character=character,status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)))
+    def _context(self,request,authorization,process,form=None,preview=None):
+        requirements=get_level_up_requirements(process.character)
+        form=form or LevelUpDraftForm(character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
+        preview=preview or preview_level_up(process)
+        ava_fields=[form[f'ava_{key}'] for key in ('strength','dexterity','constitution','wisdom','willpower','presence')]
+        return {'authorization':authorization,'process':process,'character':process.character,'campaign':process.character.campaign,'requirements':requirements,'form':form,'ava_fields':ava_fields,'preview':preview}
+    def get(self,request,slug):
+        authorization=self._authorization(request,slug)
+        try:
+            process=start_level_up(request.user,authorization)
+        except (ValidationError,PermissionDenied) as exc:
+            messages.error(request,exc.messages[0] if hasattr(exc,'messages') else str(exc))
+            return redirect('characters:dashboard',slug=slug)
+        return render(request,self.template_name,self._context(request,authorization,process))
+    def post(self,request,slug):
+        authorization=self._authorization(request,slug)
+        process=start_level_up(request.user,authorization)
+        requirements=get_level_up_requirements(process.character)
+        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
+        if form.is_valid():
+            try:
+                process=save_level_up_draft(
+                    request.user,
+                    process,
+                    selected_basic_ability=form.cleaned_data.get('basic_ability'),
+                    selected_technique_ids=[obj.pk for obj in form.cleaned_data.get('techniques',[])],
+                    selected_attribute_increases=form.selected_attribute_increases(),
+                    keep_favorite_weapon=form.cleaned_data.get('keep_favorite_weapon'),
+                    selected_favorite_weapon=form.cleaned_data.get('favorite_weapon'),
+                )
+                if request.POST.get('confirm')=='1':
+                    complete_level_up(request.user,process)
+                    messages.success(request,f'Personagem atualizado para o nível {process.to_level}.')
+                    return redirect('characters:dashboard',slug=slug)
+                messages.success(request,'Rascunho da passagem de nível salvo.')
+                return redirect('characters:level_up',slug=slug)
+            except (ValidationError,PermissionDenied) as exc:
+                form.add_error(None,exc.messages[0] if hasattr(exc,'messages') else str(exc))
+        return render(request,self.template_name,self._context(request,authorization,process,form=form),status=422)
+
+class PlayerLevelUpPreviewView(PlayerRequiredMixin,View):
+    def post(self,request,slug):
+        authorization=get_object_or_404(CharacterLevelUpAuthorization.objects.select_related('character__campaign'),character__campaign__slug=slug,character__user=request.user,status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS))
+        process=start_level_up(request.user,authorization)
+        requirements=get_level_up_requirements(process.character)
+        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
+        preview=preview_level_up(process)
+        if form.is_valid():
+            try:
+                increments=form.selected_attribute_increases() if requirements['style_level'].grants_attribute_increase else {}
+                preview=preview_level_up(process,form.cleaned_data.get('basic_ability'),increments,form.cleaned_data.get('favorite_weapon'),form.cleaned_data.get('keep_favorite_weapon'))
+            except ValidationError as exc:
+                form.add_error(None,exc.messages[0])
+        return render(request,'characters/level_up/partials/preview.html',{'preview':preview,'form':form,'process':process,'requirements':requirements},status=200 if not form.errors else 422)

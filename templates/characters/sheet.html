@@ -8,6 +8,14 @@
 {% endblock %}
 {% block content %}
   <link rel="stylesheet" href="{% static 'css/character-sheet.css' %}" />
+  {% if level_up_authorization %}
+    <div class="alert alert-primary d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
+      <span>Seu personagem está pronto para passar ao nível {{ level_up_authorization.to_level }}.</span>
+      <a class="btn btn-primary" href="{% url 'characters:level_up' campaign.slug %}">
+        {% if level_up_authorization.status == 'in_progress' %}Continuar atualização{% else %}Iniciar atualização{% endif %}
+      </a>
+    </div>
+  {% endif %}
 
   <div class="op-sheet-page">
     <div id="sheet" class="op-sheet">

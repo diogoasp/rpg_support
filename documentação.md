@@ -1813,3 +1813,137 @@ Testes principais:
 - `characters/tests/test_player_campaign_flow.py`
 
 Eles cobrem catálogo, atributos, geração aleatória, mestiços, estilos, profissões, Timoneiro, Sem Profissão, antecedentes, proficiências, derivados, HTMX, permissões, exceção do mestre, isolamento entre campanhas e fluxos completos.
+
+---
+
+## Passagem de Nível Assistida — Livro do Jogador 1.5.7
+
+Implementada a primeira versão do fluxo assistido de passagem de nível para personagens do 1º ao 4º nível, usando exclusivamente `OP RPG - Livro do Jogador 1.5.7.pdf` como fonte normativa.
+
+Documento detalhado: `docs/rules/level_progression_1_to_4_v1_5_7.md`.
+
+### Escopo
+
+- Transições permitidas: 1 → 2, 2 → 3 e 3 → 4.
+- Bloqueado: nível 5 ou superior, redução, salto de nível, Multiestilo, troca de Estilo, progressão épica, Akuma no Mi automática e Haki automático.
+- O mestre autoriza; o jogador conclui.
+- O nível do personagem só muda na confirmação final do jogador.
+
+### Models adicionados
+
+- `BasicAbility`
+- `CharacterBasicAbility`
+- `CombatStyleLevel`
+- `CombatStyleLevelFeature`
+- `LevelChoiceGroup`
+- `CombatStyleTechniqueOption`
+- `ProfessionProgression`
+- `CharacterHitPointComponent`
+- `CharacterLevelUpAuthorization`
+- `CharacterLevelUp`
+- `CharacterLevelUpHistory`
+- `CharacterLevelUpCorrection`
+
+Também foram adicionados em `Character`:
+
+- `hit_die_type`
+- `total_hit_dice`
+- `used_hit_dice`
+- `favorite_weapon`
+- `profession_grade`
+- `profession_subdivision`
+
+### Services
+
+Novo módulo: `characters.level_up_service`.
+
+Funções principais:
+
+- `authorize_level_up`
+- `cancel_level_up_authorization`
+- `start_level_up`
+- `save_level_up_draft`
+- `get_level_up_requirements`
+- `calculate_fixed_hp_gain`
+- `recalculate_max_hp`
+- `apply_constitution_retroactivity`
+- `calculate_power_points`
+- `validate_basic_ability_choice`
+- `validate_technique_choices`
+- `validate_attribute_increase`
+- `resolve_style_level_features`
+- `resolve_profession_progression`
+- `resolve_favorite_weapon`
+- `preview_level_up`
+- `complete_level_up`
+- `correct_completed_level_up`
+
+`complete_level_up` usa `transaction.atomic()` e bloqueia autorização, processo e personagem com `select_for_update()`.
+
+### Regras implementadas
+
+- Bônus de proficiência nos níveis 1 a 4 permanece `+2`.
+- PP máximo é `nível * 2`: 2, 4, 6 e 8.
+- PP atual aumenta apenas pela diferença do máximo.
+- Dado de Vida usa método fixo obrigatório: d8 = 5, d10 = 6, d12 = 7.
+- Cada passagem adiciona 1 Dado de Vida total do mesmo tipo do Estilo.
+- PV máximo é recomposto considerando Constituição; personagens antigos sem componentes usam fallback por Estilo/nível.
+- PV atual acompanha aumento do máximo e é limitado quando o máximo diminui.
+- Habilidade Básica é escolhida no 2º e 3º nível.
+- AVA no 4º nível aceita +2 em um atributo ou +1/+1 em dois atributos diferentes, limite 20.
+- Profissão evolui conforme nível total até o 4º nível.
+- Sem Profissão permanece sem progressão profissional.
+- Arma favorita pode ser mantida ou refeita entre opções válidas do Estilo.
+
+### Fluxo e rotas
+
+Mestre:
+
+- `/mestre/personagens/<pk>/autorizar-passagem-de-nivel/`
+- `/mestre/passagens-de-nivel/<pk>/cancelar/`
+
+Jogador:
+
+- `/personagem/<slug>/passagem-de-nivel/`
+- `/personagem/<slug>/passagem-de-nivel/preview/`
+
+O botão aparece no dashboard/ficha do jogador apenas quando há autorização pendente ou em andamento. O card do mestre mostra nível, autorização pendente, processo em andamento, última passagem e ação de autorização/cancelamento.
+
+### Seed
+
+Novo comando:
+
+```bash
+python manage.py seed_level_progression_1_5_7
+```
+
+`make seed` chama `seed_rpg`, que agora executa também:
+
+- `seed_player_book_rules_1_5_7`
+- `seed_level_progression_1_5_7`
+
+### Testes
+
+Novo arquivo:
+
+- `characters/tests/test_level_up_flow.py`
+
+Cobertura adicionada:
+
+- autorização do mestre;
+- bloqueio de jogador/outro mestre;
+- duplicidade;
+- nível 2 com PP, PV fixo, Habilidade Básica, profissão e característica;
+- nível 3 com técnica do Estilo;
+- nível 4 com AVA e Constituição;
+- limites de AVA;
+- tabela de PP;
+- tabela de PV fixo;
+- bloqueio de outro jogador;
+- autorização concluída não reutilizável.
+
+### Ambiguidades e decisões
+
+- O livro permite rolagem de PV nos níveis seguintes, mas esta entrega usa somente método fixo por requisito.
+- A criação atual ainda calcula PP inicial por regra anterior; a passagem de nível usa `level * 2` sem alterar criação fora do escopo.
+- Técnicas personalizadas previstas pelo livro dependem de aprovação do mestre; o fluxo inicial cadastra e exige as técnicas predefinidas localizadas nas tabelas de progressão do Capítulo 3.

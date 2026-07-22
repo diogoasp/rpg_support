@@ -9,9 +9,20 @@
       <p class="mb-0 text-muted">Nv. {{ character.level }} · {{ character.species }} · {{ character.profession }} · {{ character.combat_style }}</p>
     </div>
     <div class="d-flex align-items-start gap-2">
+      {% if level_up_authorization %}
+        <a class="btn btn-primary" href="{% url 'characters:level_up' campaign.slug %}">
+          {% if level_up_authorization.status == 'in_progress' %}Continuar atualização{% else %}Iniciar atualização{% endif %}
+        </a>
+      {% endif %}
       <a class="btn btn-pirate-red" href="{% url 'characters:sheet' campaign.slug %}">Abrir ficha completa</a>
     </div>
   </div>
+
+  {% if level_up_authorization %}
+    <div class="alert alert-primary">Seu personagem está pronto para passar ao nível {{ level_up_authorization.to_level }}.</div>
+  {% elif last_level_up %}
+    <div class="alert alert-success">Personagem atualizado para o nível {{ last_level_up.to_level }}.</div>
+  {% endif %}
 
   <div class="d-grid gap-3">
     <details class="parchment-card border-0 shadow-sm p-3" open>

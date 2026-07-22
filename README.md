@@ -131,3 +131,45 @@ O jogador inicia a criação pela seleção de campanha no painel e acessa:
 O assistente salva rascunho por etapas: conceito, espécie, estilo, profissão, atributos, antecedente, personalidade, pendências, equipamentos e revisão. A etapa Conceito registra nome, conceito, idade, altura, peso e Caminho. A etapa de atributos distribui 72 pontos, com mínimo 8 e máximo 15 antes dos bônus; bônus raciais e de antecedente são definidos nas etapas correspondentes e aparecem automaticamente na prévia. A ficha final só é criada na confirmação.
 
 O mestre revisa personagens em `/mestre/personagens/`. Exceções de regra ficam registradas com usuário, data, regra ignorada e justificativa em `CharacterRuleException`.
+
+## Livro do Jogador 1.5.7 — passagem de nível assistida
+
+O fluxo implementado cobre apenas os níveis 1 a 4 do OP RPG Livro do Jogador 1.5.7, sem Multiestilo e sem rolagem de Dado de Vida.
+
+O mestre autoriza pela ficha administrativa do personagem:
+
+```text
+/mestre/personagens/<id>/autorizar-passagem-de-nivel/
+```
+
+Depois da autorização, o jogador vê o botão de atualização no dashboard e na ficha. O nível só muda quando o jogador conclui o assistente em:
+
+```text
+/personagem/<slug-da-campanha>/passagem-de-nivel/
+```
+
+Enquanto a autorização não for concluída, o mestre pode cancelá-la pela ficha do personagem ou pelo card do dashboard. A autorização pendente bloqueia nova autorização para o mesmo personagem.
+
+O catálogo de progressão é cadastrado pelo seed principal:
+
+```bash
+make seed
+```
+
+Também pode ser executado diretamente dentro do container:
+
+```bash
+python manage.py seed_level_progression_1_5_7
+```
+
+Validação local recomendada:
+
+```bash
+make makemigrations
+make migrate
+make seed
+make check
+make test
+```
+
+As regras detalhadas ficam em [docs/rules/level_progression_1_to_4_v1_5_7.md](docs/rules/level_progression_1_to_4_v1_5_7.md).

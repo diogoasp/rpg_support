@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Autorizar passagem de nível{% endblock %}
+{% block page_heading %}Autorizar passagem de nível{% endblock %}
+{% block content %}
+<section class="parchment-card p-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
+    <div>
+      <p class="text-uppercase text-primary fw-bold mb-1">{{ character.campaign.name }}</p>
+      <h2 class="h3 mb-1">{{ character.name }}</h2>
+      <p class="mb-0">Nível {{ requirements.from_level }} → {{ requirements.to_level }} · {{ character.combat_style }}</p>
+    </div>
+    <a class="btn btn-outline-secondary align-self-start" href="{% url 'characters:master_detail' character.pk %}">Voltar</a>
+  </div>
+
+  <div class="alert alert-warning">{{ multi_style_warning }}</div>
+
+  <div class="row g-3 mb-4">
+    <section class="col-lg-6">
+      <h3 class="h5">Ganhos automáticos previstos</h3>
+      <ul>
+        <li>Nível {{ requirements.to_level }}</li>
+        <li>PP máximo {{ requirements.style_level.power_points }}</li>
+        <li>Proficiência +{{ requirements.style_level.proficiency_bonus }}</li>
+        <li>+1 Dado de Vida d{{ requirements.style.hit_die }}</li>
+        {% for feature in requirements.automatic_features %}
+          <li>{{ feature.name }}</li>
+        {% endfor %}
+        {% if requirements.profession_progression %}
+          <li>Profissão: {{ requirements.profession_progression.grade }} — {{ requirements.profession_progression.subdivision }}</li>
+        {% endif %}
+      </ul>
+    </section>
+    <section class="col-lg-6">
+      <h3 class="h5">Escolhas do jogador</h3>
+      <ul>
+        {% if requirements.grants_basic_ability %}<li>Escolher 1 Habilidade Básica.</li>{% endif %}
+        {% if requirements.grants_techniques %}<li>Receber/confirmar técnicas previstas do 3º nível.</li>{% endif %}
+        {% if requirements.grants_attribute_increase %}<li>Aplicar AVA: +2 ou +1/+1.</li>{% endif %}
+        {% for group in requirements.choice_groups %}<li>{{ group.name }}: {{ group.minimum_choices }} a {{ group.maximum_choices }} escolha(s).</li>{% endfor %}
+        <li>Manter ou refazer arma favorita entre as opções do estilo.</li>
+      </ul>
+    </section>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Confirmar autorização</button>
+  </form>
+</section>
+{% endblock %}

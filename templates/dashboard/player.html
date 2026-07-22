@@ -15,7 +15,16 @@
             </div>
             {% with character=campaign.player_characters.0 %}
               {% if character %}
-                <a class="btn btn-primary" href="{% url 'characters:dashboard' campaign.slug %}">Selecionar campanha</a>
+                <div class="d-flex flex-wrap gap-2">
+                  {% with authorization=character.active_level_up_authorizations.0 %}
+                    {% if authorization %}
+                      <a class="btn btn-primary" href="{% url 'characters:level_up' campaign.slug %}">
+                        {% if authorization.status == 'in_progress' %}Continuar atualização{% else %}Iniciar atualização{% endif %}
+                      </a>
+                    {% endif %}
+                  {% endwith %}
+                  <a class="btn btn-primary" href="{% url 'characters:dashboard' campaign.slug %}">Selecionar campanha</a>
+                </div>
               {% else %}
                 {% with creation=campaign.player_character_creations.0 %}
                   {% if creation %}
