@@ -309,12 +309,12 @@ def recalculate_max_hp(character, to_level, new_constitution=None, new_level_fix
     if components and new_level_fixed_value is not None:
         total += int(new_level_fixed_value) + con_mod
     if not components:
-        hit_die = character.hit_die_type or _style_for_character(character).hit_die
-        total += int(hit_die) + con_mod
-        for _ in range(2, int(to_level)):
-            total += FIXED_HP_VALUES[int(hit_die)] + con_mod
         if new_level_fixed_value is not None:
-            total += int(new_level_fixed_value) + con_mod
+            previous_levels = int(to_level) - 1
+            retroactive_adjustment = apply_constitution_retroactivity(character.constitution_modifier, con_mod, previous_levels)
+            total = int(character.max_hp) + int(new_level_fixed_value) + con_mod + retroactive_adjustment
+        else:
+            total = int(character.max_hp) + apply_constitution_retroactivity(character.constitution_modifier, con_mod, character.level)
     return max(1, total)
 
 

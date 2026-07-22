@@ -145,8 +145,8 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(character.constitution, 19)
         self.assertEqual(character.max_power_points, 8)
         self.assertEqual(character.current_power_points, 3)
-        self.assertEqual(character.max_hp, 49)
-        self.assertEqual(character.current_hp, 30)
+        self.assertEqual(character.max_hp, 53)
+        self.assertEqual(character.current_hp, 34)
         self.assertEqual(history.constitution_retroactive_adjustment, 4)
         self.assertEqual(character.profession_grade, "Profissional")
         self.assertEqual(character.profession_subdivision, "Novato")
@@ -167,6 +167,31 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(calculate_fixed_hp_gain(10, 1), 7)
         self.assertEqual(calculate_fixed_hp_gain(12, -1), 6)
         self.assertEqual([calculate_power_points(level) for level in range(1, 5)], [2, 4, 6, 8])
+
+    def test_existing_lunarian_guerreiro_oni_keeps_base_hp_when_leveling_to_2(self):
+        character = make_character(
+            self.campaign,
+            self.player,
+            name="Kuro",
+            species="Lunariano",
+            combat_style="Guerreiro-Oni",
+            constitution=14,
+            max_hp=30,
+            current_hp=30,
+            hit_die_type=12,
+            favorite_weapon="Kanabo",
+        )
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+        ability = BasicAbility.objects.get(slug="corpo-de-guerreiro")
+
+        save_level_up_draft(self.player, process, selected_basic_ability=ability, keep_favorite_weapon=True)
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+
+        self.assertEqual(character.level, 2)
+        self.assertEqual(character.max_hp, 39)
+        self.assertEqual(character.current_hp, 39)
 
     def test_other_player_cannot_start_authorized_process(self):
         character = make_character(self.campaign, self.player)
