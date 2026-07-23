@@ -85,6 +85,42 @@ class Phase5Tests(TestCase):
         self.character.refresh_from_db()
         self.assertEqual(self.character.current_hp, 13)
 
+    def test_master_damage_and_heal_combatant_actions_update_card_and_close_modal(self):
+        combat = start_combat_from_encounter(encounter=self.encounter())
+        item = combat.combatants.filter(enemy=self.enemy).first()
+        self.client.force_login(self.master)
+
+        response = self.client.post(
+            reverse("combat:damage", args=[combat.pk, item.pk]),
+            {"raw_damage": 6, "reduction": "", "final_damage": "", "mark_defeated_at_zero": "on"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Trigger"], "modal:close")
+        self.assertContains(response, "24/30")
+        item.refresh_from_db()
+        self.assertEqual(item.current_hp, 24)
+
+        response = self.client.post(reverse("combat:heal", args=[combat.pk, item.pk]), {"amount": 4}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Trigger"], "modal:close")
+        self.assertContains(response, "28/30")
+        item.refresh_from_db()
+        self.assertEqual(item.current_hp, 28)
+
+    def test_combatant_damage_validation_stays_in_modal(self):
+        combat = start_combat_from_encounter(encounter=self.encounter())
+        item = combat.combatants.filter(enemy=self.enemy).first()
+        self.client.force_login(self.master)
+
+        response = self.client.post(reverse("combat:damage", args=[combat.pk, item.pk]), {}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.headers["HX-Retarget"], "#modal-content")
+        self.assertEqual(response.headers["HX-Reswap"], "innerHTML")
+
     def test_reference_exclusivity(self):
         combat = start_combat_from_encounter(encounter=self.encounter())
         item = Combatant(combat=combat, enemy=self.enemy, character=self.character, combatant_type="enemy", display_name="Inválido")

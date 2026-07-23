@@ -16,6 +16,13 @@ def _combat(request, pk):
     _master(request); return get_object_or_404(Combat.objects.select_related("campaign", "encounter"), pk=pk, campaign__master=request.user)
 def _combatant(request, combat_id, pk): return get_object_or_404(Combatant.objects.select_related("combat", "combat__campaign", "enemy", "character").prefetch_related("enemy__actions", "enemy__features"), pk=pk, combat_id=combat_id, combat__campaign__master=request.user)
 def _card(request, item): return render(request, "combat/partials/combatant_card.html", {"combat":item.combat, "item":item})
+def _close_modal(response):
+    response["HX-Trigger"]="modal:close"
+    return response
+def _modal_validation(response):
+    response["HX-Retarget"]="#modal-content"
+    response["HX-Reswap"]="innerHTML"
+    return response
 
 def start(request, slug, pk):
     _master(request); campaign=get_object_or_404(Campaign, slug=slug, master=request.user); encounter=get_object_or_404(Encounter, pk=pk, campaign=campaign)
@@ -35,12 +42,16 @@ def panel(request, pk):
     return render(request, "combat/panel.html", {"combat":combat, "items":items, "filter":filter_by, "q":q,"summary":summary})
 def damage(request, combat_id, pk):
     item=_combatant(request,combat_id,pk); form=DamageForm(request.POST or None, initial={"reduction":item.resistance_bonus})
-    if request.method=="POST" and form.is_valid(): services.apply_damage_to_combatant(combatant=item, **form.cleaned_data); return _card(request,item)
-    return render(request,"combat/partials/form.html",{"form":form,"title":"Aplicar dano","url_name":"combat:damage","item":item,"combat":item.combat})
+    if request.method=="POST" and form.is_valid(): services.apply_damage_to_combatant(combatant=item, **form.cleaned_data); return _close_modal(_card(request,item))
+    status=422 if request.method=="POST" else 200
+    response=render(request,"combat/partials/form.html",{"form":form,"title":"Aplicar dano","url_name":"combat:damage","item":item,"combat":item.combat},status=status)
+    return _modal_validation(response) if request.method=="POST" else response
 def heal(request, combat_id, pk):
     item=_combatant(request,combat_id,pk); form=HealForm(request.POST or None)
-    if request.method=="POST" and form.is_valid(): services.heal_combatant(combatant=item,**form.cleaned_data); return _card(request,item)
-    return render(request,"combat/partials/form.html",{"form":form,"title":"Curar","url_name":"combat:heal","item":item,"combat":item.combat})
+    if request.method=="POST" and form.is_valid(): services.heal_combatant(combatant=item,**form.cleaned_data); return _close_modal(_card(request,item))
+    status=422 if request.method=="POST" else 200
+    response=render(request,"combat/partials/form.html",{"form":form,"title":"Curar","url_name":"combat:heal","item":item,"combat":item.combat},status=status)
+    return _modal_validation(response) if request.method=="POST" else response
 def state(request, combat_id, pk):
     item=_combatant(request,combat_id,pk); form=StateForm(request.POST or None,initial={"state":item.effective_narrative_state,"custom_text":item.custom_narrative_state})
     if request.method=="POST" and form.is_valid(): services.change_combatant_state(combatant=item,**form.cleaned_data); return _card(request,item)

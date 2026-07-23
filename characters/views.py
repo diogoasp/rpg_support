@@ -52,6 +52,13 @@ def own_character(request,slug=None):
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
 def master_character_card(request,character):
     return render(request,'characters/partials/master_dashboard_card.html',{'character':character})
+def htmx_close_modal(response):
+    response['HX-Trigger']='modal:close'
+    return response
+def htmx_modal_validation_response(response):
+    response['HX-Retarget']='#modal-content'
+    response['HX-Reswap']='innerHTML'
+    return response
 class PlayerCharacterEntryView(PlayerRequiredMixin,View):
     template_name='characters/player_list.html'
     def get(self,request):
@@ -251,8 +258,8 @@ class CharacterDamageView(MasterRequiredMixin,View):
             try: character=damage_character(actor=request.user,character=character,amount=form.cleaned_data['amount'])
             except ValidationError as e: form.add_error('amount',e)
         if form.errors:
-            return render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'damage','title':'Causar dano'},status=422)
-        return master_character_card(request,master_character(request,pk))
+            return htmx_modal_validation_response(render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'damage','title':'Causar dano'},status=422))
+        return htmx_close_modal(master_character_card(request,master_character(request,pk)))
 class CharacterHealView(MasterRequiredMixin,View):
     def get(self,request,pk):
         return render(request,'characters/partials/hp_action_form.html',{'form':CharacterHpActionForm(),'character':master_character(request,pk),'action':'heal','title':'Curar'})
@@ -262,8 +269,8 @@ class CharacterHealView(MasterRequiredMixin,View):
             try: character=heal_character(actor=request.user,character=character,amount=form.cleaned_data['amount'])
             except ValidationError as e: form.add_error('amount',e)
         if form.errors:
-            return render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'heal','title':'Curar'},status=422)
-        return master_character_card(request,master_character(request,pk))
+            return htmx_modal_validation_response(render(request,'characters/partials/hp_action_form.html',{'form':form,'character':character,'action':'heal','title':'Curar'},status=422))
+        return htmx_close_modal(master_character_card(request,master_character(request,pk)))
 class ConditionAddView(MasterRequiredMixin,View):
     def get(self,r,pk): return render(r,'characters/partials/condition_form.html',{'form':ConditionForm(),'character':master_character(r,pk)})
     def post(self,r,pk):

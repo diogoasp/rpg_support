@@ -111,6 +111,49 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Atributos")
         self.assertContains(response, "Continuar criação")
 
+    def test_master_damage_and_heal_character_actions_update_card_and_close_modal(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.master)
+
+        response = self.client.post(reverse("characters:damage", args=[character.pk]), {"amount": 3}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Trigger"], "modal:close")
+        self.assertContains(response, "7/10")
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 7)
+
+        response = self.client.post(reverse("characters:heal", args=[character.pk]), {"amount": 2}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Trigger"], "modal:close")
+        self.assertContains(response, "9/10")
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 9)
+
+    def test_master_hp_actions_do_not_revalidate_missing_portrait_file(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.portrait = "characters/portraits/missing-local-file.png"
+        character.current_hp = 5
+        character.save(update_fields=["portrait", "current_hp"])
+        self.client.force_login(self.master)
+
+        response = self.client.post(reverse("characters:heal", args=[character.pk]), {"amount": 2}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Trigger"], "modal:close")
+        self.assertContains(response, "7/10")
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 7)
+
+    def test_master_character_hp_action_validation_stays_in_modal(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.master)
+
+        response = self.client.post(reverse("characters:damage", args=[character.pk]), {"amount": ""}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.headers["HX-Retarget"], "#modal-content")
+        self.assertEqual(response.headers["HX-Reswap"], "innerHTML")
+
     def test_player_character_dashboard_has_collapsible_play_sections(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         InventoryItem.objects.create(character=character, name="Log Pose", description="Aponta para a próxima ilha.", quantity=1)

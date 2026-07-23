@@ -12,6 +12,7 @@ class DamageForm(forms.Form):
     def clean(self):
         data=super().clean()
         if data.get("raw_damage") is None and data.get("final_damage") is None: raise forms.ValidationError("Informe o dano recebido ou o dano final.")
+        if data.get("reduction") is None: data["reduction"]=0
         return data
 class HealForm(forms.Form): amount=forms.IntegerField(label="Cura", min_value=1)
 class StateForm(forms.Form):
