@@ -79,7 +79,7 @@ def split_character_features(character):
     positive_features=[]
     limitation_features=[]
     for feature in character.features.all():
-        if "Defeito" in feature.source or "Limitação" in feature.source: 
+        if "Defeito" in feature.source or "Limitação" in feature.source or "Dificuldade" in feature.source:
             limitation_features.append(feature)
         else:
             positive_features.append(feature)
