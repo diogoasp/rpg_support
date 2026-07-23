@@ -399,6 +399,32 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertNotContains(response, "Inventário")
         self.assertNotContains(response, "Clima-Tact")
 
+    def test_print_sheet_hides_buff_calculation_when_buff_has_no_die(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Shinsoku Hakujaku",
+            description="Você se move rapidamente, com passos firmes.",
+            range_text="-",
+            damage_die="",
+            damage_text="",
+            attribute_modifier="strength",
+            power_points_cost=2,
+            category=CharacterTechnique.Category.SUPPORT,
+            technique_type=CharacterTechnique.TechniqueType.BUFF,
+        )
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Shinsoku Hakujaku")
+        self.assertContains(response, "1d20 +0")
+        self.assertContains(response, "<span><strong>Atributo</strong><br>Força</span>", html=True)
+        self.assertContains(response, "<span><strong>Alcance</strong><br>-</span>", html=True)
+        self.assertNotContains(response, "<span><strong>Dado</strong><br>Conforme descrição</span>", html=True)
+        self.assertNotContains(response, "<span><strong>Buff</strong><br>(Conforme descrição +0) / 2</span>", html=True)
+
     def test_technique_category_limits_available_types(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         technique = CharacterTechnique(

@@ -32,6 +32,7 @@
       .combat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
       .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; min-height: 78px; }
       .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr; gap: 4px; margin: 5px 0; }
+      .combat-meta-compact { grid-template-columns: 1fr 1fr; }
       .combat-meta span { border: 1px solid #777; padding: 3px; min-height: 22px; }
       .attack-test-box { border: 2px solid #111; padding: 5px; margin: 5px 0; }
       .attack-test-box strong { display: block; text-transform: uppercase; font-size: 8pt; }
@@ -140,11 +141,13 @@
               <strong>Teste de ataque</strong>
               {{ technique.attack_test }} · Proficiência: {% if technique.is_proficient %}sim{% else %}não{% endif %}
             </div>
-            <div class="combat-meta">
+            <div class="combat-meta{% if not technique.show_result_calculation %} combat-meta-compact{% endif %}">
               <span><strong>Atributo</strong><br>{{ technique.attribute }}</span>
               <span><strong>Alcance</strong><br>{{ technique.range }}</span>
-              <span><strong>Dado</strong><br>{{ technique.die }}</span>
-              <span><strong>{{ technique.result_label }}</strong><br>{{ technique.formula }}</span>
+              {% if technique.show_result_calculation %}
+                <span><strong>Dado</strong><br>{{ technique.die }}</span>
+                <span><strong>{{ technique.result_label }}</strong><br>{{ technique.formula }}</span>
+              {% endif %}
             </div>
             <p><strong>Arma requerida:</strong> {{ technique.required_weapon_type }} · <strong>Armas compatíveis:</strong> {{ technique.matching_weapons }}</p>
             <p>{{ technique.description }} {% if technique.damage %}<strong>{{ technique.damage }}</strong>{% endif %}</p>

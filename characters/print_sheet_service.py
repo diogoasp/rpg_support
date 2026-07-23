@@ -138,6 +138,7 @@ def printable_technique_row(character, technique, weapon=None):
     modifier = character.attribute_modifier(modifier_key)
     modifier_label = signed(modifier)
     is_proficient = bool(weapon and weapon.is_proficient)
+    has_configured_die = bool(technique.damage_die or technique.damage_text)
     technique_die = technique.damage_die or split_damage_text(technique.damage_text)[0]
     weapon_die = weapon.damage_die if weapon else "dado da arma"
     category_label = technique.get_category_display()
@@ -186,6 +187,9 @@ def printable_technique_row(character, technique, weapon=None):
         "attribute": attribute,
         "range": technique.range_text or "-",
         "die": die,
+        "show_result_calculation": not (
+            technique.technique_type == CharacterTechnique.TechniqueType.BUFF and not has_configured_die
+        ),
         "modifier": modifier_label,
         "is_proficient": is_proficient,
         "attack_test": attack_test_label(modifier, character.proficiency_bonus, is_proficient),
