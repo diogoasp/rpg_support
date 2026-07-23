@@ -230,12 +230,22 @@ def start_level_up(actor, authorization):
 def available_basic_abilities(character, to_level):
     if to_level not in (2, 3):
         return BasicAbility.objects.none()
-    owned = CharacterBasicAbility.objects.filter(character=character).values_list("ability_id", flat=True)
+    owned_ids = CharacterBasicAbility.objects.filter(character=character).values_list("ability_id", flat=True)
+    owned_feature_names = CharacterFeature.objects.filter(
+        character=character,
+        source__icontains="Habilidade Básica",
+        is_available=True,
+    ).values_list("name", flat=True)
     category = STYLE_CATEGORIES.get(character.combat_style)
     categories = [BasicAbility.Category.GENERAL]
     if category:
         categories.append(category)
-    return BasicAbility.objects.filter(ruleset_version=RULESET_PLAYER_BOOK_1_5_7, is_active=True, category__in=categories).exclude(pk__in=owned).order_by("category", "name")
+    return (
+        BasicAbility.objects.filter(ruleset_version=RULESET_PLAYER_BOOK_1_5_7, is_active=True, category__in=categories)
+        .exclude(pk__in=owned_ids)
+        .exclude(name__in=owned_feature_names)
+        .order_by("category", "name")
+    )
 
 
 def validate_basic_ability_choice(character, to_level, ability):

@@ -6,6 +6,7 @@ from accounts.models import User
 from campaigns.models import Campaign
 from characters.level_up_service import (
     authorize_level_up,
+    available_basic_abilities,
     calculate_fixed_hp_gain,
     calculate_power_points,
     complete_level_up,
@@ -112,6 +113,30 @@ class LevelUpFlowTests(TestCase):
         self.assertTrue(CharacterBasicAbility.objects.filter(character=character, ability=ability).exists())
         self.assertTrue(CharacterFeature.objects.filter(character=character, name="Guarda Astuta").exists())
         self.assertEqual(history.fixed_hp_value, 5)
+
+    def test_available_basic_abilities_excludes_abilities_already_owned(self):
+        character = make_character(self.campaign, self.player)
+        owned = BasicAbility.objects.get(slug="corpo-de-guerreiro")
+        CharacterBasicAbility.objects.create(character=character, ability=owned, source_type="creation", source_level=1)
+
+        available = available_basic_abilities(character, 2)
+
+        self.assertNotIn(owned, available)
+
+    def test_available_basic_abilities_excludes_legacy_feature_grants(self):
+        character = make_character(self.campaign, self.player)
+        owned = BasicAbility.objects.get(slug="corpo-de-guerreiro")
+        CharacterFeature.objects.create(
+            character=character,
+            name=owned.name,
+            source="Habilidade Básica: criação",
+            description=owned.description,
+            is_available=True,
+        )
+
+        available = available_basic_abilities(character, 2)
+
+        self.assertNotIn(owned, available)
 
     def test_level_3_requires_and_records_style_technique(self):
         character = make_character(self.campaign, self.player, level=2, combat_style="Lutador", hit_die_type=12, max_hp=20, current_hp=10, max_power_points=4, current_power_points=1, favorite_weapon="Corporal", profession_subdivision="Intermediário")
