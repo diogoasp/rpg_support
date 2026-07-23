@@ -41,10 +41,26 @@ class TechniqueInline(admin.StackedInline): model=CharacterTechnique; extra=0
 class HitPointComponentInline(admin.TabularInline): model=CharacterHitPointComponent; extra=0; readonly_fields=('created_at',)
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    list_display=('name','campaign','user','level','species','combat_style','profession','current_hp','current_power_points'); list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available'); search_fields=('name','user__username','campaign__name','species','profession','combat_style'); autocomplete_fields=('campaign','user'); list_select_related=('campaign','user'); readonly_fields=('created_at','updated_at'); inlines=(AttributeInline,SkillInline,WeaponInline,TechniqueInline,HitPointComponentInline,)
+    list_display=('name','campaign','user','level','species','combat_style','profession','hp_summary','power_points_summary','armor_class','proficiency_bonus','updated_at')
+    list_filter=('campaign','level','species','combat_style','profession','haki_trained','devil_fruit_available','updated_at')
+    search_fields=('name','user__username','user__email','campaign__name','species','profession','combat_style')
+    autocomplete_fields=('campaign','user')
+    list_select_related=('campaign','user')
+    readonly_fields=('created_at','updated_at')
+    inlines=(AttributeInline,SkillInline,WeaponInline,TechniqueInline,HitPointComponentInline,)
+    list_per_page=30
+    @admin.display(description='PV')
+    def hp_summary(self,obj): return f'{obj.current_hp}/{obj.max_hp}'
+    @admin.display(description='PP')
+    def power_points_summary(self,obj): return f'{obj.current_power_points}/{obj.max_power_points}'
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
 @admin.register(Skill)
-class SkillAdmin(admin.ModelAdmin): search_fields=('name','slug'); list_filter=('related_attribute','is_active'); prepopulated_fields={'slug':('name',)}
+class SkillAdmin(admin.ModelAdmin):
+    list_display=('name','slug','related_attribute','sort_order','is_active')
+    list_filter=('related_attribute','is_active')
+    search_fields=('name','slug','description')
+    prepopulated_fields={'slug':('name',)}
+    list_editable=('sort_order','is_active')
 
 @admin.register(RuleAttribute)
 class RuleAttributeAdmin(admin.ModelAdmin):
@@ -109,11 +125,24 @@ class CharacterCreationAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterAttribute)
 class CharacterAttributeAdmin(admin.ModelAdmin):
-    list_display=('character','attribute','base_value','species_bonus','background_bonus','other_bonus','final_value'); list_filter=('attribute',); search_fields=('character__name',); autocomplete_fields=('character',)
+    list_display=('character','campaign','attribute','base_value','species_bonus','background_bonus','other_bonus','final_value')
+    list_filter=('character__campaign','attribute')
+    search_fields=('character__name','character__user__username')
+    autocomplete_fields=('character',)
+    list_select_related=('character','character__campaign','character__user')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
 
 @admin.register(CharacterProficiency)
 class CharacterProficiencyAdmin(admin.ModelAdmin):
-    list_display=('character','proficiency','source_type','multiplier','is_selected','created_at'); list_filter=('source_type','multiplier','is_selected'); search_fields=('character__name','proficiency__name'); autocomplete_fields=('character','proficiency'); readonly_fields=('created_at',)
+    list_display=('character','campaign','proficiency','source_type','multiplier','is_selected','created_at')
+    list_filter=('character__campaign','source_type','multiplier','is_selected','proficiency__category')
+    search_fields=('character__name','character__user__username','proficiency__name')
+    autocomplete_fields=('character','proficiency')
+    readonly_fields=('created_at',)
+    list_select_related=('character','character__campaign','character__user','proficiency')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
 
 @admin.register(CharacterRuleException)
 class CharacterRuleExceptionAdmin(admin.ModelAdmin):
@@ -121,42 +150,131 @@ class CharacterRuleExceptionAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterWeapon)
 class CharacterWeaponAdmin(admin.ModelAdmin):
-    list_display=('name','character','weapon_type','range_text','damage_die','attribute_modifier','is_proficient','is_available')
-    list_filter=('weapon_type','attribute_modifier','is_proficient','is_available')
-    search_fields=('name','character__name','weapon_type')
+    list_display=('name','character','campaign','weapon_type','range_text','damage_die','attribute_modifier','is_proficient','is_available','sort_order','updated_at')
+    list_filter=('character__campaign','weapon_type','attribute_modifier','is_proficient','is_available')
+    search_fields=('name','character__name','character__user__username','weapon_type')
     autocomplete_fields=('character',)
+    readonly_fields=('created_at','updated_at')
+    list_select_related=('character','character__campaign','character__user')
+    list_editable=('is_proficient','is_available','sort_order')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
 
 @admin.register(CharacterTechnique)
 class CharacterTechniqueAdmin(admin.ModelAdmin):
-    list_display=('name','character','category','technique_type','required_weapon_type','range_text','damage_die','power_points_cost','is_available')
-    list_filter=('category','technique_type','required_weapon_type','attribute_modifier','is_available')
-    search_fields=('name','character__name','required_weapon_type','description')
+    list_display=('name','character','campaign','category','technique_type','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','is_available','is_featured','sort_order')
+    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','is_available','is_featured')
+    search_fields=('name','character__name','character__user__username','required_weapon_type','description')
     autocomplete_fields=('character',)
+    readonly_fields=('created_at','updated_at')
+    list_select_related=('character','character__campaign','character__user')
+    list_editable=('is_available','is_featured','sort_order')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
 
 @admin.register(CharacterLevelUpAuthorization)
 class CharacterLevelUpAuthorizationAdmin(admin.ModelAdmin):
     list_display=('character','campaign','from_level','to_level','status','authorized_by','created_at','completed_at','cancelled_at')
-    list_filter=('status','ruleset_version','from_level','to_level')
+    list_filter=('campaign','status','ruleset_version','from_level','to_level','created_at')
     search_fields=('character__name','campaign__name','authorized_by__username')
     autocomplete_fields=('character','campaign','authorized_by')
     readonly_fields=('created_at','started_at','completed_at','cancelled_at')
+    list_select_related=('character','campaign','authorized_by')
 
 @admin.register(CharacterLevelUp)
 class CharacterLevelUpAdmin(admin.ModelAdmin):
-    list_display=('character','from_level','to_level','status','fixed_hp_value','old_max_hp','new_max_hp','created_at','completed_at')
-    list_filter=('status','from_level','to_level')
+    list_display=('character','campaign','from_level','to_level','combat_style','status','fixed_hp_value','old_max_hp','new_max_hp','old_max_power_points','new_max_power_points','created_at','completed_at')
+    list_filter=('character__campaign','combat_style','status','from_level','to_level','created_at')
     search_fields=('character__name','authorization__character__name')
     autocomplete_fields=('authorization','character','combat_style','selected_basic_ability')
     filter_horizontal=('selected_techniques',)
     readonly_fields=('created_at','completed_at')
+    list_select_related=('character','character__campaign','combat_style','selected_basic_ability')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
 
 @admin.register(CharacterLevelUpHistory)
 class CharacterLevelUpHistoryAdmin(admin.ModelAdmin):
-    list_display=('character','from_level','to_level','authorized_by','completed_by','created_at')
-    list_filter=('from_level','to_level','created_at')
+    list_display=('character','campaign','from_level','to_level','old_hp','new_hp','old_max_hp','new_max_hp','old_power_points','new_power_points','authorized_by','completed_by','created_at')
+    list_filter=('character__campaign','from_level','to_level','created_at')
+    search_fields=('character__name','character__user__username','authorized_by__username','completed_by__username')
     autocomplete_fields=('authorization','level_up','character','authorized_by','completed_by','basic_ability')
     filter_horizontal=('techniques',)
     readonly_fields=('created_at',)
+    list_select_related=('character','character__campaign','character__user','authorized_by','completed_by','basic_ability')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
 
-for model in (CharacterSkill,CharacterFeature,CharacterCondition,CharacterBasicAbility,CharacterLevelUpCorrection): admin.site.register(model)
+@admin.register(CharacterSkill)
+class CharacterSkillAdmin(admin.ModelAdmin):
+    list_display=('character','campaign','skill','related_attribute','is_proficient','is_expert','custom_bonus','final_bonus')
+    list_filter=('character__campaign','skill__related_attribute','is_proficient','is_expert')
+    search_fields=('character__name','character__user__username','skill__name')
+    autocomplete_fields=('character','skill')
+    list_select_related=('character','character__campaign','character__user','skill')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+    @admin.display(description='Atributo', ordering='skill__related_attribute')
+    def related_attribute(self,obj): return obj.skill.get_related_attribute_display()
+
+@admin.register(CharacterFeature)
+class CharacterFeatureAdmin(admin.ModelAdmin):
+    list_display=('name','character','campaign','source','is_available','sort_order')
+    list_filter=('character__campaign','source','is_available')
+    search_fields=('name','description','source','character__name','character__user__username')
+    autocomplete_fields=('character',)
+    list_select_related=('character','character__campaign','character__user')
+    list_editable=('is_available','sort_order')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+
+@admin.register(CharacterCondition)
+class CharacterConditionAdmin(admin.ModelAdmin):
+    list_display=('name','character','campaign','is_active','created_at','updated_at')
+    list_filter=('character__campaign','is_active','created_at','updated_at')
+    search_fields=('name','description','character__name','character__user__username')
+    autocomplete_fields=('character',)
+    readonly_fields=('created_at','updated_at')
+    list_select_related=('character','character__campaign','character__user')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+
+@admin.register(CharacterBasicAbility)
+class CharacterBasicAbilityAdmin(admin.ModelAdmin):
+    list_display=('character','campaign','ability','category','source_type','source_level','created_at')
+    list_filter=('character__campaign','ability__category','source_type','source_level','created_at')
+    search_fields=('character__name','character__user__username','ability__name')
+    autocomplete_fields=('character','ability')
+    readonly_fields=('created_at',)
+    list_select_related=('character','character__campaign','character__user','ability')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+    @admin.display(description='Categoria', ordering='ability__category')
+    def category(self,obj): return obj.ability.get_category_display()
+
+@admin.register(CharacterHitPointComponent)
+class CharacterHitPointComponentAdmin(admin.ModelAdmin):
+    list_display=('character','campaign','source_type','source_level','fixed_hit_die_value','constitution_modifier_at_calculation','other_bonus','created_at')
+    list_filter=('character__campaign','source_type','source_level','created_at')
+    search_fields=('character__name','character__user__username','source_type')
+    autocomplete_fields=('character',)
+    readonly_fields=('created_at',)
+    list_select_related=('character','character__campaign','character__user')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+
+@admin.register(CharacterLevelUpCorrection)
+class CharacterLevelUpCorrectionAdmin(admin.ModelAdmin):
+    list_display=('history','character','from_level','to_level','master','created_at')
+    list_filter=('history__character__campaign','history__from_level','history__to_level','created_at')
+    search_fields=('history__character__name','master__username','reason')
+    autocomplete_fields=('history','master')
+    readonly_fields=('created_at',)
+    list_select_related=('history','history__character','history__character__campaign','master')
+    @admin.display(description='Personagem', ordering='history__character__name')
+    def character(self,obj): return obj.history.character
+    @admin.display(description='Nível anterior', ordering='history__from_level')
+    def from_level(self,obj): return obj.history.from_level
+    @admin.display(description='Novo nível', ordering='history__to_level')
+    def to_level(self,obj): return obj.history.to_level
