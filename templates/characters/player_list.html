@@ -25,11 +25,16 @@
 
           {% with character=campaign.player_characters.0 creation=campaign.player_character_creations.0 %}
             {% if character %}
-              <div class="mb-3">
-                <strong>{{ character.name }}</strong>
-                <p class="small mb-2">{{ character.species|default:"Espécie pendente" }} · {{ character.combat_style|default:"Estilo pendente" }} · nível {{ character.level }}</p>
-                <a class="btn btn-pirate-red" href="{% url 'characters:sheet' campaign.slug %}">Ficha completa</a>
-                <a class="btn btn-parchment" href="{% url 'characters:dashboard' campaign.slug %}">Resumo</a>
+              <div class="mb-3 d-flex gap-3 align-items-start">
+                {% if character.portrait %}
+                  <img src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}" width="72" height="72" class="rounded border" style="object-fit:cover; object-position:center;">
+                {% endif %}
+                <div>
+                  <strong>{{ character.name }}</strong>
+                  <p class="small mb-2">{{ character.species|default:"Espécie pendente" }} · {{ character.combat_style|default:"Estilo pendente" }} · nível {{ character.level }}</p>
+                  <a class="btn btn-pirate-red" href="{% url 'characters:sheet' campaign.slug %}">Ficha completa</a>
+                  <a class="btn btn-parchment" href="{% url 'characters:dashboard' campaign.slug %}">Resumo</a>
+                </div>
               </div>
             {% elif creation %}
               <div class="mb-3">

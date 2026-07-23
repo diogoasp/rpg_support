@@ -630,6 +630,7 @@
     <div class="op-sheet-actions">
       {% if is_master_viewer %}
         <a class="op-sheet-action" href="{% url 'characters:master_detail' character.pk %}">Voltar à ficha do mestre</a>
+        <a class="op-sheet-action" href="{% url 'characters:edit' character.pk %}">Editar ficha</a>
       {% else %}
         <a class="op-sheet-action" href="{% url 'characters:dashboard' character.campaign.slug %}">Voltar ao painel</a>
       {% endif %}

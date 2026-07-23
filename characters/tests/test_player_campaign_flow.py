@@ -102,12 +102,16 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_character_menu_lists_existing_characters_and_drafts(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.portrait = "characters/portraits/nami.png"
+        character.save(update_fields=["portrait"])
         CharacterCreation.objects.create(campaign=self.c2, user=self.player, name="Usopp", current_step="attributes")
         self.client.force_login(self.player)
         response = self.client.get(reverse("characters:legacy_dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Personagens e criações")
         self.assertContains(response, "Nami")
+        self.assertContains(response, 'src="/media/characters/portraits/nami.png"')
         self.assertContains(response, "Ficha completa")
         self.assertContains(response, "Usopp")
         self.assertContains(response, "Atributos")
@@ -130,6 +134,20 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "9/10")
         character.refresh_from_db()
         self.assertEqual(character.current_hp, 9)
+
+    def test_master_character_list_cards_show_portrait(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.portrait = "characters/portraits/nami.png"
+        character.save(update_fields=["portrait"])
+        self.client.force_login(self.master)
+
+        response = self.client.get(reverse("characters:master_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Personagens das minhas campanhas")
+        self.assertContains(response, character.name)
+        self.assertContains(response, 'src="/media/characters/portraits/nami.png"')
+        self.assertContains(response, reverse("characters:master_sheet", args=[character.pk]))
 
     def test_master_hp_actions_do_not_revalidate_missing_portrait_file(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
@@ -217,6 +235,7 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "op-sheet")
         self.assertContains(response, character.name)
         self.assertContains(response, "Voltar à ficha do mestre")
+        self.assertContains(response, reverse("characters:edit", args=[character.pk]))
         self.assertNotContains(response, "Salvar alterações")
 
     def test_other_master_cannot_access_player_full_sheet(self):

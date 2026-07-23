@@ -1,1 +1,35 @@
-{% extends 'base.html' %}{% block content %}<h1>Personagens das minhas campanhas</h1><div class="row g-3">{% for character in characters %}<div class="col-lg-4"><div class="card h-100"><div class="card-body"><h2 class="h5">{{character.name}} · Nv. {{character.level}}</h2><p>PV {{character.current_hp}}/{{character.max_hp}} · PP {{character.current_power_points}}/{{character.max_power_points}} · CR {{character.armor_class}}</p>{% include 'characters/partials/condition_list.html' %}<p>{{character.inventory_items.all|length}} itens visíveis</p><a href="{% url 'characters:master_detail' character.pk %}" class="btn btn-sm btn-primary">Abrir ficha</a> <a href="{% url 'characters:edit' character.pk %}" class="btn btn-sm btn-outline-primary">Editar</a><button class="btn btn-sm btn-outline-primary" hx-get="{% url 'inventory:add' character.pk %}" hx-target="#modal-content">Adicionar item</button><button class="btn btn-sm btn-outline-primary" hx-get="{% url 'characters:condition_add' character.pk %}" hx-target="#modal-content">Adicionar condição</button></div></div></div>{% empty %}<p>Nenhum personagem.</p>{% endfor %}</div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<h1>Personagens das minhas campanhas</h1>
+<div class="row g-3">
+  {% for character in characters %}
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-3 align-items-start mb-3">
+            {% if character.portrait %}
+              <img src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}" width="72" height="72" class="rounded border" style="object-fit:cover; object-position:center;">
+            {% endif %}
+            <div>
+              <h2 class="h5 mb-1">{{ character.name }} · Nv. {{ character.level }}</h2>
+              <p class="small text-muted mb-0">{{ character.user.get_full_name|default:character.user.username }}</p>
+            </div>
+          </div>
+          <p>PV {{ character.current_hp }}/{{ character.max_hp }} · PP {{ character.current_power_points }}/{{ character.max_power_points }} · CR {{ character.armor_class }}</p>
+          {% include 'characters/partials/condition_list.html' %}
+          <p>{{ character.inventory_items.all|length }} itens visíveis</p>
+          <div class="d-flex flex-wrap gap-1">
+            <a href="{% url 'characters:master_detail' character.pk %}" class="btn btn-sm btn-primary">Abrir ficha</a>
+            <a href="{% url 'characters:master_sheet' character.pk %}" class="btn btn-sm btn-outline-primary">Ficha completa</a>
+            <a href="{% url 'characters:edit' character.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'inventory:add' character.pk %}" hx-target="#modal-content">Adicionar item</button>
+            <button class="btn btn-sm btn-outline-primary" hx-get="{% url 'characters:condition_add' character.pk %}" hx-target="#modal-content">Adicionar condição</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>Nenhum personagem.</p>
+  {% endfor %}
+</div>
+{% endblock %}

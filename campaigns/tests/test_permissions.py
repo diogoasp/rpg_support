@@ -105,6 +105,7 @@ class PermissionTests(TestCase):
             max_power_points=6,
             current_power_points=4,
             armor_class=13,
+            portrait="characters/portraits/lina.png",
         )
         self.client.force_login(self.master)
 
@@ -112,6 +113,7 @@ class PermissionTests(TestCase):
 
         self.assertContains(response, "Personagens da campanha")
         self.assertContains(response, "Lina")
+        self.assertContains(response, 'src="/media/characters/portraits/lina.png"')
         self.assertContains(response, "18/20")
         self.assertContains(response, reverse("characters:damage", kwargs={"pk": character.pk}))
         self.assertContains(response, reverse("characters:heal", kwargs={"pk": character.pk}))
