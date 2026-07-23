@@ -7,6 +7,7 @@ from campaigns.models import Campaign
 from characters.models import (
     Character,
     CharacterCreation,
+    CharacterFeature,
     CharacterSkill,
     CharacterTechnique,
     CharacterWeapon,
@@ -181,6 +182,8 @@ class PlayerCampaignFlowTests(TestCase):
         character.dream_path = "knowledge_companionship"
         character.save()
         InventoryItem.objects.create(character=character, name="Clima-Tact", description="Bastão climático.", quantity=1)
+        CharacterFeature.objects.create(character=character, name="Navegação precisa", source="Antecedente", description="Lê correntes marítimas.")
+        CharacterFeature.objects.create(character=character, name="Medo do escuro", source="Defeito", description="Hesita em locais sem luz.")
 
         self.client.force_login(self.player)
         response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
@@ -197,6 +200,10 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "58 kg")
         self.assertContains(response, "Conhecimento pelo Companheirismo")
         self.assertContains(response, "Clima-Tact")
+        self.assertContains(response, "Navegação precisa")
+        self.assertContains(response, "Medo do escuro")
+        self.assertLess(response.content.index(b"Tra\xc3\xa7os e Vantagens"), response.content.index(b"Navega\xc3\xa7\xc3\xa3o precisa"))
+        self.assertLess(response.content.index(b"Condi\xc3\xa7\xc3\xb5es e Limita\xc3\xa7\xc3\xb5es"), response.content.index(b"Medo do escuro"))
         self.assertNotContains(response, "Inteligência")
         self.assertNotContains(response, "Carisma")
 
@@ -326,6 +333,8 @@ class PlayerCampaignFlowTests(TestCase):
             category=CharacterTechnique.Category.ATTACK,
             technique_type=CharacterTechnique.TechniqueType.UNARMED,
         )
+        CharacterFeature.objects.create(character=character, name="Olhos de navegador", source="Antecedente", description="Percebe mudanças no clima.")
+        CharacterFeature.objects.create(character=character, name="Orgulho ferido", source="Defeito", description="Não aceita insultos facilmente.")
         InventoryItem.objects.create(character=character, name="Clima-Tact", description="Não deve sair na impressão.", quantity=1)
 
         self.client.force_login(self.player)
@@ -361,6 +370,13 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Punho Meteoro")
         self.assertContains(response, "1d6 + 1d4 +2")
         self.assertContains(response, "O resultado dividido por 2")
+        self.assertContains(response, "Personalidade, Singularidades e Limitações")
+        self.assertContains(response, "Traços e Vantagens")
+        self.assertContains(response, "Condições e Limitações")
+        self.assertContains(response, "Olhos de navegador")
+        self.assertContains(response, "Orgulho ferido")
+        self.assertLess(response.content.index(b"Tra\xc3\xa7os e Vantagens"), response.content.index(b"Olhos de navegador"))
+        self.assertLess(response.content.index(b"Condi\xc3\xa7\xc3\xb5es e Limita\xc3\xa7\xc3\xb5es"), response.content.index(b"Orgulho ferido"))
         self.assertNotContains(response, "Inventário")
         self.assertNotContains(response, "Clima-Tact")
 

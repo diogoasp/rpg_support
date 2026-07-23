@@ -216,7 +216,7 @@
               <div class="op-trait-column op-trait-column-good">
                 <p class="op-trait-column-title">Traços e Vantagens</p>
                 <div class="op-trait-list">
-                  {% for feature in character.features.all %}
+                  {% for feature in positive_features %}
                     <div class="op-trait-card">
                       <div class="op-trait-icon">✦</div>
                       <div>
@@ -239,20 +239,20 @@
               <div class="op-trait-column op-trait-column-bad">
                 <p class="op-trait-column-title">Condições e Limitações</p>
                 <div class="op-trait-list">
-                  {% for condition in character.conditions.all %}
+                  {% for feature in limitation_features %}
                     <div class="op-trait-card">
                       <div class="op-trait-icon">✕</div>
                       <div>
-                        <p class="op-trait-name">{{ condition.name }}</p>
-                        <p class="op-trait-desc">{{ condition.description|default:'Condição ativa.' }}</p>
+                        <p class="op-trait-name">{{ feature.name }}</p>
+                        <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
                       </div>
                     </div>
                   {% empty %}
                     <div class="op-trait-card">
                       <div class="op-trait-icon">✓</div>
                       <div>
-                        <p class="op-trait-name">Nenhuma condição ativa</p>
-                        <p class="op-trait-desc">O personagem não possui limitações temporárias registradas.</p>
+                        <p class="op-trait-name">Nenhuma limitação registrada</p>
+                        <p class="op-trait-desc">Defeitos cadastrados para o personagem aparecerão aqui.</p>
                       </div>
                     </div>
                   {% endfor %}

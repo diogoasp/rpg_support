@@ -75,6 +75,15 @@ def htmx_modal_validation_response(response):
     response['HX-Retarget']='#modal-content'
     response['HX-Reswap']='innerHTML'
     return response
+def split_character_features(character):
+    positive_features=[]
+    limitation_features=[]
+    for feature in character.features.all():
+        if feature.source == 'Defeito':
+            limitation_features.append(feature)
+        else:
+            positive_features.append(feature)
+    return positive_features, limitation_features
 class PlayerCharacterEntryView(PlayerRequiredMixin,View):
     template_name='characters/player_list.html'
     def get(self,request):
@@ -110,6 +119,7 @@ class CharacterSheetView(LoginRequiredMixin,TemplateView):
         c['carrying_capacity']=character.strength*10
         c['featured_item']=next(iter(character.inventory_items.all()),None)
         c['featured_techniques']=[tech for tech in character.techniques.all() if tech.is_featured]
+        c['positive_features'],c['limitation_features']=split_character_features(character)
         c['sheet_form']=kw.get('sheet_form') or PlayerCharacterSheetForm(instance=character)
         c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
         c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)

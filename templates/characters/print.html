@@ -157,13 +157,31 @@
     </section>
 
     <section>
-      <h2>Traços e Características</h2>
-        {% for feature in feature_rows %}
-          <div class="combat-card">
-            <h3>{{ feature.name }}</h3>
-            <p>{{ feature.description|default:feature.source }}</p>
-          </div>
-        {% endfor %}
+      <h2>Personalidade, Singularidades e Limitações</h2>
+      <div class="two-col">
+        <div>
+          <h3>Traços e Vantagens</h3>
+          {% for feature in positive_feature_rows %}
+            <div class="combat-card">
+              <h3>{{ feature.name }}</h3>
+              <p>{{ feature.description|default:feature.source }}</p>
+            </div>
+          {% empty %}
+            <div class="combat-card"><h3>Nenhum traço registrado</h3><p class="muted">Traços, vantagens e características positivas aparecerão aqui.</p></div>
+          {% endfor %}
+        </div>
+        <div>
+          <h3>Condições e Limitações</h3>
+          {% for feature in limitation_feature_rows %}
+            <div class="combat-card">
+              <h3>{{ feature.name }}</h3>
+              <p>{{ feature.description|default:feature.source }}</p>
+            </div>
+          {% empty %}
+            <div class="combat-card"><h3>Nenhuma limitação registrada</h3><p class="muted">Defeitos cadastrados aparecerão aqui.</p></div>
+          {% endfor %}
+        </div>
+      </div>
     </section>
     <section>
       <h2>Condições Ativas</h2>

@@ -203,16 +203,31 @@ def printable_feature_rows(character):
     return character.features.filter(is_available=True).order_by("sort_order", "name")
 
 
+def split_feature_rows(features):
+    positive_rows = []
+    limitation_rows = []
+    for feature in features:
+        if feature.source == "Defeito":
+            limitation_rows.append(feature)
+        else:
+            positive_rows.append(feature)
+    return positive_rows, limitation_rows
+
+
 def printable_condition_rows(character):
     return character.conditions.filter(is_active=True).order_by("-created_at")
 
 
 def print_sheet_context(character):
+    feature_rows = list(printable_feature_rows(character))
+    positive_feature_rows, limitation_feature_rows = split_feature_rows(feature_rows)
     return {
         "attribute_rows": printable_attribute_rows(character),
         "skill_rows": printable_skill_rows(character),
         "attack_rows": printable_attack_rows(character),
         "technique_rows": printable_technique_rows(character),
-        "feature_rows": printable_feature_rows(character),
+        "feature_rows": feature_rows,
+        "positive_feature_rows": positive_feature_rows,
+        "limitation_feature_rows": limitation_feature_rows,
         "condition_rows": printable_condition_rows(character),
     }
