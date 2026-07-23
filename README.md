@@ -102,6 +102,35 @@ make prod-smoke
 
 Atualizações normais usam `make deploy`; a opção recomendada na VPS é `make deploy-safe`, que cria backups antes. Consulte [OPERATIONS.md](OPERATIONS.md) para SSL, volumes, restauração, rollback e troubleshooting. O banco e o Gunicorn não possuem portas públicas em produção; somente o Nginx é publicado.
 
+### Cloudflare Tunnel sem abertura de portas
+
+Quando o provedor ou roteador não permite port-forward, publique a aplicação por Cloudflare Tunnel. No painel da Cloudflare, crie um tunnel gerenciado e configure o hostname público apontando para o serviço interno:
+
+```text
+http://nginx:80
+```
+
+No servidor, adicione o token gerado ao `.env`:
+
+```env
+CLOUDFLARE_TUNNEL_TOKEN=<token-do-tunnel>
+```
+
+Depois suba apenas o serviço do túnel:
+
+```bash
+make prod-tunnel-up
+```
+
+Logs e parada:
+
+```bash
+make prod-tunnel-logs
+make prod-tunnel-down
+```
+
+O `cloudflared` roda no mesmo Compose e na mesma rede interna do Nginx, então não precisa abrir portas no modem ou roteador.
+
 ## Livro do Jogador 1.5.7 — criação assistida
 
 O catálogo oficial usado pelo assistente é versionado como `player-book-1.5.7`. Para cadastrar ou atualizar atributos, perícias, espécies, variantes, ancestralidades, estilos, profissões, antecedentes, proficiências, características e equipamentos iniciais junto com os dados de desenvolvimento:

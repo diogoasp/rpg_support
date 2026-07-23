@@ -1,7 +1,9 @@
 name: ${COMPOSE_PROJECT_NAME:-onepiece-rpg}
 x-logging: &default-logging
   driver: json-file
-  options: {max-size: "10m", max-file: "5"}
+  options:
+    max-size: "10m"
+    max-file: "5"
 services:
   db:
     image: postgres:16.4-alpine
@@ -10,8 +12,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-rpg_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-development-only}
       TZ: ${TZ:-UTC}
-    volumes: [postgres_data:/var/lib/postgresql/data]
-    networks: [app_network]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
       interval: 10s
@@ -45,8 +49,11 @@ services:
       - static_data:/app/staticfiles
       - media_data:/app/media
       - protected_media_data:/app/protected_media
-    depends_on: {db: {condition: service_healthy}}
-    networks: [app_network]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=5)"]
       interval: 30s
@@ -65,8 +72,17 @@ services:
       - static_data:/srv/static:ro
       - media_data:/srv/media:ro
       - protected_media_data:/srv/protected_media:ro
-    depends_on: {web: {condition: service_healthy}}
-    networks: [app_network]
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - app_network
     logging: *default-logging
-volumes: {postgres_data: {}, static_data: {}, media_data: {}, protected_media_data: {}}
-networks: {app_network: {driver: bridge}}
+volumes:
+  postgres_data: {}
+  static_data: {}
+  media_data: {}
+  protected_media_data: {}
+networks:
+  app_network:
+    driver: bridge
