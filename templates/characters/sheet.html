@@ -117,22 +117,6 @@
           <span>Tripulação</span>
         </div>
       </header>
-
-      <div class="op-illustration-strip">
-        <div class="op-illustration-frame">
-          {% if character.portrait %}
-            <img src="{{ character.portrait.url }}" alt="Ilustração de {{ character.name }}" />
-          {% else %}
-            <div class="op-illustration-placeholder">
-              <svg viewBox="0 0 24 24" width="46" height="46">
-                <path fill="currentColor" d="M4 4h16v16H4V4zm2 2v9.6l3.3-3.3 2.4 2.4L15 11l3 3V6H6zm2.5 2A1.5 1.5 0 118.5 6a1.5 1.5 0 010 3z" />
-              </svg>
-              <span>{{ character.appearance|default:'Aparência ainda não registrada.' }}</span>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
       <div class="op-sheet-body">
         <div class="op-col">
           <section class="op-block">
