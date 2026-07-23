@@ -207,7 +207,7 @@ def split_feature_rows(features):
     positive_rows = []
     limitation_rows = []
     for feature in features:
-        if feature.source == "Defeito":
+        if "Defeito" in feature.source or "Limitação" in feature.source: 
             limitation_rows.append(feature)
         else:
             positive_rows.append(feature)
