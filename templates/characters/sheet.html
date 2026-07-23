@@ -633,7 +633,11 @@
       {% else %}
         <a class="op-sheet-action" href="{% url 'characters:dashboard' character.campaign.slug %}">Voltar ao painel</a>
       {% endif %}
-      <a class="op-sheet-action" href="{% url 'characters:print' character.campaign.slug %}">Imprimir</a>
+      {% if is_master_viewer %}
+        <a class="op-sheet-action" href="{% url 'characters:master_print' character.pk %}">Imprimir</a>
+      {% else %}
+        <a class="op-sheet-action" href="{% url 'characters:print' character.campaign.slug %}">Imprimir</a>
+      {% endif %}
     </div>
   </div>
 

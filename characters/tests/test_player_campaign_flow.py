@@ -204,7 +204,7 @@ class PlayerCampaignFlowTests(TestCase):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         self.client.force_login(self.master)
 
-        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+        response = self.client.get(reverse("characters:master_sheet", args=[character.pk]))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "op-sheet")
@@ -213,9 +213,10 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertNotContains(response, "Salvar alterações")
 
     def test_other_master_cannot_access_player_full_sheet(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
         self.client.force_login(self.other_master)
 
-        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+        response = self.client.get(reverse("characters:master_sheet", args=[character.pk]))
 
         self.assertEqual(response.status_code, 404)
 
@@ -224,13 +225,20 @@ class PlayerCampaignFlowTests(TestCase):
         self.client.force_login(self.master)
 
         response = self.client.post(
-            reverse("characters:sheet", kwargs={"slug": self.c1.slug}),
+            reverse("characters:master_sheet", args=[character.pk]),
             {"age": "99", "height": "", "weight": "", "dream_path": "", "dream": "", "appearance": "", "personality": "", "notes": ""},
         )
 
         self.assertEqual(response.status_code, 404)
         character.refresh_from_db()
         self.assertNotEqual(character.age, "99")
+
+    def test_campaign_master_does_not_use_player_slug_sheet_route(self):
+        self.client.force_login(self.master)
+
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 404)
 
     def test_player_can_update_subjective_sheet_fields(self):
         self.client.force_login(self.player)

@@ -26,7 +26,7 @@
 
 <div class="mt-3">
   <a class="btn btn-primary" href="{% url 'characters:edit' character.pk %}">Editar ficha</a>
-  <a class="btn btn-outline-primary" href="{% url 'characters:sheet' character.campaign.slug %}">Ficha completa</a>
+  <a class="btn btn-outline-primary" href="{% url 'characters:master_sheet' character.pk %}">Ficha completa</a>
   <a class="btn btn-outline-primary" href="{% url 'inventory:master' character.pk %}">Inventário</a>
 </div>
 {% include 'characters/partials/resource_card.html' %}

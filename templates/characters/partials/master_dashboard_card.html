@@ -9,7 +9,7 @@
       </div>
       <div class="d-flex gap-1 align-self-start">
         <a class="btn btn-sm btn-outline-secondary" href="{% url 'characters:master_detail' character.pk %}">Ficha</a>
-        <a class="btn btn-sm btn-outline-secondary" href="{% url 'characters:sheet' character.campaign.slug %}">Completa</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'characters:master_sheet' character.pk %}">Completa</a>
       </div>
     </div>
 

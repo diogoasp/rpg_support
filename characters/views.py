@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Prefetch
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
@@ -49,15 +49,20 @@ def own_character(request,slug=None):
     q=rich_queryset().filter(user=request.user,campaign__players=request.user)
     if slug:q=q.filter(campaign__slug=slug)
     return get_object_or_404(q)
-def accessible_character(request,slug=None):
+def accessible_character(request,slug=None,pk=None):
     if not request.user.is_authenticated:
         raise PermissionDenied
     if request.user.is_master:
         q=rich_queryset().filter(campaign__master=request.user)
+        if pk is None:
+            raise Http404
     elif request.user.is_player:
         q=rich_queryset().filter(user=request.user,campaign__players=request.user)
+        if pk is not None:
+            raise Http404
     else:
         raise PermissionDenied
+    if pk:q=q.filter(pk=pk)
     if slug:q=q.filter(campaign__slug=slug)
     return get_object_or_404(q)
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
@@ -96,7 +101,7 @@ class CharacterSheetView(LoginRequiredMixin,TemplateView):
     template_name='characters/sheet.html'
     def get_context_data(self,**kw):
         c=super().get_context_data(**kw)
-        character=kw.get('character') or accessible_character(self.request,self.kwargs.get('slug'))
+        character=kw.get('character') or accessible_character(self.request,self.kwargs.get('slug'),self.kwargs.get('pk'))
         c['character']=character
         c['campaign']=character.campaign
         c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True,belongs_to_crew=True).first()
