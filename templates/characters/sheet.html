@@ -506,6 +506,7 @@
         </div>
       </section>
 
+      {% if can_edit_sheet %}
       <section class="op-block op-edit-block">
         <h2 class="op-block-title"><span class="op-chapter-num">✎</span> Editar narrativa e imagem</h2>
         <form method="post" enctype="multipart/form-data" class="op-sheet-form">
@@ -581,6 +582,7 @@
           <button class="op-sheet-action op-sheet-submit" type="submit">Salvar alterações</button>
         </form>
       </section>
+      {% endif %}
 
       <footer class="op-sheet-footer">
         <h2 class="op-block-title"><span class="op-chapter-num">9</span> Guia Prático de Rolagens</h2>
@@ -626,7 +628,11 @@
     </div>
 
     <div class="op-sheet-actions">
-      <a class="op-sheet-action" href="{% url 'characters:dashboard' character.campaign.slug %}">Voltar ao painel</a>
+      {% if is_master_viewer %}
+        <a class="op-sheet-action" href="{% url 'characters:master_detail' character.pk %}">Voltar à ficha do mestre</a>
+      {% else %}
+        <a class="op-sheet-action" href="{% url 'characters:dashboard' character.campaign.slug %}">Voltar ao painel</a>
+      {% endif %}
       <a class="op-sheet-action" href="{% url 'characters:print' character.campaign.slug %}">Imprimir</a>
     </div>
   </div>

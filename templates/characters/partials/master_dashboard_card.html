@@ -7,7 +7,10 @@
           {{ character.user.get_full_name|default:character.user.username }} · Nv. {{ character.level }}
         </p>
       </div>
-      <a class="btn btn-sm btn-outline-secondary align-self-start" href="{% url 'characters:master_detail' character.pk %}">Ficha</a>
+      <div class="d-flex gap-1 align-self-start">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'characters:master_detail' character.pk %}">Ficha</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'characters:sheet' character.campaign.slug %}">Completa</a>
+      </div>
     </div>
 
     <div class="row g-2 mb-3">

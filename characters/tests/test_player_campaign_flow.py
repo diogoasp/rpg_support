@@ -50,11 +50,12 @@ def character_payload(name="Lina"):
 class PlayerCampaignFlowTests(TestCase):
     def setUp(self):
         self.master = User.objects.create_user("m", role=User.Role.MASTER)
+        self.other_master = User.objects.create_user("m2", role=User.Role.MASTER)
         self.player = User.objects.create_user("p", password="test-pass", role=User.Role.PLAYER)
         self.outsider = User.objects.create_user("o", role=User.Role.PLAYER)
         self.c1 = Campaign.objects.create(name="Mar Aberto", slug="mar-aberto", master=self.master)
         self.c2 = Campaign.objects.create(name="Novo Mundo", slug="novo-mundo", master=self.master)
-        self.c3 = Campaign.objects.create(name="Outra Mesa", slug="outra-mesa", master=self.master)
+        self.c3 = Campaign.objects.create(name="Outra Mesa", slug="outra-mesa", master=self.other_master)
         self.c1.players.add(self.player)
         self.c2.players.add(self.player)
         self.c3.players.add(self.outsider)
@@ -198,6 +199,38 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Clima-Tact")
         self.assertNotContains(response, "Inteligência")
         self.assertNotContains(response, "Carisma")
+
+    def test_campaign_master_can_access_player_full_sheet_read_only(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.master)
+
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "op-sheet")
+        self.assertContains(response, character.name)
+        self.assertContains(response, "Voltar à ficha do mestre")
+        self.assertNotContains(response, "Salvar alterações")
+
+    def test_other_master_cannot_access_player_full_sheet(self):
+        self.client.force_login(self.other_master)
+
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_master_cannot_post_player_sheet_edits(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.master)
+
+        response = self.client.post(
+            reverse("characters:sheet", kwargs={"slug": self.c1.slug}),
+            {"age": "99", "height": "", "weight": "", "dream_path": "", "dream": "", "appearance": "", "personality": "", "notes": ""},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        character.refresh_from_db()
+        self.assertNotEqual(character.age, "99")
 
     def test_player_can_update_subjective_sheet_fields(self):
         self.client.force_login(self.player)

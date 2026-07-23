@@ -49,6 +49,17 @@ def own_character(request,slug=None):
     q=rich_queryset().filter(user=request.user,campaign__players=request.user)
     if slug:q=q.filter(campaign__slug=slug)
     return get_object_or_404(q)
+def accessible_character(request,slug=None):
+    if not request.user.is_authenticated:
+        raise PermissionDenied
+    if request.user.is_master:
+        q=rich_queryset().filter(campaign__master=request.user)
+    elif request.user.is_player:
+        q=rich_queryset().filter(user=request.user,campaign__players=request.user)
+    else:
+        raise PermissionDenied
+    if slug:q=q.filter(campaign__slug=slug)
+    return get_object_or_404(q)
 def master_character(request,pk): return get_object_or_404(rich_queryset(),pk=pk,campaign__master=request.user)
 def master_character_card(request,character):
     return render(request,'characters/partials/master_dashboard_card.html',{'character':character})
@@ -81,11 +92,16 @@ class PlayerCharacterView(PlayerRequiredMixin,TemplateView):
         c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
         c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)
         return c
-class CharacterSheetView(PlayerCharacterView):
+class CharacterSheetView(LoginRequiredMixin,TemplateView):
     template_name='characters/sheet.html'
     def get_context_data(self,**kw):
         c=super().get_context_data(**kw)
-        character=c['character']
+        character=kw.get('character') or accessible_character(self.request,self.kwargs.get('slug'))
+        c['character']=character
+        c['campaign']=character.campaign
+        c['ship']=Ship.objects.filter(campaign=character.campaign,is_active=True,belongs_to_crew=True).first()
+        c['is_master_viewer']=self.request.user.is_master
+        c['can_edit_sheet']=self.request.user.is_player and character.user_id == self.request.user.pk
         c['carrying_capacity']=character.strength*10
         c['featured_item']=next(iter(character.inventory_items.all()),None)
         c['featured_techniques']=[tech for tech in character.techniques.all() if tech.is_featured]
@@ -100,11 +116,9 @@ class CharacterSheetView(PlayerCharacterView):
             form.save()
             messages.success(request,'Ficha narrativa atualizada.')
             return redirect('characters:sheet',slug=character.campaign.slug)
-        context=self.get_context_data(sheet_form=form)
-        context['character']=character
-        context['campaign']=character.campaign
-        return self.render_to_response(context,status=422)
-class CharacterPrintView(PlayerCharacterView):
+        return self.render_to_response(self.get_context_data(sheet_form=form,character=character),status=422)
+
+class CharacterPrintView(CharacterSheetView):
     template_name='characters/print.html'
     def get_context_data(self,**kw):
         c=super().get_context_data(**kw)
