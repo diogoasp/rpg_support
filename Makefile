@@ -7,7 +7,7 @@ NGINX_SERVICE ?= nginx
 SERVICE ?=
 CMD ?=
 TEST_ARGS ?=
-.PHONY: help dev-env dev-bootstrap dev dev-rebuild dev-stop dev-logs dev-manage dev-test dev-check dev-db-shell build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed seed-complete seed-player-book seed-level-progression createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-tunnel-up prod-tunnel-down prod-tunnel-logs prod-createsuperuser prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
+.PHONY: help dev-env dev-bootstrap dev dev-rebuild dev-stop dev-logs dev-manage dev-test dev-check dev-db-shell build up down restart logs ps shell django-shell migrate makemigrations showmigrations collectstatic test check check-deploy seed seed-complete seed-player-book seed-level-progression seed-level-up-abilities createsuperuser migrations-check compose-config prod-build prod-up prod-down prod-restart prod-logs prod-ps prod-shell prod-migrate prod-collectstatic prod-check prod-smoke prod-tunnel-up prod-tunnel-down prod-tunnel-logs prod-createsuperuser prod-seed-level-up-abilities prod-migrations-check prod-compose-config deploy deploy-safe db-shell db-backup db-restore backup backup-db backup-media restore-db diagnose prod-diagnose prune-dev
 help: ## Lista comandos operacionais
 	@awk 'BEGIN {FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-28s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 dev-env: ## Cria .env local a partir do exemplo, se ausente
@@ -64,6 +64,8 @@ seed-player-book: ## Seed idempotente do Livro do Jogador 1.5.7
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_player_book_rules_1_5_7
 seed-level-progression: ## Seed idempotente da progressão 1-4 do Livro do Jogador 1.5.7
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_level_progression_1_5_7
+seed-level-up-abilities: ## Corrige habilidades disponíveis na passagem de nível
+	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_level_up_basic_abilities_1_5_7
 createsuperuser: ## Cria superusuário no desenvolvimento
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py createsuperuser
 migrations-check: ## Verifica migrations de desenvolvimento
@@ -86,6 +88,8 @@ prod-shell: ## Shell no web de produção
 	$(COMPOSE_PROD) exec $(WEB_SERVICE) sh
 prod-migrate: ## Aplica migrations em produção
 	$(COMPOSE_PROD) run --rm $(WEB_SERVICE) python manage.py migrate --noinput
+prod-seed-level-up-abilities: ## Corrige habilidades disponíveis na passagem de nível em produção
+	$(COMPOSE_PROD) run --rm $(WEB_SERVICE) python manage.py seed_level_up_basic_abilities_1_5_7
 prod-collectstatic: ## Coleta estáticos em produção
 	$(COMPOSE_PROD) run --rm $(WEB_SERVICE) python manage.py collectstatic --noinput
 prod-check: ## Django check de produção

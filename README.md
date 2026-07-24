@@ -191,6 +191,18 @@ Também pode ser executado diretamente dentro do container:
 python manage.py seed_level_progression_1_5_7
 ```
 
+A correção do catálogo de Habilidades Básicas usado na passagem para os níveis 2 e 3 possui um seed próprio e idempotente. Em uma base de produção existente, execute-o uma vez após publicar esta versão:
+
+```bash
+make prod-seed-level-up-abilities
+```
+
+Ou diretamente no container Django:
+
+```bash
+python manage.py seed_level_up_basic_abilities_1_5_7
+```
+
 Validação local recomendada:
 
 ```bash
