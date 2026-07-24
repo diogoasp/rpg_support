@@ -16,12 +16,12 @@
   --shadow: rgba(8, 5, 2, .62);
   --wood-img: url('https://upload.wikimedia.org/wikipedia/commons/2/21/Old_wood_texture.jpg');
   --paper-img: url('https://upload.wikimedia.org/wikipedia/commons/5/58/Pergament.1.jpg');
-  --ship-img: url('https://upload.wikimedia.org/wikipedia/commons/8/84/Painting_of_a_pirate_ship_%28after_1852%29%2C_after_Ambroise_Louis_Garneray.jpg');
-  --map-img: url('https://upload.wikimedia.org/wikipedia/commons/8/86/Old_world_map.jpg');
-  --sea-img: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80');
-  --treasure-img: url('https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80');
-  --compass-img: url('https://images.unsplash.com/photo-1516563670759-299070f0dc54?auto=format&fit=crop&w=900&q=80');
-  --straw-img: url('https://images.unsplash.com/photo-1517639493569-5666a7b2f494?auto=format&fit=crop&w=900&q=80');
+  --ship-img: url('../img/going-merry.webp');
+  --map-img: url('../img/sea.jpg');
+  --sea-img: url('../img/sea.jpg');
+  --treasure-img: url('../img/treasure.png');
+  --compass-img: url('../img/bussola_onepiece_rpg.jpeg');
+  --straw-img: url('../img/bussola_onepiece_rpg.jpeg');
 }
 
 * {
@@ -140,17 +140,14 @@ body {
 .brand-mark {
   width: 68px;
   height: 68px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 2.2rem;
-  line-height: 1;
+  flex: 0 0 68px;
+  display: block;
   background:
-    radial-gradient(circle at 50% 38%, #111 0 44%, transparent 45%),
-    radial-gradient(circle, #d99a27 0 58%, #111 59% 66%, #e4c27d 67% 72%, #111 73%);
+    linear-gradient(rgba(12, 7, 2, .08), rgba(12, 7, 2, .12)),
+    var(--compass-img) center/cover;
   border-radius: 50%;
-  border: 3px solid #1b1107;
-  box-shadow: 0 0 0 4px rgba(217, 154, 39, .45), 0 10px 20px rgba(0, 0, 0, .55);
+  border: 4px solid #1b1107;
+  box-shadow: 0 0 0 4px rgba(217, 154, 39, .45), inset 0 0 0 2px rgba(244, 213, 150, .5), 0 10px 20px rgba(0, 0, 0, .55);
 }
 
 .parchment-nav {
@@ -569,9 +566,9 @@ form p label,
   border: 6px solid #241508;
   box-shadow: inset 0 0 90px rgba(20, 8, 2, .78), 0 18px 40px rgba(0, 0, 0, .35);
   background:
-    linear-gradient(90deg, rgba(235, 201, 140, .96) 0 34%, rgba(235, 201, 140, .54) 45%, rgba(7, 17, 21, .22) 65%, rgba(7, 17, 21, .54)),
-    linear-gradient(180deg, rgba(79, 48, 17, .18), rgba(79, 48, 17, .24)),
-    var(--ship-img) center/cover;
+    linear-gradient(90deg, rgba(235, 201, 140, .96) 0 34%, rgba(235, 201, 140, .48) 45%, rgba(7, 17, 21, .08) 65%, rgba(7, 17, 21, .22)),
+    linear-gradient(180deg, rgba(79, 48, 17, .08), rgba(79, 48, 17, .14)),
+    var(--ship-img) 68% center/cover;
 }
 
 .hero-panel .row {
@@ -617,7 +614,7 @@ form p label,
   display: block;
   height: 86px;
   margin: -.6rem auto 1rem;
-  background: var(--ship-img) center 42%/cover;
+  background: var(--ship-img) 68% 52%/cover;
   border: 3px solid var(--line);
   box-shadow: inset 0 0 34px rgba(0, 0, 0, .45);
 }
@@ -717,20 +714,24 @@ form p label,
   border-bottom: 2px solid rgba(77, 46, 18, .58);
 }
 
-.feature-card:nth-child(1) .feature-img {
-  background-image: var(--straw-img)
+.feature-character .feature-img {
+  background-image: var(--compass-img);
+  background-position: center 42%;
 }
 
-.feature-card:nth-child(2) .feature-img {
-  background-image: linear-gradient(rgba(8, 17, 21, .08), rgba(8, 17, 21, .08)), var(--ship-img)
+.feature-crew .feature-img {
+  background-image: linear-gradient(rgba(8, 17, 21, .03), rgba(8, 17, 21, .03)), var(--ship-img);
+  background-position: 68% center;
 }
 
-.feature-card:nth-child(3) .feature-img {
-  background-image: var(--treasure-img)
+.feature-explore .feature-img {
+  background-image: var(--treasure-img);
+  background-position: center 52%;
 }
 
-.feature-card:nth-child(4) .feature-img {
-  background-image: var(--compass-img)
+.feature-story .feature-img {
+  background-image: var(--sea-img);
+  background-position: 78% 58%;
 }
 
 .map-section {
