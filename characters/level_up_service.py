@@ -33,7 +33,7 @@ STYLE_CATEGORIES = {
     "Usuário de Rokushiki": BasicAbility.Category.WARRIOR,
     "Atirador": BasicAbility.Category.SPECIALIST,
     "Espadachim": BasicAbility.Category.SPECIALIST,
-    "Guerreiro-Oni": BasicAbility.Category.SPECIALIST,
+    "Guerreiro-Oni": BasicAbility.Category.WARRIOR,
     "Ciborgue": BasicAbility.Category.DIVERGENT,
     "Guerrilheiro": BasicAbility.Category.DIVERGENT,
     "Ninja": BasicAbility.Category.DIVERGENT,
@@ -231,9 +231,12 @@ def available_basic_abilities(character, to_level):
     if to_level not in (2, 3):
         return BasicAbility.objects.none()
     owned_ids = CharacterBasicAbility.objects.filter(character=character).values_list("ability_id", flat=True)
+    # Imports antigos registravam habilidades passivas somente como CharacterFeature,
+    # e nem sempre identificavam a origem como "Habilidade Básica". O nome é o elo
+    # disponível nesses registros legados, portanto toda característica ativa com o
+    # mesmo nome deve ser considerada uma habilidade já possuída.
     owned_feature_names = CharacterFeature.objects.filter(
         character=character,
-        source__icontains="Habilidade Básica",
         is_available=True,
     ).values_list("name", flat=True)
     category = STYLE_CATEGORIES.get(character.combat_style)

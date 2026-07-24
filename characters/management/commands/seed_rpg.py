@@ -13,6 +13,7 @@ class Command(BaseCommand):
         call_command("seed_skills")
         call_command("seed_player_book_rules_1_5_7")
         call_command("seed_level_progression_1_5_7")
+        call_command("seed_level_up_basic_abilities_1_5_7")
 
         master, _ = User.objects.update_or_create(
             username="diogo",

@@ -61,6 +61,7 @@ class LevelUpFlowTests(TestCase):
     def setUpTestData(cls):
         call_command("seed_player_book_rules_1_5_7", verbosity=0)
         call_command("seed_level_progression_1_5_7", verbosity=0)
+        call_command("seed_level_up_basic_abilities_1_5_7", verbosity=0)
 
     def setUp(self):
         self.master = User.objects.create_user("master", role=User.Role.MASTER)
@@ -137,6 +138,48 @@ class LevelUpFlowTests(TestCase):
         available = available_basic_abilities(character, 2)
 
         self.assertNotIn(owned, available)
+
+    def test_available_basic_abilities_excludes_passive_feature_without_basic_ability_source(self):
+        character = make_character(self.campaign, self.player)
+        owned = BasicAbility.objects.get(slug="defesa-ofensiva")
+        CharacterFeature.objects.create(
+            character=character,
+            name=owned.name,
+            source="Estilo: Atirador",
+            description=owned.description,
+            is_available=True,
+        )
+
+        available = available_basic_abilities(character, 2)
+
+        self.assertNotIn(owned, available)
+
+    def test_seed_contains_complete_general_and_style_basic_ability_catalogs(self):
+        self.assertEqual(BasicAbility.objects.filter(category=BasicAbility.Category.GENERAL).count(), 11)
+        self.assertEqual(BasicAbility.objects.filter(category=BasicAbility.Category.WARRIOR).count(), 3)
+        self.assertEqual(BasicAbility.objects.filter(category=BasicAbility.Category.SPECIALIST).count(), 3)
+        self.assertEqual(
+            set(BasicAbility.objects.filter(category=BasicAbility.Category.SPECIALIST).values_list("name", flat=True)),
+            {"Defesa Ofensiva", "Reflexo Afiado", "Gerenciamento de Energia"},
+        )
+
+    def test_available_basic_abilities_follow_each_style_category(self):
+        specialist = make_character(self.campaign, self.player, name="Atirador", combat_style="Atirador")
+        warrior = make_character(self.campaign, self.other_player, name="Oni", combat_style="Guerreiro-Oni")
+
+        specialist_names = set(available_basic_abilities(specialist, 2).values_list("name", flat=True))
+        warrior_names = set(available_basic_abilities(warrior, 2).values_list("name", flat=True))
+
+        self.assertTrue({"Defesa Ofensiva", "Reflexo Afiado", "Gerenciamento de Energia"} <= specialist_names)
+        self.assertFalse({"Mente e Corpo", "Retomar o Fôlego", "Robusto"} & specialist_names)
+        self.assertTrue({"Mente e Corpo", "Retomar o Fôlego", "Robusto"} <= warrior_names)
+        self.assertFalse({"Defesa Ofensiva", "Reflexo Afiado", "Gerenciamento de Energia"} & warrior_names)
+
+    def test_level_up_basic_ability_correction_seed_is_idempotent(self):
+        call_command("seed_level_up_basic_abilities_1_5_7", verbosity=0)
+        call_command("seed_level_up_basic_abilities_1_5_7", verbosity=0)
+
+        self.assertEqual(BasicAbility.objects.filter(ruleset_version="player-book-1.5.7").count(), 17)
 
     def test_level_3_requires_and_records_style_technique(self):
         character = make_character(self.campaign, self.player, level=2, combat_style="Lutador", hit_die_type=12, max_hp=20, current_hp=10, max_power_points=4, current_power_points=1, favorite_weapon="Corporal", profession_subdivision="Intermediário")
