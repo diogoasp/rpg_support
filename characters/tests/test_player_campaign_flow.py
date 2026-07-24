@@ -425,6 +425,30 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertNotContains(response, "<span><strong>Dado</strong><br>Conforme descrição</span>", html=True)
         self.assertNotContains(response, "<span><strong>Buff</strong><br>(Conforme descrição +0) / 2</span>", html=True)
 
+    def test_print_sheet_base_unarmed_attack_uses_only_unarmed_level_die(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.strength = 14
+        character.save(update_fields=["strength"])
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Ataque Desarmado",
+            description="Ataque desarmado padrão.",
+            range_text="1m",
+            damage_die="",
+            damage_text="1d4 + Modificador de Força",
+            category=CharacterTechnique.Category.ATTACK,
+            technique_type=CharacterTechnique.TechniqueType.UNARMED,
+        )
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ataque Desarmado")
+        self.assertContains(response, "<span><strong>Dado</strong><br>1d4</span>", html=True)
+        self.assertContains(response, "<span><strong>Dano</strong><br>1d4 +2</span>", html=True)
+        self.assertNotContains(response, "1d4 + 1d4")
+
     def test_technique_category_limits_available_types(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         technique = CharacterTechnique(

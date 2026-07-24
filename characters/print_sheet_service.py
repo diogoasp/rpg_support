@@ -138,7 +138,7 @@ def printable_technique_row(character, technique, weapon=None):
     modifier = character.attribute_modifier(modifier_key)
     modifier_label = signed(modifier)
     is_proficient = bool(weapon and weapon.is_proficient)
-    has_configured_die = bool(technique.damage_die or technique.damage_text)
+    has_configured_die = bool(technique.damage_die or (technique.damage_text and technique.technique_type != CharacterTechnique.TechniqueType.UNARMED))
     technique_die = technique.damage_die or split_damage_text(technique.damage_text)[0]
     weapon_die = weapon.damage_die if weapon else "dado da arma"
     category_label = technique.get_category_display()
@@ -151,8 +151,12 @@ def printable_technique_row(character, technique, weapon=None):
 
     if technique.technique_type == CharacterTechnique.TechniqueType.UNARMED:
         unarmed_die = unarmed_damage_die(character.level)
-        die = f"{technique_die} + {unarmed_die}"
-        formula = f"{technique_die} + {unarmed_die} {signed(character.strength_modifier)}"
+        if has_configured_die:
+            die = f"{technique_die} + {unarmed_die}"
+            formula = f"{technique_die} + {unarmed_die} {signed(character.strength_modifier)}"
+        else:
+            die = unarmed_die
+            formula = f"{unarmed_die} {signed(character.strength_modifier)}"
         attribute = "Força"
         modifier_label = signed(character.strength_modifier)
     elif technique.technique_type == CharacterTechnique.TechniqueType.BASIC:
