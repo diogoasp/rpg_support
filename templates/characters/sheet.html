@@ -195,52 +195,27 @@
           </section>
 
           <section class="op-block">
-            <h2 class="op-block-title"><span class="op-chapter-num">3</span> Personalidade, Singularidades e Limitações</h2>
-            <div class="op-two-col-cards">
-              <div class="op-trait-column op-trait-column-good">
-                <p class="op-trait-column-title">Traços e Vantagens</p>
-                <div class="op-trait-list">
-                  {% for feature in positive_features %}
-                    <div class="op-trait-card">
-                      <div class="op-trait-icon">✦</div>
-                      <div>
-                        <p class="op-trait-name">{{ feature.name }}</p>
-                        <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
-                      </div>
+            <h2 class="op-block-title"><span class="op-chapter-num">3</span> Condições e Limitações</h2>
+            <div class="op-trait-column op-trait-column-bad op-trait-column-full">
+              <p class="op-trait-column-title">Defeitos, limitações e dificuldades</p>
+              <div class="op-trait-list">
+                {% for feature in limitation_features %}
+                  <div class="op-trait-card">
+                    <div class="op-trait-icon">✕</div>
+                    <div>
+                      <p class="op-trait-name">{{ feature.name }}</p>
+                      <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
                     </div>
-                  {% empty %}
-                    <div class="op-trait-card">
-                      <div class="op-trait-icon">✦</div>
-                      <div>
-                        <p class="op-trait-name">Sem traços registrados</p>
-                        <p class="op-trait-desc">Traços de espécie, antecedente e estilo aparecerão aqui quando cadastrados.</p>
-                      </div>
+                  </div>
+                {% empty %}
+                  <div class="op-trait-card">
+                    <div class="op-trait-icon">✓</div>
+                    <div>
+                      <p class="op-trait-name">Nenhuma limitação registrada</p>
+                      <p class="op-trait-desc">Defeitos, limitações e dificuldades cadastrados para o personagem aparecerão aqui.</p>
                     </div>
-                  {% endfor %}
-                </div>
-              </div>
-
-              <div class="op-trait-column op-trait-column-bad">
-                <p class="op-trait-column-title">Condições e Limitações</p>
-                <div class="op-trait-list">
-                  {% for feature in limitation_features %}
-                    <div class="op-trait-card">
-                      <div class="op-trait-icon">✕</div>
-                      <div>
-                        <p class="op-trait-name">{{ feature.name }}</p>
-                        <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
-                      </div>
-                    </div>
-                  {% empty %}
-                    <div class="op-trait-card">
-                      <div class="op-trait-icon">✓</div>
-                      <div>
-                        <p class="op-trait-name">Nenhuma limitação registrada</p>
-                        <p class="op-trait-desc">Defeitos cadastrados para o personagem aparecerão aqui.</p>
-                      </div>
-                    </div>
-                  {% endfor %}
-                </div>
+                  </div>
+                {% endfor %}
               </div>
             </div>
           </section>
@@ -308,9 +283,9 @@
 
         <div class="op-col">
           <section class="op-block">
-            <h2 class="op-block-title"><span class="op-chapter-num">6</span> Habilidades e Traços Raciais</h2>
+            <h2 class="op-block-title"><span class="op-chapter-num">6</span> Traços e Vantagens</h2>
             <div class="op-racial-grid">
-              {% for feature in character.features.all %}
+              {% for feature in positive_features %}
                 <div class="op-racial-card">
                   <div class="op-racial-icon">★</div>
                   <div>
@@ -326,8 +301,8 @@
                 <div class="op-racial-card">
                   <div class="op-racial-icon">★</div>
                   <div>
-                    <p class="op-racial-name">{{ character.species|default:'Espécie' }}</p>
-                    <p class="op-racial-desc">Traços raciais ainda não cadastrados para esta ficha.</p>
+                    <p class="op-racial-name">Sem traços registrados</p>
+                    <p class="op-racial-desc">Traços de espécie, antecedente, estilo e vantagens aparecerão aqui quando cadastrados.</p>
                   </div>
                 </div>
               {% endfor %}
