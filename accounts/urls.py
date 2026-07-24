@@ -1,16 +1,10 @@
-from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
-class RPGLoginView(LoginView):
-    template_name = "registration/login.html"
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        self.request.session["show_dashboard_landing"] = True
-        return response
+from .views import RPGLoginView, RequiredPasswordChangeView, LogoutView
 
 app_name = "accounts"
 urlpatterns = [
     path("entrar/", RPGLoginView.as_view(), name="login"),
+    path("trocar-senha-obrigatoria/", RequiredPasswordChangeView.as_view(), name="force_password_change"),
     path("sair/", LogoutView.as_view(), name="logout"),
 ]
