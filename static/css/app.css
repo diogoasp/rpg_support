@@ -899,6 +899,9 @@ form p label,
 
 .history-markdown {
   line-height: 1.65;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .history-markdown h1,
@@ -928,13 +931,18 @@ form p label,
 }
 
 .history-markdown pre {
+  max-width: 100%;
   overflow-x: auto;
   padding: .75rem;
+  white-space: pre;
 }
 
 .history-markdown table {
   border-collapse: collapse;
+  display: block;
   margin: 1rem 0;
+  max-width: 100%;
+  overflow-x: auto;
   width: 100%;
 }
 
@@ -949,6 +957,13 @@ form p label,
 .history-markdown-preview h2,
 .history-markdown-preview h3 {
   font-size: 1rem;
+}
+
+.history-markdown img,
+.history-markdown audio,
+.history-markdown video,
+.history-markdown iframe {
+  max-width: 100%;
 }
 
 .pirate-footer {
@@ -1145,6 +1160,40 @@ form p label,
 
   .pirate-navbar {
     min-height: 76px
+  }
+
+  .history-markdown {
+    font-size: .98rem;
+    line-height: 1.55;
+  }
+
+  .history-markdown h1 {
+    font-size: 1.65rem;
+  }
+
+  .history-markdown h2 {
+    font-size: 1.4rem;
+  }
+
+  .history-markdown h3 {
+    font-size: 1.2rem;
+  }
+
+  .history-markdown ul,
+  .history-markdown ol {
+    padding-left: 1.25rem;
+  }
+
+  .history-markdown blockquote {
+    margin-left: 0;
+    margin-right: 0;
+    padding: .5rem .75rem;
+  }
+
+  .history-markdown th,
+  .history-markdown td {
+    min-width: 8rem;
+    padding: .45rem;
   }
 }
 
