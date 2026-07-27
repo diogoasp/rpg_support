@@ -1,1 +1,21 @@
-{% extends 'base.html' %}{% block content %}<h1>Sessão {{ record.session_number }} · {{ record.title }}</h1><p>{{ record.session_date }}</p>{% if record.cover_image %}<img class="history-cover" src="{% url 'history:media' record.pk 'cover' %}" alt="Capa">{% endif %}{{ record.summary|linebreaks }}{% if record.audio_file %}<audio controls preload="none" src="{% url 'history:media' record.pk 'audio' %}"></audio>{% endif %}{% if record.transcription %}<h2>Transcrição</h2>{{ record.transcription|linebreaks }}{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% load history_markdown %}
+{% block content %}
+<h1>Sessão {{ record.session_number }} · {{ record.title }}</h1>
+<p>{{ record.session_date }}</p>
+{% if record.cover_image %}
+  <img class="history-cover" src="{% url 'history:media' record.pk 'cover' %}" alt="Capa">
+{% endif %}
+<div class="history-markdown">
+  {{ record.summary|markdown_to_html }}
+</div>
+{% if record.audio_file %}
+  <audio controls preload="none" src="{% url 'history:media' record.pk 'audio' %}"></audio>
+{% endif %}
+{% if record.transcription %}
+  <h2>Transcrição</h2>
+  <div class="history-markdown">
+    {{ record.transcription|markdown_to_html }}
+  </div>
+{% endif %}
+{% endblock %}

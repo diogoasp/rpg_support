@@ -4,7 +4,18 @@ from django.core.exceptions import ValidationError
 from maps.forms import validate_upload
 from .models import SessionRecord
 class SessionRecordForm(forms.ModelForm):
- class Meta: model=SessionRecord; exclude=('campaign','is_published','published_at','created_at','updated_at','ai_summary','ai_decisions','ai_detected_items','ai_processed_at'); widgets={'session_date':forms.DateInput(attrs={'type':'date'})}
+ class Meta:
+  model=SessionRecord
+  exclude=('campaign','is_published','published_at','created_at','updated_at','ai_summary','ai_decisions','ai_detected_items','ai_processed_at')
+  widgets={
+   'session_date':forms.DateInput(attrs={'type':'date'}),
+   'summary':forms.Textarea(attrs={'rows':12,'placeholder':'Use Markdown: ## Título, **ênfase**, listas, links e tabelas.'}),
+   'transcription':forms.Textarea(attrs={'rows':12,'placeholder':'Transcrição opcional em Markdown.'}),
+  }
+  help_texts={
+   'summary':'Aceita Markdown para títulos, listas, links, citações e tabelas.',
+   'transcription':'Aceita Markdown.',
+  }
  def clean_cover_image(self):
   f=self.cleaned_data.get('cover_image');
   if f: validate_upload(f,{'image/jpeg','image/png','image/webp'},settings.MAX_IMAGE_UPLOAD_SIZE)
