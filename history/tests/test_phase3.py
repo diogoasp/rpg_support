@@ -12,6 +12,17 @@ class HistoryTests(TestCase):
  def test_unique_and_visibility(self):
   with self.assertRaises(IntegrityError): SessionRecord.objects.create(campaign=self.c,session_number=1,title='X',session_date=date.today())
   self.client.force_login(self.p); self.assertNotContains(self.client.get('/historia/'),'Rascunho'); publish_session_record(user=self.m,campaign=self.c,record=self.r); self.assertIsNotNone(self.r.published_at); self.assertContains(self.client.get('/historia/'),'Rascunho'); unpublish_session_record(user=self.m,campaign=self.c,record=self.r); self.assertNotContains(self.client.get('/historia/'),'Rascunho')
+ def test_public_history_only_shows_published_records(self):
+  published=SessionRecord.objects.create(campaign=self.c,session_number=2,title='Publicado',session_date=date.today(),summary='## Aberto')
+  publish_session_record(user=self.m,campaign=self.c,record=published)
+
+  response=self.client.get('/historia/')
+
+  self.assertEqual(response.status_code,200)
+  self.assertContains(response,'Publicado')
+  self.assertNotContains(response,'Rascunho')
+  self.assertEqual(self.client.get(f'/historia/{published.pk}/').status_code,200)
+  self.assertEqual(self.client.get(f'/historia/{self.r.pk}/').status_code,404)
  def test_private_audio(self):
   self.r.audio_file=SimpleUploadedFile('a.mp3',b'a',content_type='audio/mpeg'); self.r.save(); self.client.force_login(self.p); self.assertEqual(self.client.get(f'/historia/{self.r.pk}/midia/audio/').status_code,404)
  def test_publish_htmx(self):

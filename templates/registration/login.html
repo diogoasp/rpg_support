@@ -7,7 +7,7 @@
       <p class="text-uppercase text-primary fw-bold mb-2">One Piece RPG</p>
       <h1>Viva sua própria <span>aventura</span></h1>
       <p>Um RPG de mesa online inspirado em aventuras de piratas, tesouros perdidos, mapas antigos e jornadas lendárias.</p>
-      <div class="d-flex flex-wrap gap-3"><a class="btn btn-primary btn-lg" href="#login">Entrar agora</a><a class="btn btn-outline-primary btn-lg" href="#aventuras">Saber mais</a></div>
+      <div class="d-flex flex-wrap gap-3"><a class="btn btn-primary btn-lg" href="#login">Entrar agora</a><a class="btn btn-outline-primary btn-lg" href="{% url 'history:list' %}">Ler história</a><a class="btn btn-outline-primary btn-lg" href="#aventuras">Saber mais</a></div>
     </div>
     <div class="col-lg-5" id="login">
       <div class="login-card parchment-card p-4 p-md-5">
@@ -48,7 +48,7 @@
     <div class="col-md-3"><article class="card feature-card feature-character"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Crie seu personagem</h3><p>Origem, classe, técnicas, condições e inventário em uma ficha única.</p></div></article></div>
     <div class="col-md-3"><article class="card feature-card feature-crew"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Monte sua tripulação</h3><p>Campanhas, jogadores, navio e atalhos para a sessão presencial.</p></div></article></div>
     <div class="col-md-3"><article class="card feature-card feature-explore"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Explore e descubra</h3><p>Mapas, tesouros, registros de sessão e pistas liberadas pelo mestre.</p></div></article></div>
-    <div class="col-md-3"><article class="card feature-card feature-story"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Participe da história</h3><p>Encontros, áudio ambiente e confrontos narrativos guiados pelo destino.</p></div></article></div>
+    <div class="col-md-3"><article class="card feature-card feature-story"><div class="feature-img"></div><div class="card-body"><h3 class="h5">Participe da história</h3><p>Encontros, áudio ambiente e confrontos narrativos guiados pelo destino.</p><a href="{% url 'history:list' %}">Ler registros</a></div></article></div>
   </div>
 </section>
 <section class="map-section" id="mundo">
