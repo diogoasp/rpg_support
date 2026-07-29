@@ -13,6 +13,7 @@ from history.models import SessionRecord
 from encounters.models import Encounter
 from combat.models import Combat
 from audio_panel.models import AudioAsset
+from shops.models import Shop
 
 
 class DashboardRedirectView(LoginRequiredMixin, View):
@@ -32,12 +33,13 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["campaigns"] = Campaign.objects.filter(master=self.request.user).prefetch_related(
             "players", Prefetch("ships", Ship.objects.filter(is_active=True, belongs_to_crew=True), to_attr="active_ships"),
-            Prefetch("characters", Character.objects.select_related("user").prefetch_related("inventory_items", Prefetch("level_up_authorizations", CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING, CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by("-created_at"), to_attr="active_level_up_authorizations"), Prefetch("level_up_history", CharacterLevelUpHistory.objects.order_by("-created_at"), to_attr="recent_level_up_history")), to_attr="dashboard_characters"),
+            Prefetch("characters", Character.objects.select_related("user").prefetch_related("inventory_items", "accessible_shops", Prefetch("level_up_authorizations", CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING, CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by("-created_at"), to_attr="active_level_up_authorizations"), Prefetch("level_up_history", CharacterLevelUpHistory.objects.order_by("-created_at"), to_attr="recent_level_up_history")), to_attr="dashboard_characters"),
             Prefetch("maps", CampaignMap.objects.filter(is_active=True).prefetch_related("visible_to_users")[:5], to_attr="dashboard_maps"),
             Prefetch("session_records", SessionRecord.objects.all(), to_attr="dashboard_sessions"),
             Prefetch("encounters", Encounter.objects.filter(status__in=("draft", "ready")).prefetch_related("participants", "enemy_groups")[:5], to_attr="dashboard_encounters"),
             Prefetch("combats", Combat.objects.filter(status__in=("active", "paused")).prefetch_related("combatants"), to_attr="dashboard_combats"),
             Prefetch("audio_assets", AudioAsset.objects.filter(is_active=True, is_favorite=True).order_by("sort_order", "title")[:5], to_attr="dashboard_audio_favorites"),
+            Prefetch("shops", Shop.objects.order_by("name"), to_attr="dashboard_shops"),
         )
         return context
 

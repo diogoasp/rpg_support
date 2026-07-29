@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "dashboard",
     "characters",
     "inventory",
+    "shops",
     "ships",
     "maps",
     "history",

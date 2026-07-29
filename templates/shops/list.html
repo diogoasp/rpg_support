@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Lojas{% endblock %}
+{% block page_heading %}Lojas{% endblock %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-uppercase text-primary fw-bold mb-1">Mercado</p><h1 class="mb-0">Lojas disponíveis</h1></div>
+  </div>
+  {% for character in characters %}
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">{{ character.name }}</h2><span class="badge text-bg-warning fs-6">{{ character.money }} Bellys</span></div>
+      <div class="row g-4">
+        {% for access in character.shop_accesses.all %}
+          <div class="col-lg-6"><article class="card parchment-card h-100"><div class="card-body">
+            <p class="text-uppercase text-primary fw-bold mb-1">{{ access.shop.city }}</p><h3>{{ access.shop.name }}</h3><p>{{ access.shop.description|linebreaksbr }}</p>
+            <div class="list-group list-group-flush">
+              {% for item in access.shop.items.all %}
+                <div class="list-group-item bg-transparent px-0 d-flex justify-content-between gap-3 align-items-center">
+                  <div><strong>{{ item.name }}</strong><div class="small text-muted">{{ item.description }}</div><small>{{ item.quantity }} em estoque</small></div>
+                  <form method="post" action="{% url 'shops:purchase' item.pk %}">{% csrf_token %}<button class="btn btn-primary btn-sm" {% if item.quantity == 0 or character.money < item.price %}disabled{% endif %}>Comprar<br>{{ item.price }} B</button></form>
+                </div>
+              {% empty %}<p class="text-muted">Nenhum item nesta loja.</p>{% endfor %}
+            </div>
+          </div></article></div>
+        {% empty %}<div class="col-12"><div class="alert alert-info">O mestre ainda não liberou nenhuma loja para este personagem.</div></div>{% endfor %}
+      </div>
+    </section>
+  {% empty %}<div class="alert alert-info">Crie um personagem para acessar lojas.</div>{% endfor %}
+{% endblock %}
