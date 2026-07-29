@@ -43,3 +43,15 @@ class Ship(models.Model):
         for threshold,label in CONDITION_THRESHOLDS:
             if p>threshold:return label
         return 'Muito danificado'
+
+
+class ShipImage(models.Model):
+    ship = models.ForeignKey(Ship, on_delete=models.CASCADE, related_name='additional_images')
+    image = models.ImageField('imagem', upload_to='ships/images/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('created_at', 'pk')
+
+    def __str__(self):
+        return f'Imagem adicional de {self.ship.name}'

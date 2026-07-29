@@ -1,9 +1,15 @@
+from io import BytesIO
+from tempfile import TemporaryDirectory
+
 from django.core.exceptions import PermissionDenied,ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
-from django.test import TestCase
+from django.template.loader import render_to_string
+from django.test import TestCase,override_settings
+from PIL import Image
 from accounts.models import User
 from campaigns.models import Campaign
-from ships.models import Ship
+from ships.models import Ship,ShipImage
 from ships.services import assign_ship_to_crew,damage_ship,repair_ship,update_navigation_resources
 class ShipTests(TestCase):
  def setUp(self):
@@ -66,3 +72,37 @@ class ShipTests(TestCase):
   self.assertEqual(self.client.get('/navio/?campaign=c').status_code,403)
  def test_htmx_damage_fragment(self):
   self.client.force_login(self.master); response=self.client.post('/mestre/c/navio/dano/',{'raw_damage':10,'resistance_reduction':0},HTTP_HX_REQUEST='true'); self.assertEqual(response.status_code,200); self.assertContains(response,'ship-card'); self.assertContains(response,'style="width:90.0%"')
+
+ def test_uploads_primary_and_additional_images_with_expected_visibility(self):
+  def uploaded_image(name,color):
+   content=BytesIO()
+   Image.new('RGB',(2,2),color).save(content,format='PNG')
+   return SimpleUploadedFile(name,content.getvalue(),content_type='image/png')
+
+  with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+   self.client.force_login(self.master)
+   response=self.client.post(
+    f'/mestre/c/navio/{self.ship.pk}/editar/',
+    {
+     'name':'N','category':'medium','description':'','max_hp':100,'current_hp':100,
+     'resistance_class':10,'resistance_bonus':0,'speed':'','max_crew':10,
+     'current_crew':5,'navigation_resources':'adequate','cannons':0,
+     'facilities':'','notes':'','is_active':'on','image':uploaded_image('principal.png','red'),
+     'additional_images':[uploaded_image('lateral.png','blue'),uploaded_image('conves.png','green')],
+    },
+   )
+   self.assertRedirects(response,'/mestre/c/navio/')
+   self.ship.refresh_from_db()
+   self.assertIn('principal',self.ship.image.name)
+   self.assertEqual(ShipImage.objects.filter(ship=self.ship).count(),2)
+
+   card=render_to_string('ships/partials/card.html',{'ship':self.ship,'campaign':self.c})
+   self.assertIn(self.ship.image.url,card)
+   for additional in self.ship.additional_images.all():
+    self.assertNotIn(additional.image.url,card)
+
+   self.client.force_login(self.player)
+   detail=self.client.get('/navio/?campaign=c')
+   self.assertContains(detail,self.ship.image.url)
+   for additional in self.ship.additional_images.all():
+    self.assertContains(detail,additional.image.url)
