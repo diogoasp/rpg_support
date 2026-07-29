@@ -18,6 +18,10 @@ def player_list(request):
  q=allowed(request.user); t=request.GET.get('type'); q=q.filter(map_type=t) if t else q
  return render(request,'maps/list.html',{'maps':q.prefetch_related('visible_to_users'),'types':CampaignMap._meta.get_field('map_type').choices})
 @login_required
+def detail(request,pk):
+ obj=get_object_or_404(allowed(request.user).select_related('campaign'),pk=pk)
+ return render(request,'maps/detail.html',{'map':obj})
+@login_required
 def master_list(request,slug):
  c=get_object_or_404(Campaign,slug=slug,master=request.user); q=CampaignMap.objects.filter(campaign=c).prefetch_related('visible_to_users'); search=request.GET.get('q'); q=q.filter(title__icontains=search) if search else q
  return render(request,'maps/master_list.html',{'campaign':c,'maps':q})
@@ -38,6 +42,7 @@ def deactivate(request,slug,pk):
  c=get_object_or_404(Campaign,slug=slug,master=request.user); obj=get_object_or_404(CampaignMap,pk=pk,campaign=c); deactivate_campaign_map(user=request.user,campaign=c,campaign_map=obj); return redirect('maps:master_list',slug=slug)
 @login_required
 def protected_file(request,pk,kind):
+ if kind not in {'image','preview','file'}: raise Http404
  obj=get_object_or_404(allowed(request.user),pk=pk); field=obj.image if kind=='image' else obj.file
  if not field: raise Http404
  return protected_file_response(field,attachment=kind=='file')

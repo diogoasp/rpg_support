@@ -18,3 +18,13 @@ document.querySelector("#quickModal")?.addEventListener("hidden.bs.modal", () =>
     modalContent.innerHTML = "";
   }
 });
+
+document.querySelector("[data-map-fullscreen]")?.addEventListener("click", () => {
+  const viewer = document.querySelector("[data-map-viewer]");
+  if (!viewer) return;
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    viewer.requestFullscreen();
+  }
+});

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Roboto+Condensed:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=onepiece-assets-20260724c">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=maps-viewer-20260729">
   <script src="https://unpkg.com/htmx.org@2.0.6"></script>
 </head>
 <body class="grand-line-body{% if user.is_authenticated %} app-body{% endif %}{% if user.is_master %} master-with-audio-panel{% endif %}">
@@ -84,7 +84,7 @@
   <div class="modal fade" id="quickModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content" id="modal-content"></div></div></div>
   {% if user.is_master %}{% include "audio_panel/partials/persistent_panel.html" %}{% endif %}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{% static 'js/app.js' %}"></script>
+  <script src="{% static 'js/app.js' %}?v=maps-viewer-20260729"></script>
   {% if user.is_master %}<script type="module" src="{% static 'audio_panel/js/audio-player.js' %}"></script>{% endif %}
   {% block extra_scripts %}{% endblock %}
 </body>
