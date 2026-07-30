@@ -1,1 +1,26 @@
-<article id="map-{{ map.pk }}" class="card h-100"><div class="card-body">{% if map.image %}<img class="map-thumb" loading="lazy" src="{% url 'maps:file' map.pk 'image' %}" alt="{{ map.title }}">{% endif %}<h2 class="h5 mt-2">{{ map.title }}</h2><p>{{ map.description|truncatewords:25 }}</p><span class="badge text-bg-{% if map.is_visible_to_players %}success{% else %}secondary{% endif %}">{{ map.visibility_label }}</span>{% if map.file %}<a href="{% url 'maps:file' map.pk 'file' %}">Baixar PDF</a>{% endif %}{% if is_master %}<button class="btn btn-sm btn-outline-primary" hx-get="{% url 'maps:visibility' campaign.slug map.pk %}" hx-target="#modal-content">Visibilidade</button>{% endif %}</div></article>
+<article id="map-{{ map.pk }}" class="card map-card h-100">
+  {% if map.is_active and map.image %}
+    <a class="map-cover" href="{% url 'maps:detail' map.pk %}" aria-label="Visualizar {{ map.title }}">
+      <img class="map-thumb" loading="lazy" src="{% url 'maps:file' map.pk 'image' %}" alt="{{ map.title }}">
+    </a>
+  {% elif map.is_active and map.file %}
+    <a class="map-cover map-pdf-cover" href="{% url 'maps:detail' map.pk %}" aria-label="Visualizar {{ map.title }}">
+      <span aria-hidden="true">PDF</span><small>Mapa disponível para visualização</small>
+    </a>
+  {% elif not map.is_active %}
+    <div class="map-cover map-empty-cover"><span aria-hidden="true">☸</span><small>Mapa inativo</small></div>
+  {% else %}
+    <div class="map-cover map-empty-cover"><span aria-hidden="true">☸</span><small>Sem imagem ou PDF</small></div>
+  {% endif %}
+  <div class="card-body d-flex flex-column">
+    <h2 class="h5">{{ map.title }}</h2>
+    <p class="flex-grow-1">{{ map.description|truncatewords:25 }}</p>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <span class="badge text-bg-{% if map.is_visible_to_players %}success{% else %}secondary{% endif %}">{{ map.visibility_label }}</span>
+      {% if not map.is_active %}<span class="badge text-bg-danger">Inativo</span>{% endif %}
+      {% if map.is_active and map.image or map.is_active and map.file %}<a class="btn btn-sm btn-primary" href="{% url 'maps:detail' map.pk %}">Abrir mapa</a>{% endif %}
+      {% if map.is_active and map.file %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'maps:file' map.pk 'file' %}">Baixar PDF</a>{% endif %}
+      {% if is_master %}<button class="btn btn-sm btn-outline-primary" hx-get="{% url 'maps:visibility' campaign.slug map.pk %}" hx-target="#modal-content">Visibilidade</button>{% endif %}
+    </div>
+  </div>
+</article>
