@@ -64,3 +64,68 @@ class ShopFlowTests(TestCase):
         response = self.client.get(reverse("shops:list"))
         self.assertContains(response, "Mercado")
         self.assertContains(response, "Mapa")
+
+    def test_removed_campaign_member_cannot_see_or_purchase_released_shop(self):
+        ShopAccess.objects.create(shop=self.shop, character=self.character)
+        self.campaign.players.remove(self.player)
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("shops:list"))
+
+        self.assertNotContains(response, "Loguetown")
+        self.assertNotContains(response, "Mapa marítimo")
+        with self.assertRaises(PermissionDenied):
+            purchase(actor=self.player, item_id=self.item.pk)
+        self.item.refresh_from_db()
+        self.character.refresh_from_db()
+        self.assertEqual(self.item.quantity, 2)
+        self.assertEqual(self.character.money, 100)
+
+    def test_purchase_handles_duplicate_matching_inventory_items(self):
+        ShopAccess.objects.create(shop=self.shop, character=self.character)
+        first = InventoryItem.objects.create(
+            character=self.character,
+            name=self.item.name,
+            description=self.item.description,
+            quantity=4,
+            is_visible=True,
+        )
+        second = InventoryItem.objects.create(
+            character=self.character,
+            name=self.item.name,
+            description=self.item.description,
+            quantity=7,
+            is_visible=True,
+        )
+
+        purchase(actor=self.player, item_id=self.item.pk)
+
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertEqual(first.quantity, 5)
+        self.assertEqual(second.quantity, 7)
+        self.assertEqual(
+            InventoryItem.objects.filter(
+                character=self.character,
+                name=self.item.name,
+                description=self.item.description,
+                is_active=True,
+            ).count(),
+            2,
+        )
+
+    def test_purchase_makes_matching_hidden_inventory_item_visible(self):
+        ShopAccess.objects.create(shop=self.shop, character=self.character)
+        inventory_item = InventoryItem.objects.create(
+            character=self.character,
+            name=self.item.name,
+            description=self.item.description,
+            quantity=1,
+            is_visible=False,
+        )
+
+        purchase(actor=self.player, item_id=self.item.pk)
+
+        inventory_item.refresh_from_db()
+        self.assertEqual(inventory_item.quantity, 2)
+        self.assertTrue(inventory_item.is_visible)

@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import TemplateView
+from django.db.models import Prefetch
 
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from characters.models import Character
@@ -16,7 +17,14 @@ class ShopListView(PlayerRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["characters"] = Character.objects.filter(user=self.request.user).prefetch_related("shop_accesses__shop__items")
+        released_accesses = ShopAccess.objects.filter(
+            shop__campaign__players=self.request.user,
+        ).select_related("shop").prefetch_related("shop__items")
+        context["characters"] = (
+            Character.objects.filter(user=self.request.user, campaign__players=self.request.user)
+            .distinct()
+            .prefetch_related(Prefetch("shop_accesses", released_accesses))
+        )
         return context
 
 
