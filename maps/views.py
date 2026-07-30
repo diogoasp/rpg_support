@@ -45,4 +45,7 @@ def protected_file(request,pk,kind):
  if kind not in {'image','preview','file'}: raise Http404
  obj=get_object_or_404(allowed(request.user),pk=pk); field=obj.image if kind=='image' else obj.file
  if not field: raise Http404
- return protected_file_response(field,attachment=kind=='file')
+ response=protected_file_response(field,attachment=kind=='file')
+ if kind=='preview':
+  response['X-Frame-Options']='SAMEORIGIN'
+ return response
