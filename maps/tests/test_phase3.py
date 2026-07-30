@@ -24,8 +24,17 @@ class MapTests(TestCase):
   self.client.force_login(self.p)
   preview=self.client.get(f'/mapas/{self.public.pk}/preview/'); download=self.client.get(f'/mapas/{self.public.pk}/file/')
   self.assertEqual(preview.status_code,200); self.assertIn('inline',preview['Content-Disposition'])
+  self.assertEqual(preview['X-Frame-Options'],'SAMEORIGIN')
   self.assertEqual(download.status_code,200); self.assertIn('attachment',download['Content-Disposition'])
  def test_map_card_links_to_viewer_for_pdf(self):
   self.public.file=SimpleUploadedFile('mapa.pdf',b'%PDF-1.4',content_type='application/pdf'); self.public.save()
   self.client.force_login(self.p); r=self.client.get('/mapas/')
   self.assertContains(r,f'/mapas/{self.public.pk}/visualizar/'); self.assertContains(r,'Abrir mapa')
+ def test_inactive_map_does_not_render_broken_viewer_or_download_actions(self):
+  self.private.file=SimpleUploadedFile('mapa.pdf',b'%PDF-1.4',content_type='application/pdf')
+  self.private.is_active=False
+  self.private.save()
+  self.client.force_login(self.m); r=self.client.get('/mestre/c/mapas/')
+  self.assertContains(r,'Mapa inativo')
+  self.assertNotContains(r,f'/mapas/{self.private.pk}/visualizar/')
+  self.assertNotContains(r,f'/mapas/{self.private.pk}/file/')
