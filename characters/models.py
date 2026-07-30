@@ -35,6 +35,7 @@ class Character(models.Model):
     species=models.CharField('espécie',max_length=100,blank=True); profession=models.CharField('profissão',max_length=100,blank=True)
     combat_style=models.CharField('estilo de combate',max_length=150,blank=True); background=models.CharField('antecedente',max_length=150,blank=True)
     bounty=models.PositiveBigIntegerField('recompensa',default=0)
+    money=models.PositiveBigIntegerField('Bellys na bolsa',default=0)
     armor_class=models.PositiveSmallIntegerField('CR',default=10); proficiency_bonus=models.SmallIntegerField('proficiência',default=2)
     initiative=models.SmallIntegerField('iniciativa',default=0); movement=models.PositiveSmallIntegerField('deslocamento',default=9)
     max_hp=models.PositiveIntegerField('PV máximo',default=1); current_hp=models.PositiveIntegerField('PV atual',default=1)

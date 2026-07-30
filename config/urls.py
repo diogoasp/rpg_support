@@ -10,6 +10,7 @@ urlpatterns = [
     path("campanhas/", include("campaigns.urls")),
     path("", include("characters.urls")),
     path("", include("inventory.urls")),
+    path("", include("shops.urls")),
     path("", include("ships.urls")),
     path("", include("maps.urls")),
     path("", include("history.urls")),

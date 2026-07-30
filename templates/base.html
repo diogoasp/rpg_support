@@ -26,6 +26,7 @@
             <a href="{% url 'ships:detail' %}"><span>⚓</span>Navio</a>
             <a href="{% url 'maps:list' %}"><span>☸</span>Mapas</a>
             <a href="{% url 'history:list' %}"><span>▣</span>História</a>
+            {% if user.is_player %}<a href="{% url 'shops:list' %}"><span>⚖</span>Lojas</a>{% endif %}
             {% if user.is_player %}<a href="{% url 'characters:legacy_dashboard' %}"><span>☠</span>Personagem</a>{% endif %}
             {% if user.is_master %}
               <a href="{% url 'characters:master_list' %}"><span>♟</span>Personagens</a>

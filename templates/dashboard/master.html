@@ -68,6 +68,25 @@
                   {% endfor %}
                 </div>
 
+                <h3 class="section-title h4 mt-4">Acesso às lojas</h3>
+                {% for character in campaign.dashboard_characters %}
+                  <div class="card card-body mb-2">
+                    <strong class="mb-2">{{ character.name }}</strong>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% for shop in campaign.dashboard_shops %}
+                        <form method="post" action="{% url 'shops:toggle_access' shop.pk character.pk %}">
+                          {% csrf_token %}
+                          <button class="btn btn-sm {% if shop in character.accessible_shops.all %}btn-success{% else %}btn-outline-secondary{% endif %}" type="submit">
+                            {{ shop.name }} · {% if shop in character.accessible_shops.all %}liberada{% else %}bloqueada{% endif %}
+                          </button>
+                        </form>
+                      {% empty %}
+                        <span class="text-muted small">Cadastre lojas pelo painel administrativo.</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% empty %}<p class="text-muted">Nenhum personagem.</p>{% endfor %}
+
                 <h3 class="section-title h4 mt-4">Encontros preparados</h3>
                 <div class="list-group">
                   {% for encounter in campaign.dashboard_encounters %}
