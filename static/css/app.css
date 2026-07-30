@@ -1231,6 +1231,24 @@ form p label,
   background: rgba(25, 16, 8, .12);
 }
 
+.map-card-compact .map-cover {
+  min-height: 0;
+  height: 132px;
+}
+
+.map-card-compact .card-body {
+  padding: .9rem;
+}
+
+.map-card-compact .h5 {
+  font-size: 1rem;
+  margin-bottom: .35rem;
+}
+
+.map-card-compact p {
+  margin-bottom: .7rem;
+}
+
 .map-pdf-cover,
 .map-empty-cover {
   align-items: center;
