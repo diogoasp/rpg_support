@@ -111,7 +111,7 @@
 
                 <h3 class="section-title h4 mt-3">Mapas rápidos</h3>
                 {% for map in campaign.dashboard_maps|slice:':3' %}
-                  {% include 'maps/partials/card.html' with is_master=True %}
+                  {% include 'maps/partials/card.html' with is_master=True map_compact=True %}
                 {% empty %}
                   <span class="text-muted small">Nenhum mapa.</span>
                 {% endfor %}
