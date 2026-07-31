@@ -1,13 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from .validators import validate_ship_image
 
 SHIP_CATEGORIES=[('small','Pequeno'),('medium','Médio'),('large','Grande'),('very_large','Muito grande'),('special','Especial')]
 NAVIGATION_RESOURCE_LEVELS=[('abundant','Abundantes'),('adequate','Adequados'),('low','Baixos'),('critical','Críticos'),('empty','Esgotados')]
 CONDITION_THRESHOLDS=((75,'Normal'),(50,'Avariado'),(25,'Danificado'),(0,'Muito danificado'))
 class Ship(models.Model):
     campaign=models.ForeignKey('campaigns.Campaign',on_delete=models.CASCADE,related_name='ships')
-    name=models.CharField('nome',max_length=150); image=models.ImageField('imagem',upload_to='ships/images/',blank=True)
+    name=models.CharField('nome',max_length=150); image=models.ImageField('imagem',upload_to='ships/images/',validators=[validate_ship_image],blank=True)
     category=models.CharField('categoria',max_length=20,choices=SHIP_CATEGORIES,default='medium'); description=models.TextField('descrição',blank=True)
     max_hp=models.PositiveIntegerField('PV máximo',validators=[MinValueValidator(1)]); current_hp=models.PositiveIntegerField('PV atual')
     resistance_class=models.PositiveSmallIntegerField('Classe de Resistência',default=10); resistance_bonus=models.SmallIntegerField('bônus de resistência',default=0); speed=models.CharField('velocidade',max_length=80,blank=True)
@@ -47,7 +48,7 @@ class Ship(models.Model):
 
 class ShipImage(models.Model):
     ship = models.ForeignKey(Ship, on_delete=models.CASCADE, related_name='additional_images')
-    image = models.ImageField('imagem', upload_to='ships/images/')
+    image = models.ImageField('imagem', upload_to='ships/images/', validators=[validate_ship_image])
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

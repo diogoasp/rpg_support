@@ -1,5 +1,6 @@
 from django import forms
 from .models import Ship
+from .validators import validate_ship_image
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -15,7 +16,7 @@ class MultipleImageField(forms.ImageField):
 
 
 class ShipForm(forms.ModelForm):
- additional_images=MultipleImageField(label='Imagens adicionais',required=False,widget=MultipleFileInput,help_text='Estas imagens aparecem somente na tela de detalhes da embarcação.')
+ additional_images=MultipleImageField(label='Imagens adicionais',required=False,widget=MultipleFileInput,validators=[validate_ship_image],help_text='Estas imagens aparecem somente na tela de detalhes da embarcação.')
  class Meta:
   model=Ship
   exclude=('campaign','belongs_to_crew','created_at','updated_at')

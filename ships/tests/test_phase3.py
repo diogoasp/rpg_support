@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.template.loader import render_to_string
 from django.test import TestCase,override_settings
+from django.urls import reverse
 from PIL import Image
 from accounts.models import User
 from campaigns.models import Campaign
@@ -97,12 +98,38 @@ class ShipTests(TestCase):
    self.assertEqual(ShipImage.objects.filter(ship=self.ship).count(),2)
 
    card=render_to_string('ships/partials/card.html',{'ship':self.ship,'campaign':self.c})
-   self.assertIn(self.ship.image.url,card)
+   self.assertIn(reverse('ships:image',kwargs={'pk':self.ship.pk}),card)
    for additional in self.ship.additional_images.all():
     self.assertNotIn(additional.image.url,card)
 
    self.client.force_login(self.player)
    detail=self.client.get('/navio/?campaign=c')
-   self.assertContains(detail,self.ship.image.url)
+   self.assertContains(detail,reverse('ships:image',kwargs={'pk':self.ship.pk}))
    for additional in self.ship.additional_images.all():
-    self.assertContains(detail,additional.image.url)
+    self.assertNotContains(detail,additional.image.url)
+    self.assertContains(detail,reverse('ships:gallery_image',kwargs={'pk':additional.pk}))
+    self.assertEqual(self.client.get(reverse('ships:gallery_image',kwargs={'pk':additional.pk})).status_code,200)
+
+   self.client.force_login(self.outsider)
+   additional=self.ship.additional_images.first()
+   self.assertEqual(self.client.get(reverse('ships:gallery_image',kwargs={'pk':additional.pk})).status_code,404)
+
+ def test_additional_image_upload_respects_configured_size_limit(self):
+  content=BytesIO()
+  Image.new('RGB',(2,2),'blue').save(content,format='PNG')
+  image=SimpleUploadedFile('grande.png',content.getvalue(),content_type='image/png')
+
+  with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root,MAX_IMAGE_UPLOAD_SIZE=1):
+   self.client.force_login(self.master)
+   response=self.client.post(
+    f'/mestre/c/navio/{self.ship.pk}/editar/',
+    {
+     'name':'N','category':'medium','description':'','max_hp':100,'current_hp':100,
+     'resistance_class':10,'resistance_bonus':0,'speed':'','max_crew':10,
+     'current_crew':5,'navigation_resources':'adequate','cannons':0,
+     'facilities':'','notes':'','is_active':'on','additional_images':[image],
+    },
+   )
+   self.assertEqual(response.status_code,200)
+   self.assertContains(response,'A imagem excede 5 MB.')
+   self.assertEqual(ShipImage.objects.filter(ship=self.ship).count(),0)

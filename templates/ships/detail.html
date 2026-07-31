@@ -9,10 +9,10 @@
           <h2 class="h5">Imagens da embarcação</h2>
           <div class="row g-3 mb-4">
             {% if ship.image %}
-              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{{ ship.image.url }}" alt="{{ ship.name }} — imagem principal"></div>
+              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{% url 'ships:image' ship.pk %}" alt="{{ ship.name }} — imagem principal"></div>
             {% endif %}
             {% for ship_image in ship.additional_images.all %}
-              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{{ ship_image.image.url }}" alt="{{ ship.name }} — imagem {{ forloop.counter|add:1 }}"></div>
+              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{% url 'ships:gallery_image' ship_image.pk %}" alt="{{ ship.name }} — imagem {{ forloop.counter|add:1 }}"></div>
             {% endfor %}
           </div>
         {% endif %}
