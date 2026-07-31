@@ -30,6 +30,13 @@ class PermissionTests(TestCase):
         response = self.client.get(reverse("dashboard:home"))
         self.assertRedirects(response, f"{reverse('accounts:login')}?next=/")
 
+    def test_anonymous_user_is_redirected_from_role_protected_dashboard(self) -> None:
+        response = self.client.get(reverse("dashboard:master"))
+        self.assertRedirects(
+            response,
+            f"{reverse('accounts:login')}?next={reverse('dashboard:master')}",
+        )
+
     def test_master_is_sent_to_master_dashboard(self) -> None:
         self.client.force_login(self.master)
         response = self.client.get(reverse("dashboard:home"))
