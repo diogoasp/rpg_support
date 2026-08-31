@@ -846,6 +846,12 @@ form p label,
   border-radius: .28rem
 }
 
+.ship-detail-image {
+  width: 100%;
+  height: 22rem;
+  object-fit: cover;
+}
+
 .ship-hp-line {
   display: flex;
   align-items: center;

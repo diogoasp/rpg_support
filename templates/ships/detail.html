@@ -1,1 +1,26 @@
-{% extends 'base.html' %}{% block content %}<h1>Navio da campanha {{ campaign.name }}</h1>{% include 'ships/partials/card.html' %}{% if ship %}<div class="card mt-3"><div class="card-body"><p>{{ ship.description|linebreaksbr }}</p><dl class="row"><dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ ship.get_category_display }}</dd><dt class="col-sm-3">CR / resistência</dt><dd class="col-sm-9">{{ ship.resistance_class }} / {{ ship.resistance_bonus|stringformat:'+d' }}</dd><dt class="col-sm-3">Velocidade</dt><dd class="col-sm-9">{{ ship.speed }}</dd><dt class="col-sm-3">Canhões</dt><dd class="col-sm-9">{{ ship.cannons }}</dd></dl><h2 class="h5">Instalações</h2>{{ ship.facilities|linebreaks }}<h2 class="h5">Observações</h2>{{ ship.notes|linebreaks }}</div></div>{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Navio da campanha {{ campaign.name }}</h1>
+  {% include 'ships/partials/card.html' %}
+  {% if ship %}
+    <div class="card mt-3">
+      <div class="card-body">
+        {% if ship.image or ship.additional_images.exists %}
+          <h2 class="h5">Imagens da embarcação</h2>
+          <div class="row g-3 mb-4">
+            {% if ship.image %}
+              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{% url 'ships:image' ship.pk %}" alt="{{ ship.name }} — imagem principal"></div>
+            {% endif %}
+            {% for ship_image in ship.additional_images.all %}
+              <div class="col-12 col-md-6"><img class="img-fluid rounded ship-detail-image" src="{% url 'ships:gallery_image' ship_image.pk %}" alt="{{ ship.name }} — imagem {{ forloop.counter|add:1 }}"></div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <p>{{ ship.description|linebreaksbr }}</p>
+        <dl class="row"><dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">{{ ship.get_category_display }}</dd><dt class="col-sm-3">CR / resistência</dt><dd class="col-sm-9">{{ ship.resistance_class }} / {{ ship.resistance_bonus|stringformat:'+d' }}</dd><dt class="col-sm-3">Velocidade</dt><dd class="col-sm-9">{{ ship.speed }}</dd><dt class="col-sm-3">Canhões</dt><dd class="col-sm-9">{{ ship.cannons }}</dd></dl>
+        <h2 class="h5">Instalações</h2>{{ ship.facilities|linebreaks }}
+        <h2 class="h5">Observações</h2>{{ ship.notes|linebreaks }}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

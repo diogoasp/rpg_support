@@ -1,13 +1,19 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.shortcuts import get_object_or_404,redirect,render
+from config.protected_media import protected_file_response
 from campaigns.models import Campaign
 from .forms import *
-from .models import Ship
+from .models import Ship,ShipImage
 from .services import assign_ship_to_crew,create_or_update_ship,deactivate_ship,damage_ship,repair_ship,update_navigation_resources
 
 def crew_ship(campaign):
  return Ship.objects.filter(campaign=campaign,is_active=True,belongs_to_crew=True).first()
+
+def _allowed_ships(user):
+ q=Ship.objects.filter(campaign__in=(Campaign.objects.filter(master=user) if user.is_master else user.campaigns.all()),is_active=True)
+ return q if user.is_master else q.filter(belongs_to_crew=True)
 
 def _campaign(request,slug=None):
  if request.user.is_master:
@@ -34,7 +40,12 @@ def edit(request,slug,pk=None):
  if not request.user.is_master: raise PermissionDenied
  ship=get_object_or_404(Ship,campaign=c,pk=pk) if pk else None
  form=ShipForm(request.POST or None,request.FILES or None,instance=ship)
- if request.method=='POST' and form.is_valid(): create_or_update_ship(user=request.user,campaign=c,ship=ship,**form.cleaned_data); return redirect('ships:manage',slug=slug)
+ if request.method=='POST' and form.is_valid():
+  data=form.cleaned_data.copy()
+  additional_images=data.pop('additional_images',[])
+  saved_ship=create_or_update_ship(user=request.user,campaign=c,ship=ship,**data)
+  ShipImage.objects.bulk_create(ShipImage(ship=saved_ship,image=image) for image in additional_images)
+  return redirect('ships:manage',slug=slug)
  return render(request,'ships/form.html',{'form':form,'campaign':c,'ship':ship})
 @login_required
 def assign(request,slug,pk):
@@ -68,3 +79,13 @@ def damage(request,slug): return _action(request,slug,'damage')
 def repair(request,slug): return _action(request,slug,'repair')
 @login_required
 def resources(request,slug): return _action(request,slug,'resources')
+@login_required
+def image(request,pk):
+ ship=get_object_or_404(_allowed_ships(request.user),pk=pk)
+ if not ship.image: raise Http404
+ return protected_file_response(ship.image)
+@login_required
+def gallery_image(request,pk):
+ obj=get_object_or_404(ShipImage.objects.filter(ship__in=_allowed_ships(request.user)),pk=pk)
+ if not obj.image: raise Http404
+ return protected_file_response(obj.image)

@@ -1,7 +1,15 @@
 from django.contrib import admin
-from .models import Ship
+from .models import Ship,ShipImage
+
+
+class ShipImageInline(admin.TabularInline):
+ model=ShipImage
+ extra=1
+
+
 @admin.register(Ship)
 class ShipAdmin(admin.ModelAdmin):
+ inlines=(ShipImageInline,)
  list_display=('name','campaign','category','hp_summary','calculated_condition','resistance_class','resistance_bonus','speed','crew_summary','navigation_resources','cannons','belongs_to_crew','is_active','updated_at')
  list_filter=('campaign','category','navigation_resources','belongs_to_crew','is_active','created_at','updated_at')
  search_fields=('name','campaign__name','description','facilities','notes')
