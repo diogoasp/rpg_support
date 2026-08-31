@@ -11,6 +11,7 @@ from .models import (
     CharacterAttribute,
     CharacterCreation,
     CharacterFeature,
+    CharacterRecordSource,
     CharacterProficiency,
     CharacterSkill,
     RuleProficiency,
@@ -87,7 +88,7 @@ def _set_feature(character, name, source, description, sort_order=0):
     CharacterFeature.objects.update_or_create(
         character=character,
         name=name,
-        defaults={"source": source, "description": description, "is_available": True, "sort_order": sort_order},
+        defaults={"source": source, "description": description, "is_available": True, "sort_order": sort_order, "source_type": CharacterRecordSource.CHARACTER_CREATION},
     )
 
 
@@ -254,9 +255,9 @@ def confirm_creation(creation, actor=None):
     apply_catalog_proficiencies(character, creation)
     apply_species_variant_features(character, creation)
     if creation.background:
-        CharacterFeature.objects.update_or_create(character=character, name=creation.background.special_feature_name, defaults={"source": f"Antecedente: {creation.background.name}", "description": creation.background.special_feature_description, "is_available": True})
+        CharacterFeature.objects.update_or_create(character=character, name=creation.background.special_feature_name, defaults={"source": f"Antecedente: {creation.background.name}", "description": creation.background.special_feature_description, "is_available": True, "source_type": CharacterRecordSource.CHARACTER_CREATION})
     for feature in creation.combat_style.level_1_features:
-        CharacterFeature.objects.update_or_create(character=character, name=feature, defaults={"source": f"Estilo: {creation.combat_style.name}", "description": "Característica de 1º nível cadastrada pelo catálogo.", "is_available": True})
+        CharacterFeature.objects.update_or_create(character=character, name=feature, defaults={"source": f"Estilo: {creation.combat_style.name}", "description": "Característica de 1º nível cadastrada pelo catálogo.", "is_available": True, "source_type": CharacterRecordSource.CHARACTER_CREATION})
 
     create_initial_equipment(character, creation)
     creation.character = character

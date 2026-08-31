@@ -1947,3 +1947,86 @@ Cobertura adicionada:
 - O livro permite rolagem de PV nos níveis seguintes, mas esta entrega usa somente método fixo por requisito.
 - A criação atual ainda calcula PP inicial por regra anterior; a passagem de nível usa `level * 2` sem alterar criação fora do escopo.
 - Técnicas personalizadas previstas pelo livro dependem de aprovação do mestre; o fluxo inicial cadastra e exige as técnicas predefinidas localizadas nas tabelas de progressão do Capítulo 3.
+
+## Autonomia do jogador na manutenção da ficha
+
+A ficha completa do jogador passa a ser também a tela de manutenção cotidiana do personagem. A separação adotada é:
+
+- **Regra**: dados estruturais derivados de criação, passagem de nível ou decisão do mestre. O jogador não edita diretamente nível, espécie, estilo, profissão, antecedente, atributos, proficiências, especializações, bônus estruturais, PV máximo, PP máximo, CR, iniciativa, Dado de Vida, graduação profissional ou recompensa.
+- **Estado**: recursos operacionais. O jogador pode aplicar dano/cura em PV atual, gastar/recuperar PP atual e gerenciar condições do próprio personagem.
+- **Conteúdo**: dados de manutenção narrativa e operacional. O jogador pode manter nome, retrato, idade, altura, peso, aparência, personalidade, sonho, história/notas, técnicas manuais, armas manuais e características manuais.
+
+### Recursos
+
+PV atual é alterado por ações HTMX na ficha:
+
+- Dano: `current_hp = max(0, current_hp - amount)`.
+- Cura: `current_hp = min(max_hp, current_hp + amount)`.
+
+PP atual é alterado por ações HTMX na ficha:
+
+- Gastar: `current_power_points = max(0, current_power_points - amount)`.
+- Recuperar: `current_power_points = min(max_power_points, current_power_points + amount)`.
+
+As alterações usam services transacionais com `transaction.atomic()` e `select_for_update()` para evitar perda de atualização concorrente. O navegador envia apenas a quantidade; o backend recalcula o valor final.
+
+### Técnicas, armas e características
+
+`CharacterTechnique`, `CharacterWeapon` e `CharacterFeature` foram preservados. Não foi criada ficha paralela nem modelo equivalente.
+
+Cada registro possui origem:
+
+- `system`: regra sistêmica.
+- `character_creation`: concedido pela criação assistida.
+- `level_up`: concedido por passagem de nível.
+- `master`: criado pelo mestre.
+- `player`: criado pelo jogador.
+- `legacy`: registro antigo cuja origem não pode ser inferida com segurança.
+
+Registros `player` podem ser criados, editados, duplicados ou desativados pelo dono do personagem. Registros de regra, criação, passagem de nível, mestre e legado são protegidos para o jogador. Registros legados foram mantidos como `legacy`, sem reclassificação silenciosa.
+
+Armas manuais não permitem edição de `is_proficient`; proficiência continua estrutural. Técnicas continuam usando `CharacterTechnique.clean()` para validar consistência de categoria/tipo, PP não negativo e arma requerida quando aplicável. Modificadores exibidos continuam derivados do atributo atual do personagem.
+
+### Condições
+
+`CharacterCondition` permanece como o modelo de condições. O jogador pode adicionar e remover condições ativas do próprio personagem. Esta entrega não implementa consequências mecânicas automáticas para condições.
+
+### Auditoria
+
+Foi criado `CharacterChangeLog` para auditoria leve. São registrados usuário, personagem, ação, tipo de objeto, descrição, valores anteriores e novos quando aplicável. O objetivo é rastrear alterações relevantes, não criar aprovação do mestre.
+
+O dashboard do mestre exibe um card compacto de alterações recentes, limitado aos registros mais novos. Não há notificações nem fila de aprovação.
+
+### Permissões
+
+Todas as ações do jogador buscam o personagem por campanha e usuário logado. Não há lookup por ID de personagem vindo do POST. Outro jogador não acessa nem altera recursos, técnicas, armas, características ou condições.
+
+O mestre mantém os fluxos administrativos existentes para personagens da própria campanha. Mestre de outra campanha permanece bloqueado.
+
+### HTMX e interface
+
+A ficha usa fragments HTMX para:
+
+- PV/PP;
+- formulário de dano/cura/gasto/recuperação;
+- lista e formulário de técnicas;
+- lista e formulário de armas;
+- grupos de características;
+- lista e formulário de condições.
+
+A identidade visual da ficha foi preservada com botões compactos, badges de “Regra” e ações próximas ao conteúdo editável.
+
+### Testes
+
+Foram adicionados testes em `characters/tests/test_player_campaign_flow.py` cobrindo:
+
+- jogador altera PV atual com limites sem alterar PV máximo;
+- jogador altera PP atual com limites sem alterar PP máximo;
+- outro jogador não altera estado;
+- criação, edição, duplicação e remoção de técnica manual;
+- bloqueio de remoção de técnica protegida;
+- criação e remoção de arma manual sem concessão de proficiência;
+- criação e remoção de característica manual;
+- bloqueio de característica protegida;
+- criação e remoção de condição;
+- manutenção automática de bônus de perícia e proteção de campos estruturais no form narrativo.

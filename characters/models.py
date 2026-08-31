@@ -14,6 +14,14 @@ CANONICAL_ATTRIBUTES=(
     ('presence','Presença'),
 )
 RULESET_PLAYER_BOOK_1_5_7='player-book-1.5.7'
+class CharacterRecordSource(models.TextChoices):
+    SYSTEM='system','Sistema'
+    CHARACTER_CREATION='character_creation','Criação'
+    LEVEL_UP='level_up','Passagem de nível'
+    MASTER='master','Mestre'
+    PLAYER='player','Jogador'
+    LEGACY='legacy','Legado'
+
 DREAM_PATH_CHOICES=(
     ('knowledge_companionship','Conhecimento pelo Companheirismo (C/C)'),
     ('freedom_companionship','Liberdade pelo Companheirismo (L/C)'),
@@ -107,6 +115,8 @@ class CharacterWeapon(models.Model):
     is_proficient=models.BooleanField('proficiente',default=False)
     is_available=models.BooleanField('disponível',default=True,db_index=True)
     sort_order=models.PositiveSmallIntegerField(default=0)
+    source_type=models.CharField('origem',max_length=30,choices=CharacterRecordSource.choices,default=CharacterRecordSource.LEGACY,db_index=True)
+    created_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='created_character_weapons')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     class Meta:
@@ -115,6 +125,8 @@ class CharacterWeapon(models.Model):
     def __str__(self): return self.name
     @property
     def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
+    @property
+    def is_player_editable(self): return self.source_type==CharacterRecordSource.PLAYER
 
 class CharacterTechnique(models.Model):
     ACTIONS=[('action','Ação'),('bonus_action','Ação bônus'),('reaction','Reação'),('passive','Passiva'),('other','Outro')]
@@ -145,6 +157,8 @@ class CharacterTechnique(models.Model):
     is_available=models.BooleanField(default=True)
     is_featured=models.BooleanField(default=False)
     sort_order=models.PositiveSmallIntegerField(default=0)
+    source_type=models.CharField('origem',max_length=30,choices=CharacterRecordSource.choices,default=CharacterRecordSource.LEGACY,db_index=True)
+    created_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='created_character_techniques')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -162,6 +176,8 @@ class CharacterTechnique(models.Model):
     def effective_damage_die(self): return self.damage_die or self.damage_text
     @property
     def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
+    @property
+    def is_player_editable(self): return self.source_type==CharacterRecordSource.PLAYER
 class CharacterFeature(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='features',db_index=True)
     name=models.CharField(max_length=150)
@@ -169,13 +185,32 @@ class CharacterFeature(models.Model):
     source=models.CharField(max_length=100,blank=True)
     is_available=models.BooleanField(default=True)
     sort_order=models.PositiveSmallIntegerField(default=0)
+    source_type=models.CharField('origem',max_length=30,choices=CharacterRecordSource.choices,default=CharacterRecordSource.LEGACY,db_index=True)
+    created_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='created_character_features')
     
     class Meta: ordering=('sort_order','name')
     def __str__(self): return f"{self.character.name} - {self.name}"
+    @property
+    def is_player_editable(self): return self.source_type==CharacterRecordSource.PLAYER
 
 class CharacterCondition(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='conditions',db_index=True); name=models.CharField(max_length=100); description=models.TextField(blank=True); is_active=models.BooleanField(default=True,db_index=True); created_at=models.DateTimeField(auto_now_add=True); updated_at=models.DateTimeField(auto_now=True)
     class Meta: ordering=('-created_at',)
+
+class CharacterChangeLog(models.Model):
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='change_logs',db_index=True)
+    user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='character_change_logs')
+    action=models.CharField(max_length=60,db_index=True)
+    object_type=models.CharField(max_length=60,db_index=True)
+    object_id=models.CharField(max_length=80,blank=True)
+    description=models.CharField(max_length=255)
+    old_value=models.JSONField(default=dict,blank=True)
+    new_value=models.JSONField(default=dict,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True,db_index=True)
+    class Meta:
+        ordering=('-created_at',)
+        indexes=[models.Index(fields=('character','-created_at')),models.Index(fields=('action','object_type'))]
+    def __str__(self): return f"{self.character} · {self.description}"
 
 class RuleCatalogMixin(models.Model):
     ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)

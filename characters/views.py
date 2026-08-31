@@ -26,7 +26,11 @@ from .forms import (
     ConditionForm,
     LevelUpAuthorizationForm,
     LevelUpDraftForm,
+    PlayerFeatureForm,
+    PlayerTechniqueForm,
+    PlayerWeaponForm,
     PlayerCharacterSheetForm,
+    PowerPointActionForm,
     ResourceForm,
 )
 from .level_up_service import (
@@ -41,7 +45,25 @@ from .level_up_service import (
 )
 from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
 from .print_sheet_service import print_sheet_context
-from .services import add_character_condition, damage_character, deactivate_character_condition, heal_character, update_character_resources
+from .services import (
+    add_character_condition,
+    create_player_feature,
+    create_player_technique,
+    create_player_weapon,
+    damage_character,
+    deactivate_character_condition,
+    delete_player_feature,
+    delete_player_technique,
+    delete_player_weapon,
+    duplicate_player_technique,
+    heal_character,
+    recover_power_points,
+    spend_power_points,
+    update_character_resources,
+    update_player_feature,
+    update_player_technique,
+    update_player_weapon,
+)
 
 def rich_queryset():
     return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('weapons',queryset=CharacterWeapon.objects.filter(is_available=True).order_by('sort_order','name')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)),Prefetch('level_up_authorizations',queryset=CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by('-created_at'),to_attr='active_level_up_authorizations'),Prefetch('level_up_history',queryset=CharacterLevelUpHistory.objects.order_by('-created_at'),to_attr='recent_level_up_history'), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
@@ -124,6 +146,7 @@ class CharacterSheetView(LoginRequiredMixin,TemplateView):
         c['sheet_form']=kw.get('sheet_form') or PlayerCharacterSheetForm(instance=character)
         c['level_up_authorization']=next(iter(getattr(character,'active_level_up_authorizations',[])),None)
         c['last_level_up']=next(iter(getattr(character,'recent_level_up_history',[])),None)
+        c['recent_changes']=list(character.change_logs.select_related('user')[:8]) if hasattr(character,'change_logs') else []
         return c
     def post(self,request,*args,**kwargs):
         character=own_character(request,self.kwargs.get('slug'))
@@ -133,6 +156,164 @@ class CharacterSheetView(LoginRequiredMixin,TemplateView):
             messages.success(request,'Ficha narrativa atualizada.')
             return redirect('characters:sheet',slug=character.campaign.slug)
         return self.render_to_response(self.get_context_data(sheet_form=form,character=character),status=422)
+
+def player_sheet_fragment_context(character):
+    positive_features,limitation_features=split_character_features(character)
+    return {'character':character,'positive_features':positive_features,'limitation_features':limitation_features,'can_edit_sheet':True,'carrying_capacity':character.strength*10}
+
+class PlayerHpActionView(PlayerRequiredMixin,View):
+    action='damage'
+    def get(self,request,slug):
+        character=own_character(request,slug)
+        title='Causar dano' if self.action=='damage' else 'Curar'
+        return render(request,'characters/partials/player_resource_action_form.html',{'form':CharacterHpActionForm(),'character':character,'resource':'hp','action':self.action,'title':title})
+    def post(self,request,slug):
+        character=own_character(request,slug); form=CharacterHpActionForm(request.POST)
+        if form.is_valid():
+            try:
+                character=(damage_character if self.action=='damage' else heal_character)(actor=request.user,character=character,amount=form.cleaned_data['amount'])
+            except ValidationError as exc:
+                form.add_error('amount',exc)
+        if form.errors:
+            title='Causar dano' if self.action=='damage' else 'Curar'
+            return htmx_modal_validation_response(render(request,'characters/partials/player_resource_action_form.html',{'form':form,'character':character,'resource':'hp','action':self.action,'title':title},status=422))
+        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug)}))
+
+class PlayerPowerPointActionView(PlayerRequiredMixin,View):
+    action='spend'
+    def get(self,request,slug):
+        character=own_character(request,slug)
+        title='Gastar PP' if self.action=='spend' else 'Recuperar PP'
+        return render(request,'characters/partials/player_resource_action_form.html',{'form':PowerPointActionForm(),'character':character,'resource':'pp','action':self.action,'title':title})
+    def post(self,request,slug):
+        character=own_character(request,slug); form=PowerPointActionForm(request.POST)
+        if form.is_valid():
+            try:
+                character=(spend_power_points if self.action=='spend' else recover_power_points)(actor=request.user,character=character,amount=form.cleaned_data['amount'])
+            except ValidationError as exc:
+                form.add_error('amount',exc)
+        if form.errors:
+            title='Gastar PP' if self.action=='spend' else 'Recuperar PP'
+            return htmx_modal_validation_response(render(request,'characters/partials/player_resource_action_form.html',{'form':form,'character':character,'resource':'pp','action':self.action,'title':title},status=422))
+        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug)}))
+
+class PlayerTechniqueManageView(PlayerRequiredMixin,View):
+    def _technique(self,request,slug,technique_pk):
+        return get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=own_character(request,slug))
+    def get(self,request,slug,technique_pk=None):
+        character=own_character(request,slug)
+        technique=self._technique(request,slug,technique_pk) if technique_pk else None
+        if technique and not technique.is_player_editable: raise PermissionDenied
+        return render(request,'characters/partials/player_technique_form.html',{'form':PlayerTechniqueForm(instance=technique),'character':character,'technique':technique})
+    def post(self,request,slug,technique_pk=None):
+        character=own_character(request,slug)
+        technique=self._technique(request,slug,technique_pk) if technique_pk else None
+        if technique and not technique.is_player_editable: raise PermissionDenied
+        form=PlayerTechniqueForm(request.POST,instance=technique)
+        if form.is_valid():
+            try:
+                if technique:
+                    update_player_technique(actor=request.user,technique=technique,**form.cleaned_data)
+                else:
+                    create_player_technique(actor=request.user,character=character,**form.cleaned_data)
+            except (ValidationError,PermissionDenied) as exc:
+                form.add_error(None,exc)
+        if form.errors:
+            return htmx_modal_validation_response(render(request,'characters/partials/player_technique_form.html',{'form':form,'character':character,'technique':technique},status=422))
+        return htmx_close_modal(render(request,'characters/partials/player_technique_list.html',player_sheet_fragment_context(own_character(request,slug))))
+
+class PlayerTechniqueDuplicateView(PlayerRequiredMixin,View):
+    def post(self,request,slug,technique_pk):
+        character=own_character(request,slug)
+        technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
+        duplicate_player_technique(actor=request.user,technique=technique)
+        return render(request,'characters/partials/player_technique_list.html',player_sheet_fragment_context(own_character(request,slug)))
+
+class PlayerTechniqueDeleteView(PlayerRequiredMixin,View):
+    def post(self,request,slug,technique_pk):
+        character=own_character(request,slug)
+        technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
+        delete_player_technique(actor=request.user,technique=technique)
+        return render(request,'characters/partials/player_technique_list.html',player_sheet_fragment_context(own_character(request,slug)))
+
+class PlayerWeaponManageView(PlayerRequiredMixin,View):
+    def _weapon(self,request,slug,weapon_pk):
+        return get_object_or_404(CharacterWeapon.objects.select_related('character__campaign','character__user'),pk=weapon_pk,character=own_character(request,slug))
+    def get(self,request,slug,weapon_pk=None):
+        character=own_character(request,slug)
+        weapon=self._weapon(request,slug,weapon_pk) if weapon_pk else None
+        if weapon and not weapon.is_player_editable: raise PermissionDenied
+        return render(request,'characters/partials/player_weapon_form.html',{'form':PlayerWeaponForm(instance=weapon),'character':character,'weapon':weapon})
+    def post(self,request,slug,weapon_pk=None):
+        character=own_character(request,slug)
+        weapon=self._weapon(request,slug,weapon_pk) if weapon_pk else None
+        if weapon and not weapon.is_player_editable: raise PermissionDenied
+        form=PlayerWeaponForm(request.POST,instance=weapon)
+        if form.is_valid():
+            try:
+                if weapon:
+                    update_player_weapon(actor=request.user,weapon=weapon,**form.cleaned_data)
+                else:
+                    create_player_weapon(actor=request.user,character=character,**form.cleaned_data)
+            except (ValidationError,PermissionDenied) as exc:
+                form.add_error(None,exc)
+        if form.errors:
+            return htmx_modal_validation_response(render(request,'characters/partials/player_weapon_form.html',{'form':form,'character':character,'weapon':weapon},status=422))
+        return htmx_close_modal(render(request,'characters/partials/player_weapon_list.html',player_sheet_fragment_context(own_character(request,slug))))
+
+class PlayerWeaponDeleteView(PlayerRequiredMixin,View):
+    def post(self,request,slug,weapon_pk):
+        character=own_character(request,slug)
+        weapon=get_object_or_404(CharacterWeapon.objects.select_related('character__campaign','character__user'),pk=weapon_pk,character=character)
+        delete_player_weapon(actor=request.user,weapon=weapon)
+        return render(request,'characters/partials/player_weapon_list.html',player_sheet_fragment_context(own_character(request,slug)))
+
+class PlayerFeatureManageView(PlayerRequiredMixin,View):
+    def _feature(self,request,slug,feature_pk):
+        return get_object_or_404(CharacterFeature.objects.select_related('character__campaign','character__user'),pk=feature_pk,character=own_character(request,slug))
+    def get(self,request,slug,feature_pk=None):
+        character=own_character(request,slug)
+        feature=self._feature(request,slug,feature_pk) if feature_pk else None
+        if feature and not feature.is_player_editable: raise PermissionDenied
+        return render(request,'characters/partials/player_feature_form.html',{'form':PlayerFeatureForm(instance=feature),'character':character,'feature':feature})
+    def post(self,request,slug,feature_pk=None):
+        character=own_character(request,slug)
+        feature=self._feature(request,slug,feature_pk) if feature_pk else None
+        if feature and not feature.is_player_editable: raise PermissionDenied
+        form=PlayerFeatureForm(request.POST,instance=feature)
+        if form.is_valid():
+            try:
+                if feature:
+                    update_player_feature(actor=request.user,feature=feature,**form.cleaned_data)
+                else:
+                    create_player_feature(actor=request.user,character=character,**form.cleaned_data)
+            except (ValidationError,PermissionDenied) as exc:
+                form.add_error(None,exc)
+        if form.errors:
+            return htmx_modal_validation_response(render(request,'characters/partials/player_feature_form.html',{'form':form,'character':character,'feature':feature},status=422))
+        return htmx_close_modal(render(request,'characters/partials/player_feature_sections.html',player_sheet_fragment_context(own_character(request,slug))))
+
+class PlayerFeatureDeleteView(PlayerRequiredMixin,View):
+    def post(self,request,slug,feature_pk):
+        character=own_character(request,slug)
+        feature=get_object_or_404(CharacterFeature.objects.select_related('character__campaign','character__user'),pk=feature_pk,character=character)
+        delete_player_feature(actor=request.user,feature=feature)
+        return render(request,'characters/partials/player_feature_sections.html',player_sheet_fragment_context(own_character(request,slug)))
+
+class PlayerConditionManageView(PlayerRequiredMixin,View):
+    def get(self,request,slug):
+        return render(request,'characters/partials/player_condition_form.html',{'form':ConditionForm(),'character':own_character(request,slug)})
+    def post(self,request,slug):
+        character=own_character(request,slug); form=ConditionForm(request.POST)
+        if form.is_valid(): add_character_condition(actor=request.user,character=character,**form.cleaned_data); return htmx_close_modal(render(request,'characters/partials/player_condition_list.html',player_sheet_fragment_context(own_character(request,slug))))
+        return htmx_modal_validation_response(render(request,'characters/partials/player_condition_form.html',{'form':form,'character':character},status=422))
+
+class PlayerConditionDeleteView(PlayerRequiredMixin,View):
+    def post(self,request,slug,condition_pk):
+        character=own_character(request,slug)
+        condition=get_object_or_404(CharacterCondition.objects.select_related('character__campaign','character__user'),pk=condition_pk,character=character,is_active=True)
+        deactivate_character_condition(actor=request.user,condition=condition)
+        return render(request,'characters/partials/player_condition_list.html',player_sheet_fragment_context(own_character(request,slug)))
 
 class CharacterPrintView(CharacterSheetView):
     template_name='characters/print.html'

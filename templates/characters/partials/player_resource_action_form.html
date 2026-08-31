@@ -1,0 +1,19 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ title }} · {{ character.name }}</h2>
+  <button class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<form class="modal-body"
+      hx-post="{% if resource == 'hp' %}{% if action == 'damage' %}{% url 'characters:player_damage' character.campaign.slug %}{% else %}{% url 'characters:player_heal' character.campaign.slug %}{% endif %}{% else %}{% if action == 'spend' %}{% url 'characters:player_pp_spend' character.campaign.slug %}{% else %}{% url 'characters:player_pp_recover' character.campaign.slug %}{% endif %}{% endif %}"
+      hx-target="#player-resource-panel"
+      hx-swap="outerHTML">
+  {% csrf_token %}
+  <p class="text-muted mb-3">
+    {% if resource == 'hp' %}
+      PV atual: <strong>{{ character.current_hp }}/{{ character.max_hp }}</strong>
+    {% else %}
+      PP atual: <strong>{{ character.current_power_points }}/{{ character.max_power_points }}</strong>
+    {% endif %}
+  </p>
+  {{ form.as_p }}
+  <button class="btn {% if action == 'damage' or action == 'spend' %}btn-danger{% else %}btn-success{% endif %}" type="submit">Aplicar</button>
+</form>

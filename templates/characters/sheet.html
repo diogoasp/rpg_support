@@ -164,59 +164,7 @@
                 </tbody>
               </table>
 
-              <div class="op-survival-box">
-                <p class="op-box-title">Status de Sobrevivência</p>
-                <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12 21s-7.5-4.6-10-9.1C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.5C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.9 19.5 16.4 12 21 12 21z" />
-                  </svg>
-                  <span class="op-surv-label">PV:</span><span class="op-surv-value">{{ character.current_hp }} / {{ character.max_hp }}</span><span class="op-surv-note">Pontos de vida atuais e máximos.</span>
-                </div>
-                <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M13 2L3 14h7l-1 8 11-14h-8l1-6z" />
-                  </svg>
-                  <span class="op-surv-label">PP:</span><span class="op-surv-value">{{ character.current_power_points }} / {{ character.max_power_points }}</span><span class="op-surv-note">Pontos de poder disponíveis.</span>
-                </div>
-                <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z" />
-                  </svg>
-                  <span class="op-surv-label">CR / Defesa:</span><span class="op-surv-value">{{ character.armor_class }}</span><span class="op-surv-note">Classe de resistência atual.</span>
-                </div>
-                <div class="op-survival-row">
-                  <svg class="op-surv-icon" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M4 18l5-9 4 6 3-4 4 7H4z" />
-                  </svg>
-                  <span class="op-surv-label">Deslocamento:</span><span class="op-surv-value">{{ character.movement }} m</span><span class="op-surv-note">Carga: {{ carrying_capacity }} unidades.</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="op-block">
-            <h2 class="op-block-title"><span class="op-chapter-num">3</span> Condições e Limitações</h2>
-            <div class="op-trait-column op-trait-column-bad op-trait-column-full">
-              <p class="op-trait-column-title">Defeitos, limitações e dificuldades</p>
-              <div class="op-trait-list">
-                {% for feature in limitation_features %}
-                  <div class="op-trait-card">
-                    <div class="op-trait-icon">✕</div>
-                    <div>
-                      <p class="op-trait-name">{{ feature.name }}</p>
-                      <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
-                    </div>
-                  </div>
-                {% empty %}
-                  <div class="op-trait-card">
-                    <div class="op-trait-icon">✓</div>
-                    <div>
-                      <p class="op-trait-name">Nenhuma limitação registrada</p>
-                      <p class="op-trait-desc">Defeitos, limitações e dificuldades cadastrados para o personagem aparecerão aqui.</p>
-                    </div>
-                  </div>
-                {% endfor %}
-              </div>
+              {% include 'characters/partials/player_resource_panel.html' %}
             </div>
           </section>
 
@@ -238,77 +186,12 @@
             <p class="op-subsection-title">
               <span class="op-chapter-num-sub">5.2</span> Técnicas
             </p>
-            <div class="op-combat-cards-row">
-              {% for technique in character.techniques.all %}
-                <div class="op-combat-card {% cycle 'op-combat-card-red' 'op-combat-card-teal' %}">
-                  <p class="op-combat-card-title">
-                    {{ technique.get_action_type_display }}: <span>{{ technique.name }}</span>{% if not technique.is_available %} · Bloqueada{% endif %}
-                  </p>
-                  {% if technique.power_points_cost %}
-                    <p class="op-field-line">
-                      <span>Custo:</span> <span>{{ technique.power_points_cost }} PP</span>
-                    </p>
-                  {% endif %}
-                  {% if technique.range_text %}
-                    <p class="op-field-line">
-                      <span>Alcance:</span> <span>{{ technique.range_text }}</span>
-                    </p>
-                  {% endif %}
-                  <p class="op-field-desc">
-                    <span>Efeito:</span> <span>{{ technique.description }} {{ technique.damage_text }}</span>
-                  </p>
-                </div>
-              {% empty %}
-                <div class="op-combat-card op-combat-card-red">
-                  <p class="op-combat-card-title">Nenhuma técnica cadastrada</p>
-                  <p class="op-field-desc">As técnicas do personagem aparecerão nesta área.</p>
-                </div>
-              {% endfor %}
-            </div>
-
-            <div class="op-conditions-strip">
-              <p class="op-conditions-title">Condições Rápidas</p>
-              {% for condition in character.conditions.all %}
-                <div class="op-condition-chip">
-                  <span>⛓</span><span><strong>{{ condition.name }}:</strong> {{ condition.description|default:'Condição ativa.' }}</span>
-                </div>
-              {% empty %}
-                <div class="op-condition-chip">
-                  <span>✓</span><span><strong>Sem condições:</strong> nenhuma condição ativa no momento.</span>
-                </div>
-              {% endfor %}
-            </div>
+            {% include 'characters/partials/player_technique_list.html' %}
+            {% include 'characters/partials/player_condition_list.html' %}
           </section>
         </div>
 
         <div class="op-col">
-          <section class="op-block">
-            <h2 class="op-block-title"><span class="op-chapter-num">6</span> Traços e Vantagens</h2>
-            <div class="op-racial-grid">
-              {% for feature in positive_features %}
-                <div class="op-racial-card">
-                  <div class="op-racial-icon">★</div>
-                  <div>
-                    <p class="op-racial-name">{{ feature.name }}</p>
-                    <p class="op-racial-desc">
-                      {{ feature.source }}{% if feature.description %}
-                        : {{ feature.description }}
-                      {% endif %}
-                    </p>
-                  </div>
-                </div>
-              {% empty %}
-                <div class="op-racial-card">
-                  <div class="op-racial-icon">★</div>
-                  <div>
-                    <p class="op-racial-name">Sem traços registrados</p>
-                    <p class="op-racial-desc">Traços de espécie, antecedente, estilo e vantagens aparecerão aqui quando cadastrados.</p>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </section>
-
           <section class="op-block">
             <h2 class="op-block-title"><span class="op-chapter-num">4</span> Perícias</h2>
             <table class="op-skill-table">
@@ -347,6 +230,8 @@
 
           <section class="op-block">
             <h2 class="op-block-title"><span class="op-chapter-num">7</span> Inventário e Riquezas</h2>
+            {% include 'characters/partials/player_weapon_list.html' %}
+
             <div class="op-weapon-box">
               <p class="op-box-title">Item em Destaque</p>
               <div class="op-weapon-content">
@@ -431,6 +316,8 @@
         </div>
       </div>
 
+      {% include 'characters/partials/player_feature_sections.html' %}
+
       <section class="op-block">
         <h2 class="op-block-title"><span class="op-chapter-num">8</span> História e Sonho</h2>
         <div class="op-history-text">
@@ -479,6 +366,13 @@
               {{ sheet_form.portrait }}
               {% if sheet_form.portrait.errors %}
                 <small class="op-form-errors">{{ sheet_form.portrait.errors }}</small>
+              {% endif %}
+            </label>
+            <label class="op-form-field">
+              <span>{{ sheet_form.name.label }}</span>
+              {{ sheet_form.name }}
+              {% if sheet_form.name.errors %}
+                <small class="op-form-errors">{{ sheet_form.name.errors }}</small>
               {% endif %}
             </label>
             <label class="op-form-field">

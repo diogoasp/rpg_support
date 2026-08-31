@@ -1,0 +1,23 @@
+<div id="player-weapon-list" class="op-weapon-box">
+  <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+    <p class="op-box-title mb-0">Armas da ficha</p>
+    {% if can_edit_sheet %}<button class="op-mini-action" hx-get="{% url 'characters:player_weapon_create' character.campaign.slug %}" hx-target="#modal-content">Nova arma</button>{% endif %}
+  </div>
+  <div class="op-weapon-list">
+    {% for weapon in character.weapons.all %}
+      <div class="op-list-card">
+        <strong>{{ weapon.name }}</strong>{% if weapon.source_type != 'player' %}<span class="op-rule-badge">Regra</span>{% endif %}
+        <span>{{ weapon.weapon_type }} · {{ weapon.range_text|default:'alcance não definido' }} · {{ weapon.damage_die|default:'dado não definido' }}</span>
+        <span>{{ weapon.get_attribute_modifier_display }} {{ weapon.attribute_modifier_value|stringformat:'+d' }} · Proficiência: {% if weapon.is_proficient %}sim{% else %}não{% endif %}</span>
+        {% if can_edit_sheet and weapon.is_player_editable %}
+          <span class="op-card-actions">
+            <button class="op-mini-action" hx-get="{% url 'characters:player_weapon_update' character.campaign.slug weapon.pk %}" hx-target="#modal-content">Editar</button>
+            <button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_weapon_delete' character.campaign.slug weapon.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-weapon-list" hx-swap="outerHTML" hx-confirm="Remover esta arma da ficha?">Remover</button>
+          </span>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="op-field-desc">Nenhuma arma operacional cadastrada.</p>
+    {% endfor %}
+  </div>
+</div>

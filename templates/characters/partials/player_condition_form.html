@@ -1,0 +1,12 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">Adicionar condição</h2>
+  <button class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<form class="modal-body"
+      hx-post="{% url 'characters:player_condition_add' character.campaign.slug %}"
+      hx-target="#player-condition-list"
+      hx-swap="outerHTML">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary" type="submit">Adicionar</button>
+</form>

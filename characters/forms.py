@@ -1,17 +1,28 @@
 from django import forms
 from .character_calculation_service import ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, POINT_DISTRIBUTION_MAX, POINT_DISTRIBUTION_MIN, POINT_DISTRIBUTION_TOTAL, remaining_attribute_points
 from .creation_catalog_service import allowed_background_skills, allowed_profession_skills, allowed_style_skills
-from .models import Background, BasicAbility, CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CombatStyle, CombatStyleTechniqueOption, Profession, Skill, Species, SpeciesVariant, ZoanAncestryTrait
+from .models import Background, BasicAbility, CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterTechnique, CharacterWeapon, CombatStyle, CombatStyleTechniqueOption, Profession, Skill, Species, SpeciesVariant, ZoanAncestryTrait
 
 class CharacterForm(forms.ModelForm):
     class Meta:
         model=Character; exclude=('campaign','user','created_at','updated_at')
 class PlayerCharacterSheetForm(forms.ModelForm):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.fields["name"].required=False
+    def clean_name(self):
+        name=(self.cleaned_data.get("name") or "").strip()
+        if name:
+            return name
+        if self.instance and self.instance.pk:
+            return self.instance.name
+        raise forms.ValidationError("Informe o nome.")
     class Meta:
         model=Character
-        fields=("portrait","age","height","weight","dream_path","appearance","personality","dream","notes")
-        labels={"portrait":"Retrato/ilustração","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
+        fields=("name","portrait","age","height","weight","dream_path","appearance","personality","dream","notes")
+        labels={"name":"Nome","portrait":"Retrato/ilustração","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
         widgets={
+            "name":forms.TextInput(attrs={"autocomplete":"off"}),
             "appearance":forms.Textarea(attrs={"rows":4}),
             "personality":forms.Textarea(attrs={"rows":4}),
             "dream":forms.Textarea(attrs={"rows":4}),
@@ -21,8 +32,30 @@ class ResourceForm(forms.Form):
     value=forms.IntegerField(min_value=0,label='Novo valor')
 class CharacterHpActionForm(forms.Form):
     amount=forms.IntegerField(min_value=1,label='Quantidade')
+class PowerPointActionForm(forms.Form):
+    amount=forms.IntegerField(min_value=1,label='Quantidade')
 class ConditionForm(forms.ModelForm):
     class Meta: model=CharacterCondition; fields=('name','description')
+
+class PlayerTechniqueForm(forms.ModelForm):
+    class Meta:
+        model=CharacterTechnique
+        fields=("name","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
+        labels={"name":"Nome","description":"Descrição","action_type":"Ação","range_text":"Alcance","damage_text":"Texto de dano/cura","damage_die":"Dado de dano/cura","attribute_modifier":"Atributo usado","required_weapon_type":"Tipo de arma requerida","power_points_cost":"PP","category":"Categoria","technique_type":"Tipo","is_available":"Disponível","is_featured":"Destaque","sort_order":"Ordem"}
+        widgets={"description":forms.Textarea(attrs={"rows":3}),"damage_text":forms.TextInput(attrs={"placeholder":"Ex.: 2d8 de dano cortante"})}
+
+class PlayerWeaponForm(forms.ModelForm):
+    class Meta:
+        model=CharacterWeapon
+        fields=("name","range_text","damage_die","attribute_modifier","weapon_type","is_available","sort_order")
+        labels={"name":"Nome","range_text":"Alcance","damage_die":"Dado de dano","attribute_modifier":"Atributo usado","weapon_type":"Tipo","is_available":"Disponível","sort_order":"Ordem"}
+
+class PlayerFeatureForm(forms.ModelForm):
+    class Meta:
+        model=CharacterFeature
+        fields=("name","description","source","is_available","sort_order")
+        labels={"name":"Nome","description":"Descrição","source":"Origem visual","is_available":"Disponível","sort_order":"Ordem"}
+        widgets={"description":forms.Textarea(attrs={"rows":3}),"source":forms.TextInput(attrs={"placeholder":"Narrativa, Treinamento, Equipamento..."})}
 
 class LevelUpAuthorizationForm(forms.Form):
     master_note=forms.CharField(label="Observação do mestre",required=False,widget=forms.Textarea(attrs={"rows":3}))

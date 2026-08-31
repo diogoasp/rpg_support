@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     Background,
     Character,
+    CharacterChangeLog,
     CharacterAttribute,
     CharacterCondition,
     CharacterCreation,
@@ -150,8 +151,8 @@ class CharacterRuleExceptionAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterWeapon)
 class CharacterWeaponAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','weapon_type','range_text','damage_die','attribute_modifier','is_proficient','is_available','sort_order','updated_at')
-    list_filter=('character__campaign','weapon_type','attribute_modifier','is_proficient','is_available')
+    list_display=('name','character','campaign','weapon_type','range_text','damage_die','attribute_modifier','is_proficient','source_type','is_available','sort_order','updated_at')
+    list_filter=('character__campaign','weapon_type','attribute_modifier','is_proficient','source_type','is_available')
     search_fields=('name','character__name','character__user__username','weapon_type')
     autocomplete_fields=('character',)
     readonly_fields=('created_at','updated_at')
@@ -162,8 +163,8 @@ class CharacterWeaponAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterTechnique)
 class CharacterTechniqueAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','category','technique_type','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','is_available','is_featured','sort_order')
-    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','is_available','is_featured')
+    list_display=('name','character','campaign','category','technique_type','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','source_type','is_available','is_featured','sort_order')
+    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','source_type','is_available','is_featured')
     search_fields=('name','character__name','character__user__username','required_weapon_type','description')
     autocomplete_fields=('character',)
     readonly_fields=('created_at','updated_at')
@@ -220,12 +221,23 @@ class CharacterSkillAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterFeature)
 class CharacterFeatureAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','source','is_available','sort_order')
-    list_filter=('character__campaign','source','is_available')
+    list_display=('name','character','campaign','source','source_type','is_available','sort_order')
+    list_filter=('character__campaign','source','source_type','is_available')
     search_fields=('name','description','source','character__name','character__user__username')
     autocomplete_fields=('character',)
     list_select_related=('character','character__campaign','character__user')
     list_editable=('is_available','sort_order')
+    @admin.display(description='Campanha', ordering='character__campaign__name')
+    def campaign(self,obj): return obj.character.campaign
+
+@admin.register(CharacterChangeLog)
+class CharacterChangeLogAdmin(admin.ModelAdmin):
+    list_display=('created_at','character','campaign','user','action','object_type','description')
+    list_filter=('character__campaign','action','object_type','created_at')
+    search_fields=('character__name','character__user__username','user__username','description')
+    autocomplete_fields=('character','user')
+    readonly_fields=('character','user','action','object_type','object_id','description','old_value','new_value','created_at')
+    list_select_related=('character','character__campaign','character__user','user')
     @admin.display(description='Campanha', ordering='character__campaign__name')
     def campaign(self,obj): return obj.character.campaign
 

@@ -1,0 +1,14 @@
+<div id="player-condition-list" class="op-conditions-strip">
+  <p class="op-conditions-title">Condições Rápidas</p>
+  {% if can_edit_sheet %}<button class="op-mini-action" hx-get="{% url 'characters:player_condition_add' character.campaign.slug %}" hx-target="#modal-content">Adicionar condição</button>{% endif %}
+  {% for condition in character.conditions.all %}
+    <div class="op-condition-chip">
+      <span>⛓</span><span><strong>{{ condition.name }}:</strong> {{ condition.description|default:'Condição ativa.' }}</span>
+      {% if can_edit_sheet %}
+        <button class="op-chip-remove" aria-label="Remover {{ condition.name }}" hx-post="{% url 'characters:player_condition_remove' character.campaign.slug condition.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-condition-list" hx-swap="outerHTML" hx-confirm="Remover esta condição?">×</button>
+      {% endif %}
+    </div>
+  {% empty %}
+    <div class="op-condition-chip"><span>✓</span><span><strong>Sem condições:</strong> nenhuma condição ativa no momento.</span></div>
+  {% endfor %}
+</div>

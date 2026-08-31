@@ -495,6 +495,99 @@
   opacity: .85;
 }
 
+.op-surv-actions {
+  grid-column: 2 / span 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.op-section-actions,
+.op-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+
+.op-mini-action {
+  font-family: var(--sheet-font-title);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.42);
+  color: var(--sheet-wood-dark);
+  border: 1px solid var(--sheet-wood);
+  border-radius: 4px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.op-mini-action:hover {
+  background: var(--sheet-wood-dark);
+  color: var(--sheet-parchment-light);
+}
+
+.op-mini-danger {
+  border-color: var(--sheet-seal-red);
+  color: var(--sheet-seal-red);
+}
+
+.op-mini-success {
+  border-color: var(--sheet-seal-green);
+  color: var(--sheet-seal-green);
+}
+
+.op-rule-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--sheet-wood-dark);
+  color: var(--sheet-parchment-light);
+  font-family: var(--sheet-font-title);
+  font-size: .62rem;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.op-weapon-list {
+  display: grid;
+  gap: 8px;
+}
+
+.op-list-card {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(107,68,35,.3);
+  border-radius: 6px;
+  background: rgba(255,255,255,.35);
+  font-size: .8rem;
+  color: var(--sheet-ink-soft);
+}
+
+.op-list-card strong {
+  color: var(--sheet-wood-dark);
+  font-family: var(--sheet-font-title);
+}
+
+.op-chip-remove {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--sheet-seal-red);
+  background: rgba(124,42,34,.12);
+  color: var(--sheet-seal-red);
+  line-height: 16px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
 .op-two-col-cards,
 .op-combat-cards-row,
 .op-racial-grid {

@@ -21,6 +21,7 @@ from .models import (
     CombatStyleTechniqueOption,
     Profession,
     ProfessionProgression,
+    CharacterRecordSource,
     RULESET_PLAYER_BOOK_1_5_7,
 )
 
@@ -474,21 +475,21 @@ def complete_level_up(actor, process):
         CharacterFeature.objects.update_or_create(
             character=character,
             name=ability.name,
-            defaults={"source": f"Habilidade Básica: nível {process.to_level}", "description": ability.description, "is_available": True},
+            defaults={"source": f"Habilidade Básica: nível {process.to_level}", "description": ability.description, "is_available": True, "source_type": CharacterRecordSource.LEVEL_UP},
         )
     features_received = []
     for feature in requirements["style_level"].features.all():
         CharacterFeature.objects.update_or_create(
             character=character,
             name=feature.name,
-            defaults={"source": f"Estilo {character.combat_style}: nível {process.to_level}", "description": feature.description, "is_available": True, "sort_order": 100 + feature.sort_order},
+            defaults={"source": f"Estilo {character.combat_style}: nível {process.to_level}", "description": feature.description, "is_available": True, "sort_order": 100 + feature.sort_order, "source_type": CharacterRecordSource.LEVEL_UP},
         )
         features_received.append({"name": feature.name, "type": feature.feature_type, "effects": feature.effects})
     if progression and progression.grants_professional_feature:
         CharacterFeature.objects.update_or_create(
             character=character,
             name=progression.feature_name,
-            defaults={"source": f"Profissão: {progression.grade} {progression.subdivision}", "description": progression.feature_description, "is_available": True},
+            defaults={"source": f"Profissão: {progression.grade} {progression.subdivision}", "description": progression.feature_description, "is_available": True, "source_type": CharacterRecordSource.LEVEL_UP},
         )
 
     process.status = CharacterLevelUp.Status.COMPLETED

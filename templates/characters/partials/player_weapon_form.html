@@ -1,0 +1,13 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{% if weapon %}Editar arma{% else %}Nova arma{% endif %}</h2>
+  <button class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<form class="modal-body"
+      hx-post="{% if weapon %}{% url 'characters:player_weapon_update' character.campaign.slug weapon.pk %}{% else %}{% url 'characters:player_weapon_create' character.campaign.slug %}{% endif %}"
+      hx-target="#player-weapon-list"
+      hx-swap="outerHTML">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <p class="text-muted small">A proficiência com arma é estrutural e não pode ser alterada pelo jogador.</p>
+  <button class="btn btn-primary" type="submit">Salvar</button>
+</form>

@@ -1,0 +1,25 @@
+<section class="op-block" id="player-limitation-features">
+  <h2 class="op-block-title"><span class="op-chapter-num">3</span> Condições e Limitações</h2>
+  <div class="op-trait-column op-trait-column-bad op-trait-column-full">
+    <p class="op-trait-column-title">Defeitos, limitações e dificuldades</p>
+    <div class="op-trait-list">
+      {% for feature in limitation_features %}
+        <div class="op-trait-card">
+          <div class="op-trait-icon">✕</div>
+          <div>
+            <p class="op-trait-name">{{ feature.name }} {% if feature.source_type != 'player' %}<span class="op-rule-badge">Regra</span>{% endif %}</p>
+            <p class="op-trait-desc">{{ feature.description|default:feature.source }}</p>
+            {% if can_edit_sheet and feature.is_player_editable %}
+              <div class="op-card-actions">
+                <button class="op-mini-action" hx-get="{% url 'characters:player_feature_update' character.campaign.slug feature.pk %}" hx-target="#modal-content">Editar</button>
+                <button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_feature_delete' character.campaign.slug feature.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-feature-sections" hx-swap="outerHTML" hx-confirm="Remover esta limitação?">Remover</button>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="op-trait-card"><div class="op-trait-icon">✓</div><div><p class="op-trait-name">Nenhuma limitação registrada</p><p class="op-trait-desc">Defeitos, limitações e dificuldades cadastrados para o personagem aparecerão aqui.</p></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

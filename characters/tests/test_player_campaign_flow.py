@@ -6,8 +6,11 @@ from accounts.models import User
 from campaigns.models import Campaign
 from characters.models import (
     Character,
+    CharacterChangeLog,
+    CharacterCondition,
     CharacterCreation,
     CharacterFeature,
+    CharacterRecordSource,
     CharacterSkill,
     CharacterTechnique,
     CharacterWeapon,
@@ -472,3 +475,194 @@ class PlayerCampaignFlowTests(TestCase):
         self.client.force_login(self.outsider)
         response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
         self.assertEqual(response.status_code, 404)
+
+    def test_player_can_manage_current_hp_but_not_max_hp(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_damage", kwargs={"slug": self.c1.slug}), {"amount": 999}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 0)
+        self.assertEqual(character.max_hp, 10)
+
+        response = self.client.post(reverse("characters:player_heal", kwargs={"slug": self.c1.slug}), {"amount": 999, "max_hp": 999}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 10)
+        self.assertEqual(character.max_hp, 10)
+        self.assertTrue(CharacterChangeLog.objects.filter(character=character, action="heal", user=self.player).exists())
+
+    def test_player_can_manage_current_power_points_but_not_maximum(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 4
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_pp_spend", kwargs={"slug": self.c1.slug}), {"amount": 5, "max_power_points": 999}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 0)
+        self.assertEqual(character.max_power_points, 6)
+
+        response = self.client.post(reverse("characters:player_pp_recover", kwargs={"slug": self.c1.slug}), {"amount": 999}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 6)
+        self.assertEqual(character.max_power_points, 6)
+
+    def test_other_player_cannot_use_sheet_state_routes(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        original_hp = character.current_hp
+        self.client.force_login(self.outsider)
+
+        response = self.client.post(reverse("characters:player_damage", kwargs={"slug": self.c1.slug}), {"amount": 3}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 404)
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, original_hp)
+
+    def test_player_can_create_update_duplicate_and_remove_manual_technique(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.dexterity = 18
+        character.save(update_fields=["dexterity"])
+        self.client.force_login(self.player)
+
+        response = self.client.post(
+            reverse("characters:player_technique_create", kwargs={"slug": self.c1.slug}),
+            {
+                "name": "Golpe Perfurante",
+                "description": "Ataque customizado.",
+                "action_type": "action",
+                "range_text": "3 m",
+                "damage_text": "",
+                "damage_die": "2d8",
+                "attribute_modifier": "dexterity",
+                "required_weapon_type": "",
+                "power_points_cost": 2,
+                "category": CharacterTechnique.Category.ATTACK,
+                "technique_type": CharacterTechnique.TechniqueType.INNATE,
+                "is_available": "on",
+                "sort_order": 1,
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        technique = CharacterTechnique.objects.get(character=character, name="Golpe Perfurante")
+        self.assertEqual(technique.source_type, CharacterRecordSource.PLAYER)
+        self.assertEqual(technique.attribute_modifier_value, 4)
+        self.assertContains(response, "Destreza +4")
+
+        response = self.client.post(
+            reverse("characters:player_technique_update", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}),
+            {
+                "name": "Golpe Perfurante Revisado",
+                "description": "Ataque customizado.",
+                "action_type": "action",
+                "range_text": "3 m",
+                "damage_text": "",
+                "damage_die": "2d8",
+                "attribute_modifier": "dexterity",
+                "required_weapon_type": "",
+                "power_points_cost": 1,
+                "category": CharacterTechnique.Category.ATTACK,
+                "technique_type": CharacterTechnique.TechniqueType.INNATE,
+                "is_available": "on",
+                "sort_order": 1,
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        technique.refresh_from_db()
+        self.assertEqual(technique.name, "Golpe Perfurante Revisado")
+
+        response = self.client.post(reverse("characters:player_technique_duplicate", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(CharacterTechnique.objects.filter(character=character, name="Golpe Perfurante Revisado (cópia)", source_type=CharacterRecordSource.PLAYER).exists())
+
+        response = self.client.post(reverse("characters:player_technique_delete", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        technique.refresh_from_db()
+        self.assertFalse(technique.is_available)
+
+    def test_player_cannot_remove_system_technique(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        technique = CharacterTechnique.objects.create(character=character, name="Técnica do sistema", category=CharacterTechnique.Category.ATTACK, technique_type=CharacterTechnique.TechniqueType.INNATE, source_type=CharacterRecordSource.LEVEL_UP)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_technique_delete", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 403)
+        technique.refresh_from_db()
+        self.assertTrue(technique.is_available)
+
+    def test_player_can_manage_manual_weapon_without_granting_proficiency(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.player)
+
+        response = self.client.post(
+            reverse("characters:player_weapon_create", kwargs={"slug": self.c1.slug}),
+            {"name": "Bastão", "range_text": "1 m", "damage_die": "1d6", "attribute_modifier": "strength", "weapon_type": "Simples", "is_available": "on", "is_proficient": "on", "sort_order": 0},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        weapon = CharacterWeapon.objects.get(character=character, name="Bastão")
+        self.assertEqual(weapon.source_type, CharacterRecordSource.PLAYER)
+        self.assertFalse(weapon.is_proficient)
+
+        response = self.client.post(reverse("characters:player_weapon_delete", kwargs={"slug": self.c1.slug, "weapon_pk": weapon.pk}), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        weapon.refresh_from_db()
+        self.assertFalse(weapon.is_available)
+
+    def test_player_can_manage_manual_feature_but_not_system_feature(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        system_feature = CharacterFeature.objects.create(character=character, name="Traço de espécie", source="Espécie", source_type=CharacterRecordSource.CHARACTER_CREATION)
+        self.client.force_login(self.player)
+
+        response = self.client.post(
+            reverse("characters:player_feature_create", kwargs={"slug": self.c1.slug}),
+            {"name": "Voto pessoal", "description": "Nunca abandona aliados.", "source": "Narrativa", "is_available": "on", "sort_order": 0},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        feature = CharacterFeature.objects.get(character=character, name="Voto pessoal")
+        self.assertEqual(feature.source_type, CharacterRecordSource.PLAYER)
+
+        response = self.client.post(reverse("characters:player_feature_delete", kwargs={"slug": self.c1.slug, "feature_pk": system_feature.pk}), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 403)
+        system_feature.refresh_from_db()
+        self.assertTrue(system_feature.is_available)
+
+    def test_player_can_add_and_remove_condition(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_condition_add", kwargs={"slug": self.c1.slug}), {"name": "Sangrando", "description": "Ferimento aberto."}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        condition = CharacterCondition.objects.get(character=character, name="Sangrando")
+
+        response = self.client.post(reverse("characters:player_condition_remove", kwargs={"slug": self.c1.slug, "condition_pk": condition.pk}), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        condition.refresh_from_db()
+        self.assertFalse(condition.is_active)
+
+    def test_skill_bonus_remains_automatic_and_player_sheet_does_not_expose_proficiency(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.strength = 16
+        character.proficiency_bonus = 2
+        character.save(update_fields=["strength", "proficiency_bonus"])
+        atletismo = Skill.objects.create(name="Atletismo", slug="atletismo-auto", related_attribute="strength")
+        character_skill = CharacterSkill.objects.create(character=character, skill=atletismo, is_proficient=True, is_expert=True, custom_bonus=1)
+
+        self.assertEqual(character_skill.final_bonus, 8)
+        self.client.force_login(self.player)
+        response = self.client.post(reverse("characters:sheet", kwargs={"slug": self.c1.slug}), {"name": "Nami", "is_proficient": "", "level": 4, "max_hp": 999}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        character_skill.refresh_from_db()
+        self.assertEqual(character.level, 1)
+        self.assertEqual(character.max_hp, 10)
+        self.assertTrue(character_skill.is_proficient)

@@ -1,0 +1,25 @@
+<section class="op-block" id="player-positive-features">
+  <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+    <h2 class="op-block-title mb-0"><span class="op-chapter-num">6</span> Traços e Vantagens</h2>
+    {% if can_edit_sheet %}<button class="op-mini-action" hx-get="{% url 'characters:player_feature_create' character.campaign.slug %}" hx-target="#modal-content">Nova característica</button>{% endif %}
+  </div>
+  <div class="op-racial-grid">
+    {% for feature in positive_features %}
+      <div class="op-racial-card">
+        <div class="op-racial-icon">★</div>
+        <div>
+          <p class="op-racial-name">{{ feature.name }} {% if feature.source_type != 'player' %}<span class="op-rule-badge">Regra</span>{% endif %}</p>
+          <p class="op-racial-desc">{{ feature.source }}{% if feature.description %}: {{ feature.description }}{% endif %}</p>
+          {% if can_edit_sheet and feature.is_player_editable %}
+            <div class="op-card-actions">
+              <button class="op-mini-action" hx-get="{% url 'characters:player_feature_update' character.campaign.slug feature.pk %}" hx-target="#modal-content">Editar</button>
+              <button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_feature_delete' character.campaign.slug feature.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-feature-sections" hx-swap="outerHTML" hx-confirm="Remover esta característica?">Remover</button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="op-racial-card"><div class="op-racial-icon">★</div><div><p class="op-racial-name">Sem traços registrados</p><p class="op-racial-desc">Traços de espécie, antecedente, estilo e vantagens aparecerão aqui quando cadastrados.</p></div></div>
+    {% endfor %}
+  </div>
+</section>

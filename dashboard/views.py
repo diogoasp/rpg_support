@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
-from characters.models import Character, CharacterCreation, CharacterLevelUpAuthorization, CharacterLevelUpHistory
+from characters.models import Character, CharacterChangeLog, CharacterCreation, CharacterLevelUpAuthorization, CharacterLevelUpHistory
 from django.db.models import Prefetch, Q
 from ships.models import Ship
 from maps.models import CampaignMap
@@ -41,6 +41,7 @@ class MasterDashboardView(MasterRequiredMixin, TemplateView):
             Prefetch("audio_assets", AudioAsset.objects.filter(is_active=True, is_favorite=True).order_by("sort_order", "title")[:5], to_attr="dashboard_audio_favorites"),
             Prefetch("shops", Shop.objects.order_by("name"), to_attr="dashboard_shops"),
         )
+        context["recent_character_changes"] = CharacterChangeLog.objects.filter(character__campaign__master=self.request.user).select_related("character","user","character__campaign")[:8]
         return context
 
 
