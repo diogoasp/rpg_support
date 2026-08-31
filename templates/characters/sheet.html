@@ -17,6 +17,60 @@
     </div>
   {% endif %}
 
+  {% if can_edit_sheet %}
+    <div class="op-mobile-play-shell">
+      <header class="op-play-hero">
+        <div>
+          <p>{{ character.campaign.name }}</p>
+          <h1>{{ character.name }}</h1>
+          <span>Nv. {{ character.level }} · {{ character.combat_style|default:'Sem estilo' }}</span>
+        </div>
+        {% if character.portrait %}
+          <img src="{{ character.portrait.url }}" alt="Retrato de {{ character.name }}">
+        {% endif %}
+      </header>
+
+      <section id="jogar-recursos" class="op-play-section">
+        {% include 'characters/partials/player_resource_panel.html' %}
+        {% include 'characters/partials/player_condition_list.html' %}
+      </section>
+
+      <nav class="op-play-nav" aria-label="Navegação da ficha de jogo">
+        <a href="#jogar-recursos"><span>♥</span>Recursos</a>
+        <a href="#jogar-habilidades"><span>⚔</span>Habilidades</a>
+        <a href="#jogar-itens"><span>▣</span>Itens</a>
+        <a href="#jogar-descanso"><span>☾</span>Descanso</a>
+      </nav>
+
+      <section id="jogar-habilidades" class="op-play-section">
+        <div class="op-play-section-head">
+          <h2>Habilidades</h2>
+          <div class="op-play-filter-chips" aria-label="Filtros rápidos">
+            <span>Todas</span><span>Ataque</span><span>Suporte</span><span>0 PP</span>
+          </div>
+        </div>
+        {% include 'characters/partials/player_technique_list.html' %}
+      </section>
+
+      <section id="jogar-itens" class="op-play-section">
+        <div class="op-play-section-head">
+          <h2>Itens</h2>
+          <a href="{% url 'inventory:player' character.campaign.slug %}">Inventário</a>
+        </div>
+        {% include 'characters/partials/player_item_list.html' %}
+      </section>
+
+      <section id="jogar-descanso" class="op-play-section">
+        <div class="op-play-section-head">
+          <h2>Descanso</h2>
+        </div>
+        {% include 'characters/partials/player_rest_panel.html' %}
+      </section>
+
+      <div id="op-play-toast" class="op-play-toast"></div>
+    </div>
+  {% endif %}
+
   <div class="op-sheet-page">
     <div id="sheet" class="op-sheet">
       <svg class="op-corner op-corner-tl" viewBox="0 0 120 120">
@@ -164,7 +218,7 @@
                 </tbody>
               </table>
 
-              {% include 'characters/partials/player_resource_panel.html' %}
+              {% include 'characters/partials/player_resource_panel.html' with resource_panel_id='player-resource-panel-reference' %}
             </div>
           </section>
 
@@ -186,8 +240,8 @@
             <p class="op-subsection-title">
               <span class="op-chapter-num-sub">5.2</span> Técnicas
             </p>
-            {% include 'characters/partials/player_technique_list.html' %}
-            {% include 'characters/partials/player_condition_list.html' %}
+            {% include 'characters/partials/player_technique_list.html' with technique_list_id='player-technique-list-reference' %}
+            {% include 'characters/partials/player_condition_list.html' with condition_list_id='player-condition-list-reference' %}
           </section>
         </div>
 

@@ -1,3 +1,4 @@
+from math import ceil
 from typing import Any
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -69,6 +70,79 @@ def recover_power_points(*,actor:Any,character:Character,amount:int)->Character:
     locked.current_power_points=min(locked.max_power_points,locked.current_power_points+amount)
     validate_resource_bounds(locked); locked.save(update_fields=('current_power_points','updated_at'))
     log_character_change(character=locked,user=actor,action='recover_pp',object_type='resource',description=f'PP {old_pp} → {locked.current_power_points}',old_value={'current_power_points':old_pp},new_value={'current_power_points':locked.current_power_points})
+    return locked
+
+@transaction.atomic
+def use_player_technique(*,actor:Any,technique:CharacterTechnique)->Character:
+    ensure_owner(actor,technique.character)
+    if not technique.is_available: raise ValidationError('Técnica indisponível.')
+    locked=Character.objects.select_for_update().get(pk=technique.character_id)
+    cost=technique.power_points_cost or 0
+    if cost and locked.current_power_points < cost:
+        raise ValidationError(f'PP insuficiente. Necessário: {cost}. Disponível: {locked.current_power_points}.')
+    old_pp=locked.current_power_points
+    if cost:
+        locked.current_power_points=max(0,locked.current_power_points-cost)
+        validate_resource_bounds(locked)
+        locked.save(update_fields=('current_power_points','updated_at'))
+    log_character_change(character=locked,user=actor,action='use_technique',object_type='technique',object_id=technique.pk,description=f'{technique.name} usada · -{cost} PP',old_value={'current_power_points':old_pp},new_value={'current_power_points':locked.current_power_points})
+    return locked
+
+@transaction.atomic
+def undo_player_technique_use(*,actor:Any,technique:CharacterTechnique)->Character:
+    ensure_owner(actor,technique.character)
+    locked=Character.objects.select_for_update().get(pk=technique.character_id)
+    cost=technique.power_points_cost or 0
+    old_pp=locked.current_power_points
+    if cost:
+        locked.current_power_points=min(locked.max_power_points,locked.current_power_points+cost)
+        validate_resource_bounds(locked)
+        locked.save(update_fields=('current_power_points','updated_at'))
+    log_character_change(character=locked,user=actor,action='undo_technique',object_type='technique',object_id=technique.pk,description=f'Uso desfeito: {technique.name} · +{cost} PP',old_value={'current_power_points':old_pp},new_value={'current_power_points':locked.current_power_points})
+    return locked
+
+@transaction.atomic
+def short_rest_character(*,actor:Any,character:Character)->Character:
+    ensure_owner(actor,character)
+    locked=Character.objects.select_for_update().get(pk=character.pk)
+    old={'current_hp':locked.current_hp,'current_power_points':locked.current_power_points,'great_damage_recovery_day':locked.great_damage_recovery_day}
+    hp_gain=locked.great_damage_recovery_hp_per_rest if locked.great_damage_recovery_days else ceil(locked.max_hp/2)
+    locked.current_hp=min(locked.max_hp,locked.current_hp+hp_gain)
+    locked.current_power_points=min(locked.max_power_points,locked.current_power_points+ceil(locked.max_power_points/2))
+    if locked.great_damage_recovery_days:
+        if locked.great_damage_recovery_day >= locked.great_damage_recovery_days:
+            locked.great_damage_recovery_days=0; locked.great_damage_recovery_day=0; locked.great_damage_recovery_hp_per_rest=0
+        else:
+            locked.great_damage_recovery_day+=1
+    validate_resource_bounds(locked); locked.save()
+    log_character_change(character=locked,user=actor,action='short_rest',object_type='resource',description='Descanso curto aplicado',old_value=old,new_value={'current_hp':locked.current_hp,'current_power_points':locked.current_power_points,'great_damage_recovery_day':locked.great_damage_recovery_day})
+    return locked
+
+@transaction.atomic
+def long_rest_character(*,actor:Any,character:Character)->Character:
+    ensure_owner(actor,character)
+    locked=Character.objects.select_for_update().get(pk=character.pk)
+    old={'current_hp':locked.current_hp,'current_power_points':locked.current_power_points,'great_damage_recovery_days':locked.great_damage_recovery_days}
+    locked.current_hp=locked.max_hp
+    locked.current_power_points=locked.max_power_points
+    locked.great_damage_recovery_days=0
+    locked.great_damage_recovery_day=0
+    locked.great_damage_recovery_hp_per_rest=0
+    validate_resource_bounds(locked); locked.save()
+    log_character_change(character=locked,user=actor,action='long_rest',object_type='resource',description='Descanso longo aplicado',old_value=old,new_value={'current_hp':locked.current_hp,'current_power_points':locked.current_power_points,'great_damage_recovery_days':0})
+    return locked
+
+@transaction.atomic
+def start_great_damage_recovery(*,actor:Any,character:Character,days:int)->Character:
+    ensure_owner(actor,character)
+    if days < 1 or days > 30: raise ValidationError('Informe entre 1 e 30 dias.')
+    locked=Character.objects.select_for_update().get(pk=character.pk)
+    missing_hp=max(0,locked.max_hp-locked.current_hp)
+    locked.great_damage_recovery_days=days
+    locked.great_damage_recovery_day=1
+    locked.great_damage_recovery_hp_per_rest=ceil(missing_hp/days) if missing_hp else 0
+    locked.save(update_fields=('great_damage_recovery_days','great_damage_recovery_day','great_damage_recovery_hp_per_rest','updated_at'))
+    log_character_change(character=locked,user=actor,action='start_great_damage_recovery',object_type='resource',description=f'Recuperação de grande dano iniciada: {days} dias',new_value={'days':days,'hp_per_rest':locked.great_damage_recovery_hp_per_rest})
     return locked
 @transaction.atomic
 def add_character_condition(*,actor:Any,character:Character,**data)->CharacterCondition:

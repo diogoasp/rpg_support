@@ -512,6 +512,111 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertEqual(character.current_power_points, 6)
         self.assertEqual(character.max_power_points, 6)
 
+    def test_player_sheet_renders_mobile_first_play_surface(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        CharacterTechnique.objects.create(character=character, name="Corte Rápido", power_points_cost=2, is_featured=True)
+        InventoryItem.objects.create(character=character, name="Ração", quantity=2, is_visible=True, is_active=True)
+        self.client.force_login(self.player)
+
+        response = self.client.get(reverse("characters:sheet", kwargs={"slug": self.c1.slug}))
+
+        self.assertContains(response, 'class="op-mobile-play-shell"')
+        self.assertContains(response, "Recursos")
+        self.assertContains(response, "Habilidades")
+        self.assertContains(response, "Itens")
+        self.assertContains(response, "Descanso")
+        self.assertContains(response, "- Dano")
+        self.assertContains(response, "+ Recuperar")
+        self.assertContains(response, "Favoritas")
+
+    def test_player_can_use_technique_and_undo_power_point_spend(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 4
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Corte Ascendente", power_points_cost=2)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 2)
+        self.assertContains(response, "Corte Ascendente usado")
+        self.assertContains(response, "Desfazer")
+
+        response = self.client.post(reverse("characters:player_technique_undo", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 4)
+
+    def test_player_cannot_use_technique_without_enough_power_points(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 1
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Explosão", power_points_cost=2)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 1)
+        self.assertContains(response, "PP insuficiente")
+
+    def test_player_can_use_consumable_item(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        item = InventoryItem.objects.create(character=character, name="Poção", quantity=2, is_visible=True, is_active=True)
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("inventory:use", kwargs={"pk": item.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        item.refresh_from_db()
+        self.assertEqual(item.quantity, 1)
+        self.assertContains(response, "Item usado: Poção")
+
+    def test_player_rest_actions_update_current_resources(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_hp = 20
+        character.current_hp = 3
+        character.max_power_points = 6
+        character.current_power_points = 1
+        character.save(update_fields=["max_hp", "current_hp", "max_power_points", "current_power_points"])
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_short_rest", kwargs={"slug": self.c1.slug}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 13)
+        self.assertEqual(character.current_power_points, 4)
+
+        response = self.client.post(reverse("characters:player_long_rest", kwargs={"slug": self.c1.slug}), HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_hp, 20)
+        self.assertEqual(character.current_power_points, 6)
+
+    def test_player_can_start_great_damage_recovery(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_hp = 30
+        character.current_hp = 12
+        character.save(update_fields=["max_hp", "current_hp"])
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_great_damage_recovery", kwargs={"slug": self.c1.slug}), {"days": 3}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.great_damage_recovery_days, 3)
+        self.assertEqual(character.great_damage_recovery_day, 1)
+        self.assertEqual(character.great_damage_recovery_hp_per_rest, 6)
+        self.assertContains(response, "Dia 1 de 3")
+
     def test_other_player_cannot_use_sheet_state_routes(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         original_hp = character.current_hp

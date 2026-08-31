@@ -1976,7 +1976,7 @@ Cobertura adicionada:
 
 ### Ambiguidades e decisões
 
-- O livro permite rolagem de PV nos níveis seguintes, mas esta entrega usa somente método fixo por requisito.
+- O wizard de passagem de nível aceita média fixa ou rolagem física informada pelo jogador; o sistema não rola dados automaticamente.
 - A criação atual ainda calcula PP inicial por regra anterior; a passagem de nível usa `level * 2` sem alterar criação fora do escopo.
 - Técnicas personalizadas previstas pelo livro dependem de aprovação do mestre; o fluxo inicial cadastra e exige as técnicas predefinidas localizadas nas tabelas de progressão do Capítulo 3.
 
@@ -2041,6 +2041,9 @@ A ficha usa fragments HTMX para:
 
 - PV/PP;
 - formulário de dano/cura/gasto/recuperação;
+- uso de técnica com gasto imediato de PP e opção de desfazer;
+- uso de item consumível com redução de quantidade;
+- descanso curto, descanso longo e recuperação de grande dano;
 - lista e formulário de técnicas;
 - lista e formulário de armas;
 - grupos de características;
@@ -2048,12 +2051,52 @@ A ficha usa fragments HTMX para:
 
 A identidade visual da ficha foi preservada com botões compactos, badges de “Regra” e ações próximas ao conteúdo editável.
 
+### Tela Jogar mobile-first
+
+A tela de ficha do jogador possui uma superfície inicial de jogo desenhada primeiro para celular. O alvo principal é largura entre 320px e 430px, uso em orientação vertical e ações rápidas durante a sessão.
+
+A primeira dobra mostra:
+
+- nome do personagem;
+- nível e estilo;
+- PV atual/máximo com barra visual;
+- PP atual/máximo com barra visual;
+- botões grandes de dano, cura, gastar e recuperar;
+- condições ativas em chips.
+
+A navegação interna usa quatro âncoras principais:
+
+- Recursos;
+- Habilidades;
+- Itens;
+- Descanso.
+
+Na seção de habilidades, técnicas são cards compactos em coluna única. Favoritas aparecem antes das demais, usando `is_featured`. O card mostra nome, custo em PP, ação, dano/cura resumido e botões `Usar` e `Detalhes`. Descrições longas ficam recolhidas em detalhes, para evitar muro de texto em combate.
+
+`Usar` técnica não pede confirmação: o backend valida ownership, disponibilidade e PP suficiente, deduz PP em transação e atualiza somente os fragments necessários. A interface exibe toast inferior com a alteração e botão `Desfazer`, que devolve o PP até o máximo atual.
+
+Itens aparecem como cards compactos. Quando possuem quantidade controlada, o botão `Usar` reduz a quantidade em uma unidade, respeitando ownership e visibilidade. Itens sem quantidade permanecem como consulta narrativa.
+
+Descanso possui três ações grandes em coluna:
+
+- descanso curto: recupera 50% do máximo de PV e PP, limitado aos máximos;
+- descanso longo: recupera PV e PP totalmente e encerra recuperação de grande dano;
+- recuperação de grande dano: registra quantidade de dias e mostra card de recuperação em andamento.
+
+No mobile da ficha do jogador, a navegação global pesada é ocultada para priorizar a tela de jogo. A ficha completa continua disponível abaixo como referência, mas não é a primeira interação da sessão.
+
 ### Testes
 
 Foram adicionados testes em `characters/tests/test_player_campaign_flow.py` cobrindo:
 
 - jogador altera PV atual com limites sem alterar PV máximo;
 - jogador altera PP atual com limites sem alterar PP máximo;
+- jogador usa técnica, gasta PP e desfaz;
+- jogador não usa técnica sem PP suficiente;
+- jogador usa item consumível;
+- jogador aplica descanso curto/longo;
+- jogador inicia recuperação de grande dano;
+- ficha renderiza superfície mobile-first com Recursos, Habilidades, Itens e Descanso;
 - outro jogador não altera estado;
 - criação, edição, duplicação e remoção de técnica manual;
 - bloqueio de remoção de técnica protegida;

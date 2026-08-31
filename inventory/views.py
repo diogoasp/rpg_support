@@ -1,4 +1,5 @@
 from config.protected_media import protected_file_response
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 from django.views.generic import TemplateView
@@ -6,7 +7,7 @@ from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from characters.views import master_character, own_character
 from .forms import InventoryItemForm
 from .models import InventoryItem
-from .services import add_inventory_item,deactivate_inventory_item
+from .services import add_inventory_item,deactivate_inventory_item,use_inventory_item
 class PlayerInventoryView(PlayerRequiredMixin,TemplateView):
     template_name='inventory/player.html'
     def get_context_data(self,**kw): c=super().get_context_data(**kw); c['character']=own_character(self.request,self.kwargs.get('slug')); return c
@@ -22,6 +23,18 @@ class ItemAddView(MasterRequiredMixin,View):
 class ItemDeactivateView(MasterRequiredMixin,View):
     def post(self,r,pk):
         item=get_object_or_404(InventoryItem.objects.select_related('character__campaign'),pk=pk,character__campaign__master=r.user); deactivate_inventory_item(actor=r.user,item=item); return render(r,'inventory/partials/item_list.html',{'character':master_character(r,item.character_id),'is_master':True})
+class PlayerItemUseView(PlayerRequiredMixin,View):
+    def post(self,r,pk):
+        item=get_object_or_404(InventoryItem.objects.select_related('character__campaign','character__user'),pk=pk,character__user=r.user,is_active=True,is_visible=True)
+        try:
+            use_inventory_item(actor=r.user,item=item)
+            message=f'Item usado: {item.name}'
+            is_error=False
+        except ValidationError as exc:
+            message=' '.join(exc.messages) if hasattr(exc,'messages') else str(exc)
+            is_error=True
+        response=render(r,'characters/partials/player_item_list.html',{'character':own_character(r,item.character.campaign.slug),'feedback_message':message,'feedback_is_error':is_error})
+        return response
 class ProtectedFileView(PlayerRequiredMixin,View):
     def get(self,r,pk):
         item=get_object_or_404(InventoryItem,pk=pk,character__user=r.user,is_active=True,is_visible=True); return protected_file_response(item.file,attachment=True)

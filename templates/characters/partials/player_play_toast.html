@@ -1,0 +1,12 @@
+<div id="op-play-toast" class="op-play-toast {% if feedback_is_error %}is-error{% endif %}" {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
+  {% if feedback_message %}
+    <span>{{ feedback_message }}</span>
+    {% if feedback_undo_technique %}
+      <button type="button"
+              hx-post="{% url 'characters:player_technique_undo' character.campaign.slug feedback_undo_technique.pk %}"
+              hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+              hx-target="#player-technique-list"
+              hx-swap="outerHTML">Desfazer</button>
+    {% endif %}
+  {% endif %}
+</div>

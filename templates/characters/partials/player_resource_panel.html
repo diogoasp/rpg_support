@@ -1,26 +1,28 @@
-<div id="player-resource-panel" class="op-survival-box">
-  <p class="op-box-title">Status de Sobrevivência</p>
-  <div class="op-survival-row">
+<div id="{% firstof resource_panel_id 'player-resource-panel' %}" class="op-survival-box op-play-resources" {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
+  <p class="op-box-title">Recursos</p>
+  <div class="op-survival-row op-resource-card op-hp-card">
     <svg class="op-surv-icon" viewBox="0 0 24 24">
       <path fill="currentColor" d="M12 21s-7.5-4.6-10-9.1C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.5C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.9 19.5 16.4 12 21 12 21z" />
     </svg>
-    <span class="op-surv-label">PV:</span><span class="op-surv-value">{{ character.current_hp }} / {{ character.max_hp }}</span><span class="op-surv-note">Pontos de vida atuais e máximos.</span>
+    <span class="op-surv-label">PV</span><span class="op-surv-value">{{ character.current_hp }} / {{ character.max_hp }}</span><span class="op-surv-note">Pontos de vida atuais e máximos.</span>
+    <progress class="op-resource-bar" value="{{ character.current_hp }}" max="{{ character.max_hp }}">{{ character.current_hp }} / {{ character.max_hp }}</progress>
     {% if can_edit_sheet %}
       <span class="op-surv-actions">
-        <button class="op-mini-action op-mini-danger" hx-get="{% url 'characters:player_damage' character.campaign.slug %}" hx-target="#modal-content">Dano</button>
-        <button class="op-mini-action op-mini-success" hx-get="{% url 'characters:player_heal' character.campaign.slug %}" hx-target="#modal-content">Cura</button>
+        <button class="op-mini-action op-touch-action op-mini-danger" hx-get="{% url 'characters:player_damage' character.campaign.slug %}" hx-target="#modal-content">- Dano</button>
+        <button class="op-mini-action op-touch-action op-mini-success" hx-get="{% url 'characters:player_heal' character.campaign.slug %}" hx-target="#modal-content">+ Cura</button>
       </span>
     {% endif %}
   </div>
-  <div class="op-survival-row">
+  <div class="op-survival-row op-resource-card op-pp-card">
     <svg class="op-surv-icon" viewBox="0 0 24 24">
       <path fill="currentColor" d="M13 2L3 14h7l-1 8 11-14h-8l1-6z" />
     </svg>
-    <span class="op-surv-label">PP:</span><span class="op-surv-value">{{ character.current_power_points }} / {{ character.max_power_points }}</span><span class="op-surv-note">Pontos de poder disponíveis.</span>
+    <span class="op-surv-label">PP</span><span class="op-surv-value">{{ character.current_power_points }} / {{ character.max_power_points }}</span><span class="op-surv-note">Pontos de poder disponíveis.</span>
+    <progress class="op-resource-bar" value="{{ character.current_power_points }}" max="{% if character.max_power_points %}{{ character.max_power_points }}{% else %}1{% endif %}">{{ character.current_power_points }} / {{ character.max_power_points }}</progress>
     {% if can_edit_sheet %}
       <span class="op-surv-actions">
-        <button class="op-mini-action op-mini-danger" hx-get="{% url 'characters:player_pp_spend' character.campaign.slug %}" hx-target="#modal-content">Gastar</button>
-        <button class="op-mini-action op-mini-success" hx-get="{% url 'characters:player_pp_recover' character.campaign.slug %}" hx-target="#modal-content">Recuperar</button>
+        <button class="op-mini-action op-touch-action op-mini-danger" hx-get="{% url 'characters:player_pp_spend' character.campaign.slug %}" hx-target="#modal-content">- Gastar</button>
+        <button class="op-mini-action op-touch-action op-mini-success" hx-get="{% url 'characters:player_pp_recover' character.campaign.slug %}" hx-target="#modal-content">+ Recuperar</button>
       </span>
     {% endif %}
   </div>

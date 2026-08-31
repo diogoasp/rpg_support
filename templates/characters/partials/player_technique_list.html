@@ -1,32 +1,22 @@
-<div id="player-technique-list">
+{% firstof technique_list_id 'player-technique-list' as technique_target_id %}
+<div id="{{ technique_target_id }}" class="op-play-techniques">
   {% if can_edit_sheet %}
     <div class="op-section-actions">
-      <button class="op-mini-action" hx-get="{% url 'characters:player_technique_create' character.campaign.slug %}" hx-target="#modal-content">Nova técnica</button>
+      <button class="op-mini-action op-touch-action" hx-get="{% url 'characters:player_technique_create' character.campaign.slug %}" hx-target="#modal-content">+ Nova técnica</button>
     </div>
   {% endif %}
-  <div class="op-combat-cards-row">
+  {% if featured_techniques %}
+    <p class="op-play-section-label">Favoritas</p>
+    <div class="op-play-card-list">
+      {% for technique in featured_techniques|slice:':5' %}
+        {% include 'characters/partials/player_technique_card.html' with technique_target_id=technique_target_id card_prefix='featured' %}
+      {% endfor %}
+    </div>
+    <p class="op-play-section-label">Todas as habilidades</p>
+  {% endif %}
+  <div class="op-play-card-list op-combat-cards-row">
     {% for technique in character.techniques.all %}
-      <div class="op-combat-card {% cycle 'op-combat-card-red' 'op-combat-card-teal' %}">
-        <p class="op-combat-card-title">
-          {{ technique.get_action_type_display }}: <span>{{ technique.name }}</span>{% if not technique.is_available %} · Bloqueada{% endif %}
-          {% if technique.source_type != 'player' %}<span class="op-rule-badge">Regra</span>{% endif %}
-        </p>
-        {% if technique.power_points_cost %}<p class="op-field-line"><span>Custo:</span> <span>{{ technique.power_points_cost }} PP</span></p>{% endif %}
-        {% if technique.range_text %}<p class="op-field-line"><span>Alcance:</span> <span>{{ technique.range_text }}</span></p>{% endif %}
-        {% if technique.source %}<p class="op-field-line"><span>Origem:</span> <span>{{ technique.source }}</span></p>{% endif %}
-        <p class="op-field-line"><span>Atributo:</span> <span>{{ technique.get_attribute_modifier_display }} {{ technique.attribute_modifier_value|stringformat:'+d' }}</span></p>
-        {% if technique.damage_die %}<p class="op-field-line"><span>Dado:</span> <span>{{ technique.damage_die }}</span></p>{% endif %}
-        <p class="op-field-desc"><span>Efeito:</span> <span>{{ technique.description }} {{ technique.damage_text }}</span></p>
-        {% if can_edit_sheet %}
-          <div class="op-card-actions">
-            {% if technique.is_player_editable %}
-              <button class="op-mini-action" hx-get="{% url 'characters:player_technique_update' character.campaign.slug technique.pk %}" hx-target="#modal-content">Editar</button>
-              <button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_technique_delete' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-technique-list" hx-swap="outerHTML" hx-confirm="Remover esta técnica da ficha?">Remover</button>
-            {% endif %}
-            <button class="op-mini-action" hx-post="{% url 'characters:player_technique_duplicate' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#player-technique-list" hx-swap="outerHTML">Duplicar</button>
-          </div>
-        {% endif %}
-      </div>
+      {% include 'characters/partials/player_technique_card.html' with technique_target_id=technique_target_id card_prefix='all' %}
     {% empty %}
       <div class="op-combat-card op-combat-card-red">
         <p class="op-combat-card-title">Nenhuma técnica cadastrada</p>

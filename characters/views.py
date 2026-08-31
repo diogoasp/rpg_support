@@ -24,6 +24,7 @@ from .forms import (
     CharacterHpActionForm,
     CharacterForm,
     ConditionForm,
+    GreatDamageRecoveryForm,
     LevelUpAuthorizationForm,
     LevelUpDraftForm,
     PlayerFeatureForm,
@@ -57,12 +58,17 @@ from .services import (
     delete_player_weapon,
     duplicate_player_technique,
     heal_character,
+    long_rest_character,
     recover_power_points,
+    short_rest_character,
     spend_power_points,
+    start_great_damage_recovery,
+    undo_player_technique_use,
     update_character_resources,
     update_player_feature,
     update_player_technique,
     update_player_weapon,
+    use_player_technique,
 )
 
 def rich_queryset():
@@ -197,7 +203,7 @@ class CharacterSheetView(LoginRequiredMixin,TemplateView):
 
 def player_sheet_fragment_context(character):
     positive_features,limitation_features=split_character_features(character)
-    return {'character':character,'positive_features':positive_features,'limitation_features':limitation_features,'can_edit_sheet':True,'carrying_capacity':character.strength*10}
+    return {'character':character,'positive_features':positive_features,'limitation_features':limitation_features,'featured_techniques':[tech for tech in character.techniques.all() if tech.is_featured],'can_edit_sheet':True,'carrying_capacity':character.strength*10}
 
 class PlayerHpActionView(PlayerRequiredMixin,View):
     action='damage'
@@ -273,6 +279,51 @@ class PlayerTechniqueDeleteView(PlayerRequiredMixin,View):
         technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
         delete_player_technique(actor=request.user,technique=technique)
         return render(request,'characters/partials/player_technique_list.html',player_sheet_fragment_context(own_character(request,slug)))
+
+class PlayerTechniqueUseView(PlayerRequiredMixin,View):
+    undo=False
+    def post(self,request,slug,technique_pk):
+        character=own_character(request,slug)
+        technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
+        try:
+            if self.undo:
+                undo_player_technique_use(actor=request.user,technique=technique)
+                feedback=f'Uso desfeito: {technique.name} · +{technique.power_points_cost or 0} PP'
+            else:
+                use_player_technique(actor=request.user,technique=technique)
+                feedback=f'{technique.name} usado · -{technique.power_points_cost or 0} PP'
+        except ValidationError as exc:
+            feedback=' '.join(exc.messages) if hasattr(exc,'messages') else str(exc)
+        context=player_sheet_fragment_context(own_character(request,slug))
+        context.update({'feedback_message':feedback,'feedback_is_error':'insuficiente' in feedback.lower() or 'indisponível' in feedback.lower(),'feedback_undo_technique':None if self.undo else technique})
+        return render(request,'characters/partials/player_play_technique_update.html',context)
+
+class PlayerRestActionView(PlayerRequiredMixin,View):
+    rest_type='short'
+    def post(self,request,slug):
+        character=own_character(request,slug)
+        character=short_rest_character(actor=request.user,character=character) if self.rest_type=='short' else long_rest_character(actor=request.user,character=character)
+        context=player_sheet_fragment_context(own_character(request,slug))
+        context['feedback_message']='Descanso curto aplicado' if self.rest_type=='short' else 'Descanso longo aplicado'
+        context['oob_resources']=True
+        return render(request,'characters/partials/player_rest_panel.html',context)
+
+class PlayerGreatDamageRecoveryView(PlayerRequiredMixin,View):
+    def get(self,request,slug):
+        return render(request,'characters/partials/player_great_damage_form.html',{'form':GreatDamageRecoveryForm(),'character':own_character(request,slug)})
+    def post(self,request,slug):
+        character=own_character(request,slug)
+        form=GreatDamageRecoveryForm(request.POST)
+        if form.is_valid():
+            try:
+                start_great_damage_recovery(actor=request.user,character=character,days=form.cleaned_data['days'])
+            except ValidationError as exc:
+                form.add_error('days',exc)
+        if form.errors:
+            return htmx_modal_validation_response(render(request,'characters/partials/player_great_damage_form.html',{'form':form,'character':character},status=422))
+        context=player_sheet_fragment_context(own_character(request,slug))
+        context['oob_resources']=True
+        return htmx_close_modal(render(request,'characters/partials/player_rest_panel.html',context))
 
 class PlayerWeaponManageView(PlayerRequiredMixin,View):
     def _weapon(self,request,slug,weapon_pk):

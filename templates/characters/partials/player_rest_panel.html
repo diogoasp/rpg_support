@@ -1,0 +1,36 @@
+<div id="player-rest-panel" class="op-rest-panel" {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
+  {% if character.great_damage_recovery_days %}
+    <article class="op-recovery-card">
+      <p>Recuperação em andamento</p>
+      <h3>Dia {{ character.great_damage_recovery_day }} de {{ character.great_damage_recovery_days }}</h3>
+      <span>Próximo descanso: +{{ character.great_damage_recovery_hp_per_rest }} PV</span>
+    </article>
+  {% endif %}
+  <button class="op-rest-action"
+          type="button"
+          hx-post="{% url 'characters:player_short_rest' character.campaign.slug %}"
+          hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+          hx-target="#player-rest-panel"
+          hx-swap="outerHTML">
+    <strong>Descanso curto</strong>
+    <span>Recupera 50% de PV e PP.</span>
+  </button>
+  <button class="op-rest-action"
+          type="button"
+          hx-post="{% url 'characters:player_long_rest' character.campaign.slug %}"
+          hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+          hx-target="#player-rest-panel"
+          hx-swap="outerHTML">
+    <strong>Descanso longo</strong>
+    <span>Recupera PV e PP totalmente.</span>
+  </button>
+  <button class="op-rest-action"
+          type="button"
+          hx-get="{% url 'characters:player_great_damage_recovery' character.campaign.slug %}"
+          hx-target="#modal-content">
+    <strong>Recuperação de grande dano</strong>
+    <span>Divide a recuperação em vários dias.</span>
+  </button>
+  {% if oob_resources %}{% include 'characters/partials/player_resource_panel.html' with oob=True %}{% endif %}
+  {% if feedback_message %}{% include 'characters/partials/player_play_toast.html' with oob=True %}{% endif %}
+</div>

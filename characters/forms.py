@@ -31,9 +31,11 @@ class PlayerCharacterSheetForm(forms.ModelForm):
 class ResourceForm(forms.Form):
     value=forms.IntegerField(min_value=0,label='Novo valor')
 class CharacterHpActionForm(forms.Form):
-    amount=forms.IntegerField(min_value=1,label='Quantidade')
+    amount=forms.IntegerField(min_value=1,label='Quantidade',widget=forms.NumberInput(attrs={"inputmode":"numeric","pattern":"[0-9]*","class":"op-mobile-number","autofocus":"autofocus"}))
 class PowerPointActionForm(forms.Form):
-    amount=forms.IntegerField(min_value=1,label='Quantidade')
+    amount=forms.IntegerField(min_value=1,label='Quantidade',widget=forms.NumberInput(attrs={"inputmode":"numeric","pattern":"[0-9]*","class":"op-mobile-number","autofocus":"autofocus"}))
+class GreatDamageRecoveryForm(forms.Form):
+    days=forms.IntegerField(label="Dias",min_value=1,max_value=30,initial=3,widget=forms.NumberInput(attrs={"inputmode":"numeric","pattern":"[0-9]*","class":"op-mobile-number","autofocus":"autofocus"}))
 class ConditionForm(forms.ModelForm):
     class Meta: model=CharacterCondition; fields=('name','description')
 
