@@ -43,7 +43,7 @@ from .level_up_service import (
     save_level_up_draft,
     start_level_up,
 )
-from .models import Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
+from .models import CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
 from .print_sheet_service import print_sheet_context
 from .services import (
     add_character_condition,
@@ -107,6 +107,44 @@ def split_character_features(character):
         else:
             positive_features.append(feature)
     return positive_features, limitation_features
+
+def _bool_from_post(value):
+    return value in ("1","true","on","yes",True)
+
+def _posted_level_up_entries(post,prefix):
+    names=post.getlist(f"{prefix}_name[]")
+    entries=[]
+    for index,name in enumerate(names):
+        name=(name or "").strip()
+        if not name:
+            continue
+        if prefix=="technique":
+            entries.append({
+                "name": name,
+                "source": post.getlist("technique_source[]")[index] if index < len(post.getlist("technique_source[]")) else "",
+                "description": post.getlist("technique_description[]")[index] if index < len(post.getlist("technique_description[]")) else "",
+                "action_type": post.getlist("technique_action_type[]")[index] if index < len(post.getlist("technique_action_type[]")) else "action",
+                "range_text": post.getlist("technique_range_text[]")[index] if index < len(post.getlist("technique_range_text[]")) else "",
+                "damage_text": post.getlist("technique_damage_text[]")[index] if index < len(post.getlist("technique_damage_text[]")) else "",
+                "damage_die": post.getlist("technique_damage_die[]")[index] if index < len(post.getlist("technique_damage_die[]")) else "",
+                "attribute_modifier": post.getlist("technique_attribute_modifier[]")[index] if index < len(post.getlist("technique_attribute_modifier[]")) else "strength",
+                "required_weapon_type": post.getlist("technique_required_weapon_type[]")[index] if index < len(post.getlist("technique_required_weapon_type[]")) else "",
+                "power_points_cost": post.getlist("technique_power_points_cost[]")[index] if index < len(post.getlist("technique_power_points_cost[]")) else 0,
+                "category": post.getlist("technique_category[]")[index] if index < len(post.getlist("technique_category[]")) else "attack",
+                "technique_type": post.getlist("technique_technique_type[]")[index] if index < len(post.getlist("technique_technique_type[]")) else "innate",
+                "is_available": True,
+                "is_featured": _bool_from_post(post.getlist("technique_is_featured[]")[index]) if index < len(post.getlist("technique_is_featured[]")) else False,
+                "sort_order": post.getlist("technique_sort_order[]")[index] if index < len(post.getlist("technique_sort_order[]")) else 0,
+            })
+        else:
+            entries.append({
+                "name": name,
+                "source": post.getlist("feature_source[]")[index] if index < len(post.getlist("feature_source[]")) else "",
+                "description": post.getlist("feature_description[]")[index] if index < len(post.getlist("feature_description[]")) else "",
+                "is_available": True,
+                "sort_order": post.getlist("feature_sort_order[]")[index] if index < len(post.getlist("feature_sort_order[]")) else 0,
+            })
+    return entries
 class PlayerCharacterEntryView(PlayerRequiredMixin,View):
     template_name='characters/player_list.html'
     def get(self,request):
@@ -533,10 +571,11 @@ class PlayerLevelUpWizardView(PlayerRequiredMixin,View):
         return get_object_or_404(CharacterLevelUpAuthorization.objects.select_related('character__campaign').filter(character=character,status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)))
     def _context(self,request,authorization,process,form=None,preview=None):
         requirements=get_level_up_requirements(process.character)
-        form=form or LevelUpDraftForm(character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
-        preview=preview or preview_level_up(process)
+        requirements["process"]=process
+        form=form or LevelUpDraftForm(character=process.character,requirements=requirements,initial={"hp_method":process.hp_method,"hp_roll_result":process.hp_roll_result,**{f"ava_{key}":process.selected_attribute_increases.get(key,0) for key in ('strength','dexterity','constitution','wisdom','willpower','presence')},"ava_mode":process.selected_attribute_increases.get("mode","")})
+        preview=preview or preview_level_up(process,process.selected_attribute_increases,process.hp_method,process.hp_roll_result)
         ava_fields=[form[f'ava_{key}'] for key in ('strength','dexterity','constitution','wisdom','willpower','presence')]
-        return {'authorization':authorization,'process':process,'character':process.character,'campaign':process.character.campaign,'requirements':requirements,'form':form,'ava_fields':ava_fields,'preview':preview}
+        return {'authorization':authorization,'process':process,'character':process.character,'campaign':process.character.campaign,'requirements':requirements,'form':form,'ava_fields':ava_fields,'preview':preview,'attribute_choices':CANONICAL_ATTRIBUTES,'technique_actions':CharacterTechnique.ACTIONS,'technique_categories':CharacterTechnique.Category.choices,'technique_types':CharacterTechnique.TechniqueType.choices}
     def get(self,request,slug):
         authorization=self._authorization(request,slug)
         try:
@@ -549,17 +588,18 @@ class PlayerLevelUpWizardView(PlayerRequiredMixin,View):
         authorization=self._authorization(request,slug)
         process=start_level_up(request.user,authorization)
         requirements=get_level_up_requirements(process.character)
-        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
+        requirements["process"]=process
+        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements)
         if form.is_valid():
             try:
                 process=save_level_up_draft(
                     request.user,
                     process,
-                    selected_basic_ability=form.cleaned_data.get('basic_ability'),
-                    selected_technique_ids=[obj.pk for obj in form.cleaned_data.get('techniques',[])],
                     selected_attribute_increases=form.selected_attribute_increases(),
-                    keep_favorite_weapon=form.cleaned_data.get('keep_favorite_weapon'),
-                    selected_favorite_weapon=form.cleaned_data.get('favorite_weapon'),
+                    hp_method=form.cleaned_data.get('hp_method'),
+                    hp_roll_result=form.cleaned_data.get('hp_roll_result'),
+                    draft_techniques=_posted_level_up_entries(request.POST,"technique"),
+                    draft_features=_posted_level_up_entries(request.POST,"feature"),
                 )
                 if request.POST.get('confirm')=='1':
                     complete_level_up(request.user,process)
@@ -576,12 +616,22 @@ class PlayerLevelUpPreviewView(PlayerRequiredMixin,View):
         authorization=get_object_or_404(CharacterLevelUpAuthorization.objects.select_related('character__campaign'),character__campaign__slug=slug,character__user=request.user,status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS))
         process=start_level_up(request.user,authorization)
         requirements=get_level_up_requirements(process.character)
-        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements,available_basic_abilities=available_basic_abilities(process.character,process.to_level))
-        preview=preview_level_up(process)
+        requirements["process"]=process
+        form=LevelUpDraftForm(request.POST,character=process.character,requirements=requirements)
+        preview=preview_level_up(process,process.selected_attribute_increases,process.hp_method,process.hp_roll_result)
         if form.is_valid():
             try:
-                increments=form.selected_attribute_increases() if requirements['style_level'].grants_attribute_increase else {}
-                preview=preview_level_up(process,form.cleaned_data.get('basic_ability'),increments,form.cleaned_data.get('favorite_weapon'),form.cleaned_data.get('keep_favorite_weapon'))
+                increments=form.selected_attribute_increases() if requirements['grants_attribute_increase'] else {}
+                process=save_level_up_draft(
+                    request.user,
+                    process,
+                    selected_attribute_increases=increments,
+                    hp_method=form.cleaned_data.get('hp_method'),
+                    hp_roll_result=form.cleaned_data.get('hp_roll_result'),
+                    draft_techniques=_posted_level_up_entries(request.POST,"technique"),
+                    draft_features=_posted_level_up_entries(request.POST,"feature"),
+                )
+                preview=preview_level_up(process,process.selected_attribute_increases,process.hp_method,process.hp_roll_result)
             except ValidationError as exc:
                 form.add_error(None,exc.messages[0])
         return render(request,'characters/level_up/partials/preview.html',{'preview':preview,'form':form,'process':process,'requirements':requirements},status=200 if not form.errors else 422)

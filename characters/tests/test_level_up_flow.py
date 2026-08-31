@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
 from django.test import TestCase
+from django.urls import reverse
 
 from accounts.models import User
 from campaigns.models import Campaign
@@ -8,6 +9,7 @@ from characters.level_up_service import (
     authorize_level_up,
     available_basic_abilities,
     calculate_fixed_hp_gain,
+    calculate_hp_gain,
     calculate_power_points,
     complete_level_up,
     save_level_up_draft,
@@ -19,6 +21,8 @@ from characters.models import (
     CharacterBasicAbility,
     CharacterFeature,
     CharacterLevelUpAuthorization,
+    CharacterRecordSource,
+    CharacterTechnique,
     CombatStyleLevel,
 )
 
@@ -84,6 +88,21 @@ class LevelUpFlowTests(TestCase):
         with self.assertRaises(ValidationError):
             authorize_level_up(self.master, character)
 
+    def test_player_wizard_uses_open_ability_registration(self):
+        character = make_character(self.campaign, self.player)
+        authorize_level_up(self.master, character)
+        self.client.force_login(self.player)
+
+        response = self.client.get(reverse("characters:level_up", kwargs={"slug": self.campaign.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Aumento de PV")
+        self.assertContains(response, "Habilidades recebidas")
+        self.assertContains(response, "+ Técnica de Combate")
+        self.assertContains(response, "+ Traço / Característica")
+        self.assertNotContains(response, "Habilidade Básica</legend>")
+        self.assertNotContains(response, "Arma favorita</legend>")
+
     def test_player_and_other_master_cannot_authorize(self):
         character = make_character(self.campaign, self.player)
 
@@ -92,13 +111,11 @@ class LevelUpFlowTests(TestCase):
         with self.assertRaises(PermissionDenied):
             authorize_level_up(self.other_master, character)
 
-    def test_level_2_applies_fixed_hp_pp_basic_ability_profession_and_feature(self):
+    def test_level_2_applies_average_hp_pp_profession_and_accepts_zero_abilities(self):
         character = make_character(self.campaign, self.player)
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
-        ability = BasicAbility.objects.get(slug="corpo-de-guerreiro")
 
-        save_level_up_draft(self.player, process, selected_basic_ability=ability, keep_favorite_weapon=True)
         history = complete_level_up(self.player, process)
         character.refresh_from_db()
 
@@ -111,8 +128,9 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(character.current_hp, 13)
         self.assertEqual(character.profession_grade, "Amador")
         self.assertEqual(character.profession_subdivision, "Intermediário")
-        self.assertTrue(CharacterBasicAbility.objects.filter(character=character, ability=ability).exists())
-        self.assertTrue(CharacterFeature.objects.filter(character=character, name="Guarda Astuta").exists())
+        self.assertFalse(CharacterBasicAbility.objects.filter(character=character).exists())
+        self.assertFalse(CharacterFeature.objects.filter(character=character, name="Guarda Astuta").exists())
+        self.assertEqual(history.hp_method, "average")
         self.assertEqual(history.fixed_hp_value, 5)
 
     def test_available_basic_abilities_excludes_abilities_already_owned(self):
@@ -181,15 +199,22 @@ class LevelUpFlowTests(TestCase):
 
         self.assertEqual(BasicAbility.objects.filter(ruleset_version="player-book-1.5.7").count(), 17)
 
-    def test_level_3_requires_and_records_style_technique(self):
+    def test_level_3_accepts_manual_techniques_and_features_without_catalog_dependency(self):
         character = make_character(self.campaign, self.player, level=2, combat_style="Lutador", hit_die_type=12, max_hp=20, current_hp=10, max_power_points=4, current_power_points=1, favorite_weapon="Corporal", profession_subdivision="Intermediário")
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
-        ability = BasicAbility.objects.get(slug="aprendizado-excepcional")
-        style_level = CombatStyleLevel.objects.get(combat_style__name="Lutador", level=3)
-        technique = style_level.technique_options.get(name="Power Shoot")
 
-        save_level_up_draft(self.player, process, selected_basic_ability=ability, selected_technique_ids=[technique.pk], keep_favorite_weapon=True)
+        save_level_up_draft(
+            self.player,
+            process,
+            draft_techniques=[
+                {"name": "Power Shoot", "source": "Lutador", "category": CharacterTechnique.Category.ATTACK, "technique_type": CharacterTechnique.TechniqueType.INNATE, "attribute_modifier": "strength", "power_points_cost": 6},
+                {"name": "Contra golpe", "source": "Treinamento", "category": CharacterTechnique.Category.ATTACK, "technique_type": CharacterTechnique.TechniqueType.UNARMED, "attribute_modifier": "strength"},
+            ],
+            draft_features=[
+                {"name": "Posições de Luta", "source": "Lutador", "description": "Característica registrada pelo jogador."},
+            ],
+        )
         history = complete_level_up(self.player, process)
         character.refresh_from_db()
 
@@ -197,8 +222,13 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(character.max_power_points, 6)
         self.assertEqual(character.current_power_points, 3)
         self.assertEqual(character.profession_subdivision, "Veterano")
-        self.assertTrue(history.techniques.filter(name="Power Shoot").exists())
-        self.assertTrue(CharacterFeature.objects.filter(character=character, name="Posições de Luta").exists())
+        self.assertFalse(history.techniques.exists())
+        self.assertTrue(history.created_techniques.filter(name="Power Shoot").exists())
+        feature = CharacterFeature.objects.get(character=character, name="Posições de Luta")
+        self.assertEqual(feature.source_type, CharacterRecordSource.LEVEL_UP)
+        self.assertEqual(feature.level_acquired, 3)
+        self.assertIn("adquirid", feature.source)
+        self.assertEqual(CharacterTechnique.objects.filter(character=character, source_type=CharacterRecordSource.LEVEL_UP).count(), 2)
 
     def test_level_4_ava_plus_two_recalculates_constitution_hp_and_profession(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=17, max_hp=39, current_hp=20, max_power_points=6, current_power_points=1, favorite_weapon="Bazuca", profession_subdivision="Veterano")
@@ -218,7 +248,7 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(history.constitution_retroactive_adjustment, 4)
         self.assertEqual(character.profession_grade, "Profissional")
         self.assertEqual(character.profession_subdivision, "Novato")
-        self.assertTrue(CharacterFeature.objects.filter(character=character, name="Graduação Profissional").exists())
+        self.assertFalse(CharacterFeature.objects.filter(character=character, name="Graduação Profissional").exists())
 
     def test_ava_plus_one_plus_one_cannot_repeat_or_exceed_20(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=20, max_hp=45, current_hp=45, max_power_points=6, current_power_points=6, favorite_weapon="Bazuca")
@@ -234,7 +264,45 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(calculate_fixed_hp_gain(8, 2), 7)
         self.assertEqual(calculate_fixed_hp_gain(10, 1), 7)
         self.assertEqual(calculate_fixed_hp_gain(12, -1), 6)
+        self.assertEqual(calculate_hp_gain(10, 2, "average"), 8)
+        self.assertEqual(calculate_hp_gain(10, 2, "rolled", 7), 9)
+        with self.assertRaises(ValidationError):
+            calculate_hp_gain(10, 2, "rolled", 11)
         self.assertEqual([calculate_power_points(level) for level in range(1, 5)], [2, 4, 6, 8])
+
+    def test_level_up_rolled_hp_records_method_and_preserves_damage(self):
+        character = make_character(self.campaign, self.player, combat_style="Espadachim", hit_die_type=10, max_hp=25, current_hp=18, constitution=14)
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+
+        save_level_up_draft(self.player, process, hp_method="rolled", hp_roll_result=7)
+        history = complete_level_up(self.player, process)
+        character.refresh_from_db()
+
+        self.assertEqual(character.level, 2)
+        self.assertEqual(character.max_hp, 34)
+        self.assertEqual(character.current_hp, 27)
+        self.assertEqual(history.hp_method, "rolled")
+        self.assertEqual(history.hp_roll_result, 7)
+        self.assertEqual(history.fixed_hp_value, 7)
+        self.assertEqual(history.hp_gain_total, 9)
+
+    def test_invalid_level_up_ability_draft_does_not_change_character(self):
+        character = make_character(self.campaign, self.player, level=2, max_hp=20, current_hp=10, max_power_points=4, current_power_points=1)
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+
+        with self.assertRaises(ValidationError):
+            save_level_up_draft(
+                self.player,
+                process,
+                draft_techniques=[{"name": "Técnica inválida", "category": CharacterTechnique.Category.SUPPORT, "technique_type": CharacterTechnique.TechniqueType.COMBAT}],
+            )
+
+        character.refresh_from_db()
+        self.assertEqual(character.level, 2)
+        self.assertEqual(character.max_hp, 20)
+        self.assertFalse(CharacterTechnique.objects.filter(character=character, name="Técnica inválida").exists())
 
     def test_existing_lunarian_guerreiro_oni_keeps_base_hp_when_leveling_to_2(self):
         character = make_character(
@@ -251,9 +319,7 @@ class LevelUpFlowTests(TestCase):
         )
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
-        ability = BasicAbility.objects.get(slug="corpo-de-guerreiro")
 
-        save_level_up_draft(self.player, process, selected_basic_ability=ability, keep_favorite_weapon=True)
         complete_level_up(self.player, process)
         character.refresh_from_db()
 
@@ -272,8 +338,6 @@ class LevelUpFlowTests(TestCase):
         character = make_character(self.campaign, self.player)
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
-        ability = BasicAbility.objects.get(slug="corpo-de-guerreiro")
-        save_level_up_draft(self.player, process, selected_basic_ability=ability, keep_favorite_weapon=True)
         complete_level_up(self.player, process)
 
         with self.assertRaises(ValidationError):

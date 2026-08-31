@@ -163,9 +163,9 @@ class CharacterWeaponAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterTechnique)
 class CharacterTechniqueAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','category','technique_type','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','source_type','is_available','is_featured','sort_order')
-    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','source_type','is_available','is_featured')
-    search_fields=('name','character__name','character__user__username','required_weapon_type','description')
+    list_display=('name','character','campaign','category','technique_type','source','level_acquired','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','source_type','is_available','is_featured','sort_order')
+    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','source_type','level_acquired','is_available','is_featured')
+    search_fields=('name','source','character__name','character__user__username','required_weapon_type','description')
     autocomplete_fields=('character',)
     readonly_fields=('created_at','updated_at')
     list_select_related=('character','character__campaign','character__user')
@@ -221,8 +221,8 @@ class CharacterSkillAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterFeature)
 class CharacterFeatureAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','source','source_type','is_available','sort_order')
-    list_filter=('character__campaign','source','source_type','is_available')
+    list_display=('name','character','campaign','source','source_type','level_acquired','is_available','sort_order')
+    list_filter=('character__campaign','source','source_type','level_acquired','is_available')
     search_fields=('name','description','source','character__name','character__user__username')
     autocomplete_fields=('character',)
     list_select_related=('character','character__campaign','character__user')

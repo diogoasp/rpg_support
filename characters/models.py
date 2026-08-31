@@ -145,6 +145,7 @@ class CharacterTechnique(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='techniques',db_index=True)
     name=models.CharField(max_length=150)
     description=models.TextField(blank=True)
+    source=models.CharField(max_length=120,blank=True)
     action_type=models.CharField(max_length=20,choices=ACTIONS,default='action')
     range_text=models.CharField(max_length=100,blank=True)
     damage_text=models.CharField(max_length=150,blank=True)
@@ -158,6 +159,7 @@ class CharacterTechnique(models.Model):
     is_featured=models.BooleanField(default=False)
     sort_order=models.PositiveSmallIntegerField(default=0)
     source_type=models.CharField('origem',max_length=30,choices=CharacterRecordSource.choices,default=CharacterRecordSource.LEGACY,db_index=True)
+    level_acquired=models.PositiveSmallIntegerField('nível adquirido',null=True,blank=True,db_index=True)
     created_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='created_character_techniques')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -186,6 +188,7 @@ class CharacterFeature(models.Model):
     is_available=models.BooleanField(default=True)
     sort_order=models.PositiveSmallIntegerField(default=0)
     source_type=models.CharField('origem',max_length=30,choices=CharacterRecordSource.choices,default=CharacterRecordSource.LEGACY,db_index=True)
+    level_acquired=models.PositiveSmallIntegerField('nível adquirido',null=True,blank=True,db_index=True)
     created_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='created_character_features')
     
     class Meta: ordering=('sort_order','name')
@@ -457,6 +460,9 @@ class CharacterLevelUpAuthorization(models.Model):
         if errors: raise ValidationError(errors)
 
 class CharacterLevelUp(models.Model):
+    class HpMethod(models.TextChoices):
+        AVERAGE='average','Valor médio'
+        ROLLED='rolled','Rolado'
     class Status(models.TextChoices):
         DRAFT='draft','Rascunho'
         COMPLETED='completed','Concluído'
@@ -475,6 +481,11 @@ class CharacterLevelUp(models.Model):
     new_max_hp=models.PositiveIntegerField(default=0)
     old_max_power_points=models.PositiveIntegerField(default=0)
     new_max_power_points=models.PositiveIntegerField(default=0)
+    hp_method=models.CharField(max_length=20,choices=HpMethod.choices,default=HpMethod.AVERAGE)
+    hp_roll_result=models.PositiveSmallIntegerField(null=True,blank=True)
+    hp_gain_total=models.SmallIntegerField(default=0)
+    draft_techniques=models.JSONField(default=list,blank=True)
+    draft_features=models.JSONField(default=list,blank=True)
     selected_basic_ability=models.ForeignKey(BasicAbility,on_delete=models.PROTECT,null=True,blank=True)
     selected_techniques=models.ManyToManyField(CombatStyleTechniqueOption,blank=True,related_name='level_up_processes')
     selected_attribute_increases=models.JSONField(default=dict,blank=True)
@@ -515,6 +526,11 @@ class CharacterLevelUpHistory(models.Model):
     features_received=models.JSONField(default=list,blank=True)
     profession_progression=models.JSONField(default=dict,blank=True)
     favorite_weapon=models.CharField(max_length=120,blank=True)
+    hp_method=models.CharField(max_length=20,choices=CharacterLevelUp.HpMethod.choices,default=CharacterLevelUp.HpMethod.AVERAGE)
+    hp_roll_result=models.PositiveSmallIntegerField(null=True,blank=True)
+    hp_gain_total=models.SmallIntegerField(default=0)
+    created_techniques=models.ManyToManyField(CharacterTechnique,blank=True,related_name='level_up_history_entries')
+    created_features=models.ManyToManyField(CharacterFeature,blank=True,related_name='level_up_history_entries')
     created_at=models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering=('-created_at',)

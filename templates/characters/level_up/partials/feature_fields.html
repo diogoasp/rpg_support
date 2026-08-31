@@ -1,0 +1,6 @@
+<div class="row g-3">
+  <div class="col-md-6"><label class="form-label">Nome</label><input class="form-control" name="feature_name[]" value="{{ item.name|default:'' }}" required></div>
+  <div class="col-md-6"><label class="form-label">Origem</label><input class="form-control" name="feature_source[]" value="{{ item.source|default:character.combat_style }}" placeholder="{{ character.combat_style }}"></div>
+  <div class="col-12"><label class="form-label">Descrição</label><textarea class="form-control" rows="5" name="feature_description[]">{{ item.description|default:'' }}</textarea></div>
+  <input type="hidden" name="feature_sort_order[]" value="{{ item.sort_order|default:0 }}">
+</div>

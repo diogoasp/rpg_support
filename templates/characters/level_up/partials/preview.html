@@ -6,6 +6,31 @@
     <div class="col-md-3"><small class="text-muted">Constituição</small><strong class="d-block">{{ preview.old_constitution }} → {{ preview.new_constitution }}</strong></div>
     <div class="col-md-3"><small class="text-muted">Proficiência</small><strong class="d-block">+{{ preview.proficiency_bonus }}</strong></div>
   </div>
-  <p class="small mb-0 mt-2">PV usa método fixo: d{{ preview.hit_die_type }} = {{ preview.fixed_hp_value }}, modificador de Constituição {{ preview.new_constitution_modifier|stringformat:'+d' }}. Ajuste retroativo de Constituição: {{ preview.constitution_retroactive_adjustment|stringformat:'+d' }}.</p>
-  <p class="small mb-0">Dados de Vida totais: {{ preview.total_hit_dice }}d{{ preview.hit_die_type }}. Arma favorita: {{ preview.favorite_weapon|default:"-" }}.</p>
+  <p class="small mb-0 mt-2">
+    PV:
+    {% if preview.hp_method == 'rolled' %}
+      d{{ preview.hit_die_type }} rolado = {{ preview.hp_roll_result }}
+    {% else %}
+      d{{ preview.hit_die_type }} médio = {{ preview.fixed_hp_value }}
+    {% endif %}
+    + Constituição {{ preview.new_constitution_modifier|stringformat:'+d' }} = +{{ preview.hp_gain }} PV no novo nível.
+    Ajuste retroativo de Constituição: {{ preview.constitution_retroactive_adjustment|stringformat:'+d' }}.
+  </p>
+  <p class="small mb-2">Dados de Vida totais: {{ preview.total_hit_dice }}d{{ preview.hit_die_type }}.</p>
+  {% if process %}
+    <div class="row g-2 small">
+      <div class="col-md-4">
+        <strong>Técnicas adicionadas</strong>
+        <ul class="mb-0">{% for item in process.draft_techniques %}<li>{{ item.name }}</li>{% empty %}<li>Nenhuma</li>{% endfor %}</ul>
+      </div>
+      <div class="col-md-4">
+        <strong>Características adicionadas</strong>
+        <ul class="mb-0">{% for item in process.draft_features %}<li>{{ item.name }}</li>{% empty %}<li>Nenhuma</li>{% endfor %}</ul>
+      </div>
+      <div class="col-md-4">
+        <strong>AVA</strong>
+        <ul class="mb-0">{% for key,value in preview.attribute_increases.items %}{% if key != 'mode' and value %}<li>{{ key }} +{{ value }}</li>{% endif %}{% empty %}<li>Não aplicado</li>{% endfor %}</ul>
+      </div>
+    </div>
+  {% endif %}
 </div>

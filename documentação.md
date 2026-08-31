@@ -1885,15 +1885,44 @@ Funções principais:
 - Bônus de proficiência nos níveis 1 a 4 permanece `+2`.
 - PP máximo é `nível * 2`: 2, 4, 6 e 8.
 - PP atual aumenta apenas pela diferença do máximo.
-- Dado de Vida usa método fixo obrigatório: d8 = 5, d10 = 6, d12 = 7.
+- Dado de Vida pode usar método médio ou resultado rolado fisicamente pelo jogador. O sistema não rola dados.
+- Método médio usa d8 = 5, d10 = 6, d12 = 7.
 - Cada passagem adiciona 1 Dado de Vida total do mesmo tipo do Estilo.
 - PV máximo é recomposto considerando Constituição; personagens antigos sem componentes usam fallback por Estilo/nível.
 - PV atual acompanha aumento do máximo e é limitado quando o máximo diminui.
-- Habilidade Básica é escolhida no 2º e 3º nível.
+- Habilidades, técnicas e características recebidas na passagem são registradas manualmente pelo jogador como `CharacterTechnique` ou `CharacterFeature`.
 - AVA no 4º nível aceita +2 em um atributo ou +1/+1 em dois atributos diferentes, limite 20.
 - Profissão evolui conforme nível total até o 4º nível.
 - Sem Profissão permanece sem progressão profissional.
-- Arma favorita pode ser mantida ou refeita entre opções válidas do Estilo.
+- Arma favorita não é mais etapa do wizard.
+
+### Mudança de arquitetura do wizard
+
+O fluxo de passagem de nível deixou de depender da completude do catálogo interno de Habilidades Básicas, técnicas e características de Estilo. O catálogo continua existindo para criação assistida, consulta, seeds e histórico antigo, mas não é mais autoridade para bloquear a passagem de nível.
+
+Nova ordem do wizard:
+
+- 1 → 2: PV, habilidades recebidas, revisão e confirmação.
+- 2 → 3: PV, habilidades recebidas, revisão e confirmação.
+- 3 → 4: PV, habilidades recebidas, AVA, revisão e confirmação.
+
+Na etapa de PV, o jogador escolhe:
+
+- `average`: usa o valor médio fixo do dado de vida.
+- `rolled`: registra o resultado rolado fisicamente, validado entre 1 e o tamanho do dado.
+
+O histórico registra método de PV, resultado bruto quando rolado, valor médio/bruto usado, modificador de Constituição, ganho total, PV máximo anterior e novo.
+
+Na etapa de habilidades, o jogador pode adicionar qualquer quantidade de:
+
+- `CharacterTechnique`: quando há ação, alcance, dano/cura, PP, atributo, arma ou tipo mecânico de técnica.
+- `CharacterFeature`: para passivas, Habilidades Básicas, características de Estilo, profissão, espécie, treinamento ou regras textuais complexas.
+
+O campo textual `source` é preenchido inicialmente com o Estilo de Combate e recebe automaticamente o sufixo `— adquirido/adquirida no nível X` ao confirmar. O campo técnico `source_type` recebe `level_up`, e `level_acquired` recebe o novo nível. Esses registros ficam protegidos para o jogador após a confirmação.
+
+O rascunho do wizard guarda as entradas em `CharacterLevelUp.draft_techniques` e `CharacterLevelUp.draft_features`. Nenhuma técnica ou característica oficial é criada antes da confirmação final.
+
+Na confirmação, `complete_level_up` usa `transaction.atomic()`, bloqueia autorização, processo e personagem com `select_for_update()`, revalida ownership/status/nível, recalcula PV/PP/AVA/Constituição e só então cria `CharacterTechnique` e `CharacterFeature` oficiais. Qualquer erro reverte a transação inteira.
 
 ### Fluxo e rotas
 
@@ -1933,9 +1962,12 @@ Cobertura adicionada:
 - autorização do mestre;
 - bloqueio de jogador/outro mestre;
 - duplicidade;
-- nível 2 com PP, PV fixo, Habilidade Básica, profissão e característica;
-- nível 3 com técnica do Estilo;
+- nível 2 com PP, PV médio, profissão e zero habilidades;
+- nível 3 com técnicas e features livres;
 - nível 4 com AVA e Constituição;
+- PV médio e rolado;
+- registro de origem e proteção pós-level-up;
+- rollback quando habilidade inválida é enviada;
 - limites de AVA;
 - tabela de PP;
 - tabela de PV fixo;

@@ -13,6 +13,7 @@
         </p>
         {% if technique.power_points_cost %}<p class="op-field-line"><span>Custo:</span> <span>{{ technique.power_points_cost }} PP</span></p>{% endif %}
         {% if technique.range_text %}<p class="op-field-line"><span>Alcance:</span> <span>{{ technique.range_text }}</span></p>{% endif %}
+        {% if technique.source %}<p class="op-field-line"><span>Origem:</span> <span>{{ technique.source }}</span></p>{% endif %}
         <p class="op-field-line"><span>Atributo:</span> <span>{{ technique.get_attribute_modifier_display }} {{ technique.attribute_modifier_value|stringformat:'+d' }}</span></p>
         {% if technique.damage_die %}<p class="op-field-line"><span>Dado:</span> <span>{{ technique.damage_die }}</span></p>{% endif %}
         <p class="op-field-desc"><span>Efeito:</span> <span>{{ technique.description }} {{ technique.damage_text }}</span></p>

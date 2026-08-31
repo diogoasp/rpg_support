@@ -77,7 +77,7 @@ def add_character_condition(*,actor:Any,character:Character,**data)->CharacterCo
 def deactivate_character_condition(*,actor:Any,condition:CharacterCondition)->CharacterCondition:
     ensure_master_or_owner(actor,condition.character); old={'is_active':condition.is_active}; condition.is_active=False; condition.save(update_fields=('is_active','updated_at')); log_character_change(character=condition.character,user=actor,action='deactivate',object_type='condition',object_id=condition.pk,description=f'Condição removida: {condition.name}',old_value=old,new_value={'is_active':False}); return condition
 
-TECHNIQUE_FIELDS=('name','description','action_type','range_text','damage_text','damage_die','attribute_modifier','required_weapon_type','power_points_cost','category','technique_type','is_available','is_featured','sort_order')
+TECHNIQUE_FIELDS=('name','source','description','action_type','range_text','damage_text','damage_die','attribute_modifier','required_weapon_type','power_points_cost','category','technique_type','is_available','is_featured','sort_order')
 WEAPON_FIELDS=('name','range_text','damage_die','attribute_modifier','weapon_type','is_available','sort_order')
 FEATURE_FIELDS=('name','description','source','is_available','sort_order')
 

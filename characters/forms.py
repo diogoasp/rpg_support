@@ -40,8 +40,8 @@ class ConditionForm(forms.ModelForm):
 class PlayerTechniqueForm(forms.ModelForm):
     class Meta:
         model=CharacterTechnique
-        fields=("name","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
-        labels={"name":"Nome","description":"Descrição","action_type":"Ação","range_text":"Alcance","damage_text":"Texto de dano/cura","damage_die":"Dado de dano/cura","attribute_modifier":"Atributo usado","required_weapon_type":"Tipo de arma requerida","power_points_cost":"PP","category":"Categoria","technique_type":"Tipo","is_available":"Disponível","is_featured":"Destaque","sort_order":"Ordem"}
+        fields=("name","source","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
+        labels={"name":"Nome","source":"Origem","description":"Descrição","action_type":"Ação","range_text":"Alcance","damage_text":"Texto de dano/cura","damage_die":"Dado de dano/cura","attribute_modifier":"Atributo usado","required_weapon_type":"Tipo de arma requerida","power_points_cost":"PP","category":"Categoria","technique_type":"Tipo","is_available":"Disponível","is_featured":"Destaque","sort_order":"Ordem"}
         widgets={"description":forms.Textarea(attrs={"rows":3}),"damage_text":forms.TextInput(attrs={"placeholder":"Ex.: 2d8 de dano cortante"})}
 
 class PlayerWeaponForm(forms.ModelForm):
@@ -61,31 +61,33 @@ class LevelUpAuthorizationForm(forms.Form):
     master_note=forms.CharField(label="Observação do mestre",required=False,widget=forms.Textarea(attrs={"rows":3}))
 
 class LevelUpDraftForm(forms.Form):
-    basic_ability=forms.ModelChoiceField(label="Habilidade Básica",queryset=BasicAbility.objects.none(),required=False)
-    techniques=forms.ModelMultipleChoiceField(label="Técnicas",queryset=CombatStyleTechniqueOption.objects.none(),required=False,widget=forms.CheckboxSelectMultiple)
-    ava_mode=forms.ChoiceField(label="Aumento no Valor de Atributo",choices=(("", "---------"),("plus2","+2 em um atributo"),("plus1_plus1","+1 em dois atributos diferentes")),required=False)
-    keep_favorite_weapon=forms.BooleanField(label="Deseja manter sua arma favorita atual?",required=False,initial=True)
-    favorite_weapon=forms.ChoiceField(label="Nova arma favorita",choices=(),required=False)
+    hp_method=forms.ChoiceField(label="Método de PV",choices=(("average","Usar valor médio"),("rolled","Rolar o dado")),initial="average")
+    hp_roll_result=forms.IntegerField(label="Resultado do dado",required=False,min_value=1)
+    ava_mode=forms.CharField(required=False,widget=forms.HiddenInput)
     for key,label in CANONICAL_ATTRIBUTES:
-        locals()[f"ava_{key}"]=forms.IntegerField(label=label,min_value=0,max_value=2,required=False,initial=0)
+        locals()[f"ava_{key}"]=forms.IntegerField(label=label,min_value=0,max_value=2,required=False,initial=0,widget=forms.HiddenInput)
 
     def __init__(self,*args,character=None,requirements=None,available_basic_abilities=None,**kwargs):
         super().__init__(*args,**kwargs)
         self.character=character
         self.requirements=requirements or {}
-        self.fields["basic_ability"].queryset=available_basic_abilities or BasicAbility.objects.none()
-        style_level=self.requirements.get("style_level")
-        self.fields["techniques"].queryset=style_level.technique_options.all() if style_level else CombatStyleTechniqueOption.objects.none()
-        self.fields["techniques"].required=bool(style_level and style_level.grants_techniques)
-        self.fields["basic_ability"].required=bool(self.requirements.get("grants_basic_ability"))
-        self.fields["ava_mode"].required=bool(style_level and style_level.grants_attribute_increase)
+        self.fields["ava_mode"].required=bool(self.requirements.get("grants_attribute_increase"))
         for key in ATTRIBUTE_KEYS:
             self.fields[f"ava_{key}"].required=False
-            self.fields[f"ava_{key}"].widget.attrs.update({"class":"form-control form-control-sm"})
-        favorite_options=self.requirements.get("favorite_weapon_options") or []
-        self.fields["favorite_weapon"].choices=[("", "---------")]+[(option,option) for option in favorite_options]
-        if character and character.favorite_weapon:
-            self.fields["keep_favorite_weapon"].initial=True
+        hp_method=(self.data.get("hp_method") if self.is_bound else None) or getattr(self.requirements.get("process"),"hp_method","average")
+        self.fields["hp_roll_result"].required=hp_method=="rolled"
+
+    def clean(self):
+        cleaned=super().clean()
+        die=int(self.requirements.get("hit_die") or 0)
+        method=cleaned.get("hp_method")
+        result=cleaned.get("hp_roll_result")
+        if method=="rolled":
+            if result is None:
+                self.add_error("hp_roll_result","Informe o resultado do dado.")
+            elif die and (result < 1 or result > die):
+                self.add_error("hp_roll_result",f"Resultado deve estar entre 1 e {die}.")
+        return cleaned
 
     def selected_attribute_increases(self):
         return {

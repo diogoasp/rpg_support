@@ -1,0 +1,15 @@
+<div class="row g-3">
+  <div class="col-md-6"><label class="form-label">Nome</label><input class="form-control" name="technique_name[]" value="{{ item.name|default:'' }}" required></div>
+  <div class="col-md-6"><label class="form-label">Origem</label><input class="form-control" name="technique_source[]" value="{{ item.source|default:character.combat_style }}" placeholder="{{ character.combat_style }}"></div>
+  <div class="col-md-4"><label class="form-label">Tipo</label><select class="form-select" name="technique_technique_type[]">{% for value,label in technique_types %}<option value="{{ value }}" {% if item.technique_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label">Categoria</label><select class="form-select" name="technique_category[]">{% for value,label in technique_categories %}<option value="{{ value }}" {% if item.category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label">Ação</label><select class="form-select" name="technique_action_type[]">{% for value,label in technique_actions %}<option value="{{ value }}" {% if item.action_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label">Dado</label><input class="form-control" name="technique_damage_die[]" value="{{ item.damage_die|default:'' }}" placeholder="Ex.: 2d8"></div>
+  <div class="col-md-4"><label class="form-label">PP</label><input class="form-control" type="number" min="0" name="technique_power_points_cost[]" value="{{ item.power_points_cost|default:0 }}"></div>
+  <div class="col-md-4"><label class="form-label">Atributo</label><select class="form-select" name="technique_attribute_modifier[]">{% for value,label in attribute_choices %}<option value="{{ value }}" {% if item.attribute_modifier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-6"><label class="form-label">Alcance</label><input class="form-control" name="technique_range_text[]" value="{{ item.range_text|default:'' }}"></div>
+  <div class="col-md-6"><label class="form-label">Tipo de arma requerida</label><input class="form-control" name="technique_required_weapon_type[]" value="{{ item.required_weapon_type|default:'' }}"></div>
+  <div class="col-12"><label class="form-label">Texto de dano/cura</label><input class="form-control" name="technique_damage_text[]" value="{{ item.damage_text|default:'' }}"></div>
+  <div class="col-12"><label class="form-label">Descrição</label><textarea class="form-control" rows="3" name="technique_description[]">{{ item.description|default:'' }}</textarea></div>
+  <input type="hidden" name="technique_sort_order[]" value="{{ item.sort_order|default:0 }}">
+</div>

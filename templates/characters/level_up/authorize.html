@@ -19,12 +19,10 @@
       <h3 class="h5">Ganhos automáticos previstos</h3>
       <ul>
         <li>Nível {{ requirements.to_level }}</li>
-        <li>PP máximo {{ requirements.style_level.power_points }}</li>
-        <li>Proficiência +{{ requirements.style_level.proficiency_bonus }}</li>
+        <li>PP máximo {{ requirements.to_level|add:requirements.to_level }}</li>
+        <li>Proficiência +2 nos níveis 1 a 4</li>
         <li>+1 Dado de Vida d{{ requirements.style.hit_die }}</li>
-        {% for feature in requirements.automatic_features %}
-          <li>{{ feature.name }}</li>
-        {% endfor %}
+        <li>PV será calculado pelo jogador com valor médio ou resultado rolado fisicamente.</li>
         {% if requirements.profession_progression %}
           <li>Profissão: {{ requirements.profession_progression.grade }} — {{ requirements.profession_progression.subdivision }}</li>
         {% endif %}
@@ -33,12 +31,11 @@
     <section class="col-lg-6">
       <h3 class="h5">Escolhas do jogador</h3>
       <ul>
-        {% if requirements.grants_basic_ability %}<li>Escolher 1 Habilidade Básica.</li>{% endif %}
-        {% if requirements.grants_techniques %}<li>Receber/confirmar técnicas previstas do 3º nível.</li>{% endif %}
+        <li>Registrar manualmente técnicas recebidas no nível, se houver.</li>
+        <li>Registrar manualmente traços, Habilidades Básicas ou características recebidas, se houver.</li>
         {% if requirements.grants_attribute_increase %}<li>Aplicar AVA: +2 ou +1/+1.</li>{% endif %}
-        {% for group in requirements.choice_groups %}<li>{{ group.name }}: {{ group.minimum_choices }} a {{ group.maximum_choices }} escolha(s).</li>{% endfor %}
-        <li>Manter ou refazer arma favorita entre as opções do estilo.</li>
       </ul>
+      <p class="small text-muted mb-0">O catálogo interno não limita mais as habilidades disponíveis na passagem de nível. O jogador consulta o Livro do Jogador e registra o que recebeu.</p>
     </section>
   </div>
 

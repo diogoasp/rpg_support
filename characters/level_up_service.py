@@ -1,7 +1,6 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
-from django.utils.text import slugify
 
 from .character_calculation_service import calculate_attribute_modifier, calculate_initiative, calculate_proficiency_bonus, calculate_resistance_class
 from .models import (
@@ -15,6 +14,7 @@ from .models import (
     CharacterLevelUpAuthorization,
     CharacterLevelUpCorrection,
     CharacterLevelUpHistory,
+    CharacterTechnique,
     CombatStyle,
     CombatStyleLevel,
     CombatStyleLevelFeature,
@@ -59,6 +59,26 @@ def calculate_fixed_hp_gain(hit_die, constitution_modifier):
     return max(1, FIXED_HP_VALUES[int(hit_die)] + int(constitution_modifier))
 
 
+def raw_hp_value(hit_die, method, roll_result=None):
+    hit_die = int(hit_die)
+    if method == CharacterLevelUp.HpMethod.AVERAGE:
+        if hit_die not in FIXED_HP_VALUES:
+            raise ValidationError("Dado de Vida sem valor médio cadastrado para passagem de nível.")
+        return FIXED_HP_VALUES[hit_die]
+    if method == CharacterLevelUp.HpMethod.ROLLED:
+        if roll_result is None:
+            raise ValidationError("Informe o resultado do Dado de Vida.")
+        roll_result = int(roll_result)
+        if roll_result < 1 or roll_result > hit_die:
+            raise ValidationError(f"Resultado do Dado de Vida deve estar entre 1 e {hit_die}.")
+        return roll_result
+    raise ValidationError("Método de PV inválido.")
+
+
+def calculate_hp_gain(hit_die, constitution_modifier, method=CharacterLevelUp.HpMethod.AVERAGE, roll_result=None):
+    return max(1, raw_hp_value(hit_die, method, roll_result) + int(constitution_modifier))
+
+
 def calculate_power_points(level):
     if int(level) < 1 or int(level) > MAX_IMPLEMENTED_LEVEL:
         raise ValidationError("PP desta entrega só está definido para níveis 1 a 4.")
@@ -91,33 +111,42 @@ def resolve_style_level_features(character, to_level):
     return style_level
 
 
+def optional_style_level(character, to_level):
+    try:
+        return resolve_style_level_features(character, to_level)
+    except ValidationError:
+        return None
+
+
 def resolve_profession_progression(character, to_level):
     if character.profession.strip().lower().startswith("sem profissão"):
         return None
     try:
         return ProfessionProgression.objects.get(level=to_level, ruleset_version=RULESET_PLAYER_BOOK_1_5_7)
-    except ProfessionProgression.DoesNotExist as exc:
-        raise ValidationError({"profession": f"Progressão profissional do nível {to_level} não cadastrada."}) from exc
+    except ProfessionProgression.DoesNotExist:
+        return None
 
 
 def get_level_up_requirements(character):
     if character.level >= MAX_IMPLEMENTED_LEVEL:
         raise ValidationError("Passagem acima do 4º nível não está implementada.")
     to_level = character.level + 1
-    style_level = resolve_style_level_features(character, to_level)
+    style = _style_for_character(character)
+    style_level = optional_style_level(character, to_level)
     profession_progression = resolve_profession_progression(character, to_level)
     return {
         "from_level": character.level,
         "to_level": to_level,
-        "style": style_level.combat_style,
+        "style": style,
         "style_level": style_level,
-        "automatic_features": list(style_level.features.filter(is_automatic=True)),
-        "choice_groups": list(style_level.choice_groups.all()),
-        "techniques": list(style_level.technique_options.all()),
+        "automatic_features": [],
+        "choice_groups": [],
+        "techniques": [],
         "profession_progression": profession_progression,
-        "grants_basic_ability": style_level.grants_basic_ability,
-        "grants_attribute_increase": style_level.grants_attribute_increase,
-        "favorite_weapon_options": style_level.combat_style.favorite_weapon_options,
+        "grants_basic_ability": False,
+        "grants_attribute_increase": bool(to_level == 4 or (style_level and style_level.grants_attribute_increase)),
+        "favorite_weapon_options": style.favorite_weapon_options,
+        "hit_die": style.hit_die,
     }
 
 
@@ -216,6 +245,7 @@ def start_level_up(actor, authorization):
             "new_max_hp": character.max_hp,
             "old_max_power_points": character.max_power_points,
             "new_max_power_points": calculate_power_points(authorization.to_level),
+            "hp_method": CharacterLevelUp.HpMethod.AVERAGE,
             "snapshot_before": _snapshot(character),
         },
     )
@@ -271,6 +301,60 @@ def validate_technique_choices(style_level, selected_ids):
     if style_level.grants_techniques and set(selected_ids) != set(required):
         raise ValidationError("As técnicas obrigatórias previstas para o nível devem ser selecionadas.")
     return list(CombatStyleTechniqueOption.objects.filter(pk__in=selected_ids, combat_style_level=style_level))
+
+
+TECHNIQUE_DRAFT_FIELDS = ("name","source","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
+FEATURE_DRAFT_FIELDS = ("name","source","description","is_available","sort_order")
+
+
+def source_with_acquired_level(source, to_level):
+    text = (source or "").strip() or "Estilo de Combate"
+    marker = f"adquirid{'a' if text.lower().startswith(('habilidade','técnica','tecnica','característica','caracteristica')) else 'o'} no nível {to_level}"
+    if "adquirid" in text.lower() and f"nível {to_level}" in text.lower():
+        return text
+    return f"{text} — {marker}"
+
+
+def validate_level_up_draft_techniques(character, to_level, entries):
+    normalized = []
+    for index, entry in enumerate(entries or [], start=1):
+        data = {field: entry.get(field) for field in TECHNIQUE_DRAFT_FIELDS if field in entry}
+        data["name"] = (data.get("name") or "").strip()
+        if not data["name"]:
+            raise ValidationError(f"Técnica {index}: informe o nome.")
+        data["source"] = (data.get("source") or character.combat_style or "Estilo de Combate").strip()
+        data["description"] = data.get("description") or ""
+        data["action_type"] = data.get("action_type") or "action"
+        data["range_text"] = data.get("range_text") or ""
+        data["damage_text"] = data.get("damage_text") or ""
+        data["damage_die"] = data.get("damage_die") or ""
+        data["attribute_modifier"] = data.get("attribute_modifier") or "strength"
+        data["required_weapon_type"] = data.get("required_weapon_type") or ""
+        data["power_points_cost"] = int(data.get("power_points_cost") or 0)
+        data["category"] = data.get("category") or CharacterTechnique.Category.ATTACK
+        data["technique_type"] = data.get("technique_type") or CharacterTechnique.TechniqueType.INNATE
+        data["is_available"] = bool(data.get("is_available", True))
+        data["is_featured"] = bool(data.get("is_featured", False))
+        data["sort_order"] = int(data.get("sort_order") or 0)
+        candidate = CharacterTechnique(character=character, **data)
+        candidate.full_clean(exclude=("source_type","created_by","level_acquired"))
+        normalized.append(data)
+    return normalized
+
+
+def validate_level_up_draft_features(character, to_level, entries):
+    normalized = []
+    for index, entry in enumerate(entries or [], start=1):
+        data = {field: entry.get(field) for field in FEATURE_DRAFT_FIELDS if field in entry}
+        data["name"] = (data.get("name") or "").strip()
+        if not data["name"]:
+            raise ValidationError(f"Característica {index}: informe o nome.")
+        data["source"] = (data.get("source") or character.combat_style or "Estilo de Combate").strip()
+        data["description"] = data.get("description") or ""
+        data["is_available"] = bool(data.get("is_available", True))
+        data["sort_order"] = int(data.get("sort_order") or 0)
+        normalized.append(data)
+    return normalized
 
 
 def validate_attribute_increase(character, to_level, data):
@@ -332,7 +416,7 @@ def recalculate_max_hp(character, to_level, new_constitution=None, new_level_fix
     return max(1, total)
 
 
-def preview_level_up(process, selected_basic_ability=None, selected_attribute_increases=None, selected_favorite_weapon=None, keep_favorite_weapon=True):
+def preview_level_up(process, selected_attribute_increases=None, hp_method=None, hp_roll_result=None):
     character = process.character
     style = process.combat_style
     to_level = process.to_level
@@ -341,22 +425,26 @@ def preview_level_up(process, selected_basic_ability=None, selected_attribute_in
     new_con = old_con + int(increments.get("constitution", 0))
     old_con_mod = character.constitution_modifier
     new_con_mod = calculate_attribute_modifier(new_con)
-    fixed_value = FIXED_HP_VALUES[int(style.hit_die)]
-    new_max_hp = recalculate_max_hp(character, to_level, new_constitution=new_con, new_level_fixed_value=fixed_value)
+    method = hp_method or process.hp_method or CharacterLevelUp.HpMethod.AVERAGE
+    roll_result = hp_roll_result if hp_roll_result is not None else process.hp_roll_result
+    raw_value = raw_hp_value(style.hit_die, method, roll_result)
+    hp_gain = calculate_hp_gain(style.hit_die, new_con_mod, method, roll_result)
+    new_max_hp = recalculate_max_hp(character, to_level, new_constitution=new_con, new_level_fixed_value=raw_value)
     hp_diff = new_max_hp - character.max_hp
     new_current_hp = min(character.current_hp + hp_diff, new_max_hp) if hp_diff > 0 else min(character.current_hp, new_max_hp)
     new_max_pp = calculate_power_points(to_level)
     pp_diff = new_max_pp - character.max_power_points
     new_current_pp = min(character.current_power_points + pp_diff, new_max_pp)
-    favorite_weapon, favorite_changed = resolve_favorite_weapon(character, keep_favorite_weapon, selected_favorite_weapon)
     return {
         "old_constitution": old_con,
         "new_constitution": new_con,
         "old_constitution_modifier": old_con_mod,
         "new_constitution_modifier": new_con_mod,
         "constitution_retroactive_adjustment": apply_constitution_retroactivity(old_con_mod, new_con_mod, to_level),
-        "fixed_hp_value": fixed_value,
-        "hp_gain": calculate_fixed_hp_gain(style.hit_die, new_con_mod),
+        "fixed_hp_value": raw_value,
+        "hp_method": method,
+        "hp_roll_result": roll_result,
+        "hp_gain": hp_gain,
         "old_max_hp": character.max_hp,
         "new_max_hp": new_max_hp,
         "old_current_hp": character.current_hp,
@@ -368,9 +456,9 @@ def preview_level_up(process, selected_basic_ability=None, selected_attribute_in
         "proficiency_bonus": calculate_proficiency_bonus(to_level),
         "total_hit_dice": to_level,
         "hit_die_type": style.hit_die,
-        "favorite_weapon": favorite_weapon,
-        "favorite_weapon_changed": favorite_changed,
-        "selected_basic_ability": selected_basic_ability.name if selected_basic_ability else "",
+        "favorite_weapon": character.favorite_weapon,
+        "favorite_weapon_changed": False,
+        "selected_basic_ability": "",
         "attribute_increases": increments,
     }
 
@@ -378,6 +466,9 @@ def preview_level_up(process, selected_basic_ability=None, selected_attribute_in
 def refresh_level_up_preview(process):
     preview = preview_level_up(process)
     process.fixed_hp_value = preview["fixed_hp_value"]
+    process.hp_method = preview["hp_method"]
+    process.hp_roll_result = preview["hp_roll_result"]
+    process.hp_gain_total = preview["hp_gain"]
     process.new_constitution = preview["new_constitution"]
     process.old_constitution_modifier = preview["old_constitution_modifier"]
     process.new_constitution_modifier = preview["new_constitution_modifier"]
@@ -386,26 +477,33 @@ def refresh_level_up_preview(process):
     process.old_max_power_points = preview["old_max_power_points"]
     process.new_max_power_points = preview["new_max_power_points"]
     process.snapshot_after = preview
-    process.save(update_fields=("fixed_hp_value","new_constitution","old_constitution_modifier","new_constitution_modifier","old_max_hp","new_max_hp","old_max_power_points","new_max_power_points","snapshot_after"))
+    process.save(update_fields=("fixed_hp_value","hp_method","hp_roll_result","hp_gain_total","new_constitution","old_constitution_modifier","new_constitution_modifier","old_max_hp","new_max_hp","old_max_power_points","new_max_power_points","snapshot_after"))
     return preview
 
 
-def save_level_up_draft(actor, process, selected_basic_ability=None, selected_technique_ids=None, selected_attribute_increases=None, selected_style_choices=None, selected_profession_choices=None, keep_favorite_weapon=True, selected_favorite_weapon=""):
+def save_level_up_draft(actor, process, selected_basic_ability=None, selected_technique_ids=None, selected_attribute_increases=None, selected_style_choices=None, selected_profession_choices=None, keep_favorite_weapon=True, selected_favorite_weapon="", hp_method=None, hp_roll_result=None, draft_techniques=None, draft_features=None):
     validate_player_can_execute(actor, process.character)
     requirements = get_level_up_requirements(process.character)
     if requirements["to_level"] != process.to_level:
         raise ValidationError("O nível atual do personagem diverge do processo.")
-    ability = validate_basic_ability_choice(process.character, process.to_level, selected_basic_ability)
-    techniques = validate_technique_choices(requirements["style_level"], selected_technique_ids or [])
-    increments = validate_attribute_increase(process.character, process.to_level, selected_attribute_increases or {}) if requirements["style_level"].grants_attribute_increase else {}
-    favorite_weapon, favorite_changed = resolve_favorite_weapon(process.character, keep_favorite_weapon, selected_favorite_weapon)
-    preview = preview_level_up(process, ability, increments, favorite_weapon, keep_favorite_weapon=bool(not favorite_changed))
-    process.selected_basic_ability = ability
+    increments = validate_attribute_increase(process.character, process.to_level, selected_attribute_increases or {}) if requirements["grants_attribute_increase"] else {}
+    method = hp_method or process.hp_method or CharacterLevelUp.HpMethod.AVERAGE
+    roll = hp_roll_result if method == CharacterLevelUp.HpMethod.ROLLED else None
+    raw_hp_value(process.combat_style.hit_die, method, roll)
+    techniques = validate_level_up_draft_techniques(process.character, process.to_level, draft_techniques if draft_techniques is not None else process.draft_techniques)
+    features = validate_level_up_draft_features(process.character, process.to_level, draft_features if draft_features is not None else process.draft_features)
+    preview = preview_level_up(process, increments, method, roll)
+    process.selected_basic_ability = None
     process.selected_attribute_increases = increments
     process.selected_style_choices = selected_style_choices or {}
     process.selected_profession_choices = selected_profession_choices or {}
-    process.selected_favorite_weapon = favorite_weapon
-    process.favorite_weapon_changed = favorite_changed
+    process.selected_favorite_weapon = process.character.favorite_weapon
+    process.favorite_weapon_changed = False
+    process.hp_method = method
+    process.hp_roll_result = roll
+    process.hp_gain_total = preview["hp_gain"]
+    process.draft_techniques = techniques
+    process.draft_features = features
     process.snapshot_after = preview
     process.fixed_hp_value = preview["fixed_hp_value"]
     process.new_constitution = preview["new_constitution"]
@@ -413,7 +511,7 @@ def save_level_up_draft(actor, process, selected_basic_ability=None, selected_te
     process.new_max_hp = preview["new_max_hp"]
     process.new_max_power_points = preview["new_max_power_points"]
     process.save()
-    process.selected_techniques.set(techniques)
+    process.selected_techniques.clear()
     return process
 
 
@@ -444,11 +542,11 @@ def complete_level_up(actor, process):
     if character.level != authorization.from_level or process.to_level != authorization.to_level:
         raise ValidationError("O nível atual diverge da autorização.")
     requirements = get_level_up_requirements(character)
-    ability = validate_basic_ability_choice(character, process.to_level, process.selected_basic_ability)
-    techniques = validate_technique_choices(requirements["style_level"], process.selected_techniques.values_list("pk", flat=True))
-    increments = validate_attribute_increase(character, process.to_level, process.selected_attribute_increases) if requirements["style_level"].grants_attribute_increase else {}
-    favorite_weapon, favorite_changed = resolve_favorite_weapon(character, keep_current=not process.favorite_weapon_changed, selected_weapon=process.selected_favorite_weapon)
-    preview = preview_level_up(process, ability, increments, favorite_weapon, keep_favorite_weapon=not favorite_changed)
+    increments = validate_attribute_increase(character, process.to_level, process.selected_attribute_increases) if requirements["grants_attribute_increase"] else {}
+    draft_techniques = validate_level_up_draft_techniques(character, process.to_level, process.draft_techniques)
+    draft_features = validate_level_up_draft_features(character, process.to_level, process.draft_features)
+    raw_hp_value(process.combat_style.hit_die, process.hp_method, process.hp_roll_result)
+    preview = preview_level_up(process, increments, process.hp_method, process.hp_roll_result)
 
     for key, increment in increments.items():
         setattr(character, key, getattr(character, key) + increment)
@@ -470,33 +568,58 @@ def complete_level_up(actor, process):
             "other_bonus": 0,
         },
     )
-    if ability:
-        CharacterBasicAbility.objects.create(character=character, ability=ability, source_type="level_up", source_level=process.to_level)
-        CharacterFeature.objects.update_or_create(
+    created_techniques = []
+    for entry in draft_techniques:
+        technique = CharacterTechnique(
             character=character,
-            name=ability.name,
-            defaults={"source": f"Habilidade Básica: nível {process.to_level}", "description": ability.description, "is_available": True, "source_type": CharacterRecordSource.LEVEL_UP},
+            source=source_with_acquired_level(entry.get("source"), process.to_level),
+            description=entry.get("description",""),
+            name=entry["name"],
+            action_type=entry.get("action_type","action"),
+            range_text=entry.get("range_text",""),
+            damage_text=entry.get("damage_text",""),
+            damage_die=entry.get("damage_die",""),
+            attribute_modifier=entry.get("attribute_modifier","strength"),
+            required_weapon_type=entry.get("required_weapon_type",""),
+            power_points_cost=int(entry.get("power_points_cost") or 0),
+            category=entry.get("category") or CharacterTechnique.Category.ATTACK,
+            technique_type=entry.get("technique_type") or CharacterTechnique.TechniqueType.INNATE,
+            is_available=bool(entry.get("is_available",True)),
+            is_featured=bool(entry.get("is_featured",False)),
+            sort_order=int(entry.get("sort_order") or 0),
+            source_type=CharacterRecordSource.LEVEL_UP,
+            level_acquired=process.to_level,
+            created_by=actor,
         )
-    features_received = []
-    for feature in requirements["style_level"].features.all():
-        CharacterFeature.objects.update_or_create(
+        technique.full_clean()
+        technique.save()
+        created_techniques.append(technique)
+    created_features = []
+    for entry in draft_features:
+        feature = CharacterFeature.objects.create(
             character=character,
-            name=feature.name,
-            defaults={"source": f"Estilo {character.combat_style}: nível {process.to_level}", "description": feature.description, "is_available": True, "sort_order": 100 + feature.sort_order, "source_type": CharacterRecordSource.LEVEL_UP},
+            name=entry["name"],
+            source=source_with_acquired_level(entry.get("source"), process.to_level),
+            description=entry.get("description",""),
+            is_available=bool(entry.get("is_available",True)),
+            sort_order=int(entry.get("sort_order") or 0),
+            source_type=CharacterRecordSource.LEVEL_UP,
+            level_acquired=process.to_level,
+            created_by=actor,
         )
-        features_received.append({"name": feature.name, "type": feature.feature_type, "effects": feature.effects})
-    if progression and progression.grants_professional_feature:
-        CharacterFeature.objects.update_or_create(
-            character=character,
-            name=progression.feature_name,
-            defaults={"source": f"Profissão: {progression.grade} {progression.subdivision}", "description": progression.feature_description, "is_available": True, "source_type": CharacterRecordSource.LEVEL_UP},
-        )
+        created_features.append(feature)
 
     process.status = CharacterLevelUp.Status.COMPLETED
     process.completed_at = timezone.now()
     process.snapshot_after = preview
-    process.favorite_weapon_changed = favorite_changed
-    process.selected_favorite_weapon = favorite_weapon
+    process.favorite_weapon_changed = False
+    process.selected_favorite_weapon = character.favorite_weapon
+    process.hp_gain_total = preview["hp_gain"]
+    process.fixed_hp_value = preview["fixed_hp_value"]
+    process.new_constitution = preview["new_constitution"]
+    process.new_constitution_modifier = preview["new_constitution_modifier"]
+    process.new_max_hp = preview["new_max_hp"]
+    process.new_max_power_points = preview["new_max_power_points"]
     process.save()
     authorization.status = CharacterLevelUpAuthorization.Status.COMPLETED
     authorization.completed_at = process.completed_at
@@ -520,13 +643,18 @@ def complete_level_up(actor, process):
         new_power_points=preview["new_current_power_points"],
         old_max_power_points=preview["old_max_power_points"],
         new_max_power_points=preview["new_max_power_points"],
-        basic_ability=ability,
+        basic_ability=None,
         attribute_increases=increments,
-        features_received=features_received,
+        features_received=[{"name": feature.name, "source": feature.source} for feature in created_features],
         profession_progression={"grade": character.profession_grade, "subdivision": character.profession_subdivision},
-        favorite_weapon=favorite_weapon,
+        favorite_weapon=character.favorite_weapon,
+        hp_method=process.hp_method,
+        hp_roll_result=process.hp_roll_result,
+        hp_gain_total=preview["hp_gain"],
     )
-    history.techniques.set(techniques)
+    history.techniques.clear()
+    history.created_techniques.set(created_techniques)
+    history.created_features.set(created_features)
     return history
 
 

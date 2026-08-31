@@ -2,98 +2,185 @@
 {% block title %}Passagem de nível{% endblock %}
 {% block page_heading %}Passagem de nível{% endblock %}
 {% block content %}
-<section class="parchment-card p-4">
+<section class="parchment-card p-4 level-up-wizard">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
       <p class="text-uppercase text-primary fw-bold mb-1">{{ campaign.name }}</p>
-      <h2 class="h3 mb-1">{{ character.name }}</h2>
-      <p class="mb-0">Nível {{ process.from_level }} → {{ process.to_level }} · {{ character.combat_style }}</p>
+      <h2 class="h3 mb-1">Passagem para o nível {{ process.to_level }}</h2>
+      <p class="mb-0">{{ character.name }} · Nível {{ process.from_level }} → {{ process.to_level }} · {{ character.combat_style }}</p>
     </div>
     <a class="btn btn-outline-secondary align-self-start" href="{% url 'characters:dashboard' campaign.slug %}">Voltar</a>
   </div>
 
-  <div class="row g-3 mb-4">
-    <section class="col-lg-6">
-      <h3 class="h5">Ganhos automáticos</h3>
-      <ul>
-        <li>PP máximo: {{ requirements.style_level.power_points }}</li>
-        <li>Bônus de proficiência permanece +{{ requirements.style_level.proficiency_bonus }}</li>
-        <li>+1 Dado de Vida d{{ requirements.style.hit_die }}</li>
-        <li>PV por método fixo, sem rolagem.</li>
-        {% for feature in requirements.automatic_features %}
-          <li><strong>{{ feature.name }}</strong>: {{ feature.description|truncatewords:24 }}</li>
-        {% endfor %}
-        {% if requirements.profession_progression %}
-          <li>Profissão: {{ requirements.profession_progression.grade }} — {{ requirements.profession_progression.subdivision }}</li>
-        {% endif %}
-      </ul>
-    </section>
-    <section class="col-lg-6">
-      <h3 class="h5">Escolhas necessárias</h3>
-      <ul>
-        {% if requirements.grants_basic_ability %}<li>Habilidade Básica.</li>{% endif %}
-        {% if requirements.grants_techniques %}<li>Técnicas previstas para o estilo.</li>{% endif %}
-        {% if requirements.grants_attribute_increase %}<li>Aumento no Valor de Atributo.</li>{% endif %}
-        {% for group in requirements.choice_groups %}<li>{{ group.name }}.</li>{% endfor %}
-        <li>Arma favorita.</li>
-      </ul>
-    </section>
-  </div>
-
-  <form method="post">
+  <form method="post" id="level-up-form">
     {% csrf_token %}
     {{ form.non_field_errors }}
 
-    {% if requirements.grants_basic_ability %}
-      <fieldset class="mb-3">
-        <legend class="h5">Habilidade Básica</legend>
-        {{ form.basic_ability.errors }}
-        {{ form.basic_ability }}
-      </fieldset>
-    {% endif %}
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h3 class="h5">1. Aumento de PV</h3>
+        <div class="row g-2 mb-3">
+          <div class="col-md-3"><small class="text-muted">Nível atual</small><strong class="d-block">{{ process.from_level }}</strong></div>
+          <div class="col-md-3"><small class="text-muted">Novo nível</small><strong class="d-block">{{ process.to_level }}</strong></div>
+          <div class="col-md-3"><small class="text-muted">Estilo</small><strong class="d-block">{{ character.combat_style }}</strong></div>
+          <div class="col-md-3"><small class="text-muted">Dado de Vida</small><strong class="d-block">d{{ requirements.hit_die }}</strong></div>
+          <div class="col-md-3"><small class="text-muted">Constituição</small><strong class="d-block">{{ character.constitution }} ({{ character.constitution_modifier|stringformat:'+d' }})</strong></div>
+          <div class="col-md-3"><small class="text-muted">PV atual</small><strong class="d-block">{{ character.current_hp }}</strong></div>
+          <div class="col-md-3"><small class="text-muted">PV máximo atual</small><strong class="d-block">{{ character.max_hp }}</strong></div>
+        </div>
+        {{ form.hp_method.errors }}
+        <div class="d-flex flex-wrap gap-3 mb-3">
+          <label class="form-check">
+            <input class="form-check-input" type="radio" name="hp_method" value="average" {% if form.hp_method.value != 'rolled' %}checked{% endif %} data-hp-method>
+            <span class="form-check-label">Usar valor médio</span>
+          </label>
+          <label class="form-check">
+            <input class="form-check-input" type="radio" name="hp_method" value="rolled" {% if form.hp_method.value == 'rolled' %}checked{% endif %} data-hp-method>
+            <span class="form-check-label">Rolar o dado</span>
+          </label>
+        </div>
+        <div id="hp-roll-field" class="mb-3" {% if form.hp_method.value != 'rolled' %}hidden{% endif %}>
+          <label class="form-label" for="{{ form.hp_roll_result.id_for_label }}">Resultado do dado</label>
+          {{ form.hp_roll_result }}
+          {{ form.hp_roll_result.errors }}
+          <div class="form-text">Informe um valor de 1 a {{ requirements.hit_die }}. O sistema não rola o dado.</div>
+        </div>
+        <p class="mb-0 small text-muted">O ganho final será recalculado na confirmação. Se AVA alterar Constituição, o ajuste retroativo será considerado sem duplicar o novo nível.</p>
+      </div>
+    </section>
 
-    {% if requirements.grants_techniques %}
-      <fieldset class="mb-3">
-        <legend class="h5">Técnicas</legend>
-        {{ form.techniques.errors }}
-        {{ form.techniques }}
-      </fieldset>
-    {% endif %}
-
-    {% if requirements.grants_attribute_increase %}
-      <fieldset class="mb-3">
-        <legend class="h5">Aumento no Valor de Atributo</legend>
-        {{ form.ava_mode.errors }}
-        {{ form.ava_mode }}
-        <div class="row g-2 mt-2">
-          {% for field in ava_fields %}
-            <div class="col-6 col-md-2">
-              <label class="form-label small">{{ field.label }}</label>
-              {{ field }}
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+          <div>
+            <h3 class="h5 mb-1">2. Habilidades recebidas</h3>
+            <p class="text-muted mb-0">Cadastre aqui técnicas e características recebidas com base no Livro do Jogador. A quantidade é livre.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-self-start">
+            <button class="btn btn-outline-primary btn-sm" type="button" data-add-technique>+ Técnica de Combate</button>
+            <button class="btn btn-outline-primary btn-sm" type="button" data-add-feature>+ Traço / Característica</button>
+          </div>
+        </div>
+        <div id="level-up-abilities" class="d-grid gap-3">
+          {% for item in process.draft_techniques %}
+            <div class="level-up-entry border rounded p-3" data-entry>
+              <div class="d-flex justify-content-between gap-2 mb-2"><strong>Técnica de Combate</strong><button class="btn btn-sm btn-outline-danger" type="button" data-remove-entry>Remover</button></div>
+              {% include 'characters/level_up/partials/technique_fields.html' with item=item %}
+            </div>
+          {% endfor %}
+          {% for item in process.draft_features %}
+            <div class="level-up-entry border rounded p-3" data-entry>
+              <div class="d-flex justify-content-between gap-2 mb-2"><strong>Traço / Característica</strong><button class="btn btn-sm btn-outline-danger" type="button" data-remove-entry>Remover</button></div>
+              {% include 'characters/level_up/partials/feature_fields.html' with item=item %}
             </div>
           {% endfor %}
         </div>
-      </fieldset>
+      </div>
+    </section>
+
+    {% if requirements.grants_attribute_increase %}
+      <section class="card border-0 shadow-sm mb-4" id="ava-panel" data-ava-limit="20">
+        <div class="card-body">
+          <h3 class="h5">3. Aumento no Valor de Atributo</h3>
+          <p class="text-muted">Distribua 2 pontos. Use +2 em um atributo ou +1 em dois atributos diferentes.</p>
+          {{ form.ava_mode }}
+          {% for field in ava_fields %}{{ field }}{% endfor %}
+          <div class="list-group mb-3">
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="strength" data-base="{{ character.strength }}"><span>Força</span><span><strong data-ava-value>{{ character.strength }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="strength">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="strength">+</button></span></div>
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="dexterity" data-base="{{ character.dexterity }}"><span>Destreza</span><span><strong data-ava-value>{{ character.dexterity }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="dexterity">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="dexterity">+</button></span></div>
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="constitution" data-base="{{ character.constitution }}"><span>Constituição</span><span><strong data-ava-value>{{ character.constitution }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="constitution">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="constitution">+</button></span></div>
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="wisdom" data-base="{{ character.wisdom }}"><span>Sabedoria</span><span><strong data-ava-value>{{ character.wisdom }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="wisdom">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="wisdom">+</button></span></div>
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="willpower" data-base="{{ character.willpower }}"><span>Vontade</span><span><strong data-ava-value>{{ character.willpower }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="willpower">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="willpower">+</button></span></div>
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3" data-ava-row data-key="presence" data-base="{{ character.presence }}"><span>Presença</span><span><strong data-ava-value>{{ character.presence }}</strong> <small class="text-muted" data-ava-delta></small></span><span class="btn-group"><button class="btn btn-sm btn-outline-secondary" type="button" data-ava-minus data-key="presence">-</button><button class="btn btn-sm btn-outline-primary" type="button" data-ava-plus data-key="presence">+</button></span></div>
+          </div>
+          <p class="mb-0"><strong>Pontos restantes:</strong> <span id="ava-remaining">2</span></p>
+          <button class="btn btn-outline-primary btn-sm mt-3" type="button" hx-post="{% url 'characters:level_up_preview' campaign.slug %}" hx-target="#level-up-preview" hx-swap="outerHTML" hx-include="#level-up-form">Salvar aumento de atributos na prévia</button>
+        </div>
+      </section>
     {% endif %}
 
-    <fieldset class="mb-3">
-      <legend class="h5">Arma favorita</legend>
-      <div class="form-check">
-        {{ form.keep_favorite_weapon }}
-        <label class="form-check-label" for="{{ form.keep_favorite_weapon.id_for_label }}">Deseja manter sua arma favorita atual?</label>
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h3 class="h5">{% if requirements.grants_attribute_increase %}4{% else %}3{% endif %}. Revisão</h3>
+        {% include 'characters/level_up/partials/preview.html' %}
       </div>
-      <p class="small text-muted mb-1">Atual: {{ character.favorite_weapon|default:"não registrada" }}</p>
-      {{ form.favorite_weapon.errors }}
-      {{ form.favorite_weapon }}
-    </fieldset>
+    </section>
 
-    {% include 'characters/level_up/partials/preview.html' %}
-
-    <div class="d-flex flex-wrap gap-2 mt-4">
-      <button class="btn btn-outline-primary" type="button" hx-post="{% url 'characters:level_up_preview' campaign.slug %}" hx-target="#level-up-preview" hx-swap="outerHTML" hx-include="closest form">Atualizar prévia</button>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-outline-primary" type="button" hx-post="{% url 'characters:level_up_preview' campaign.slug %}" hx-target="#level-up-preview" hx-swap="outerHTML" hx-include="#level-up-form">Atualizar prévia</button>
       <button class="btn btn-secondary" type="submit">Salvar rascunho</button>
       <button class="btn btn-primary" type="submit" name="confirm" value="1">Confirmar passagem de nível</button>
     </div>
   </form>
 </section>
+
+<template id="technique-template">
+  <div class="level-up-entry border rounded p-3" data-entry>
+    <div class="d-flex justify-content-between gap-2 mb-2"><strong>Técnica de Combate</strong><button class="btn btn-sm btn-outline-danger" type="button" data-remove-entry>Remover</button></div>
+    {% include 'characters/level_up/partials/technique_fields.html' with item=None %}
+  </div>
+</template>
+<template id="feature-template">
+  <div class="level-up-entry border rounded p-3" data-entry>
+    <div class="d-flex justify-content-between gap-2 mb-2"><strong>Traço / Característica</strong><button class="btn btn-sm btn-outline-danger" type="button" data-remove-entry>Remover</button></div>
+    {% include 'characters/level_up/partials/feature_fields.html' with item=None %}
+  </div>
+</template>
+
+<script>
+  (() => {
+    const form = document.querySelector("#level-up-form");
+    const rollField = document.querySelector("#hp-roll-field");
+    document.querySelectorAll("[data-hp-method]").forEach((input) => {
+      input.addEventListener("change", () => {
+        if (rollField) rollField.hidden = input.value !== "rolled";
+      });
+    });
+    const abilityBox = document.querySelector("#level-up-abilities");
+    const addTemplate = (id) => {
+      const template = document.querySelector(id);
+      abilityBox.appendChild(template.content.firstElementChild.cloneNode(true));
+    };
+    document.querySelector("[data-add-technique]")?.addEventListener("click", () => addTemplate("#technique-template"));
+    document.querySelector("[data-add-feature]")?.addEventListener("click", () => addTemplate("#feature-template"));
+    abilityBox?.addEventListener("click", (event) => {
+      if (event.target.matches("[data-remove-entry]")) event.target.closest("[data-entry]").remove();
+    });
+    const avaPanel = document.querySelector("#ava-panel");
+    if (!avaPanel) return;
+    const keys = ["strength","dexterity","constitution","wisdom","willpower","presence"];
+    const increments = Object.fromEntries(keys.map((key) => [key, Number(form.querySelector(`[name="ava_${key}"]`)?.value || 0)]));
+    const limit = Number(avaPanel.dataset.avaLimit || 20);
+    const remainingEl = document.querySelector("#ava-remaining");
+    const syncAva = () => {
+      const total = keys.reduce((sum, key) => sum + increments[key], 0);
+      keys.forEach((key) => {
+        const input = form.querySelector(`[name="ava_${key}"]`);
+        if (input) input.value = increments[key];
+        const row = avaPanel.querySelector(`[data-ava-row][data-key="${key}"]`);
+        if (!row) return;
+        const base = Number(row.dataset.base || 0);
+        row.querySelector("[data-ava-value]").textContent = String(base + increments[key]);
+        row.querySelector("[data-ava-delta]").textContent = increments[key] ? `(${base} → ${base + increments[key]})` : "";
+      });
+      const mode = total === 2 && Object.values(increments).includes(2) ? "plus2" : (total === 2 ? "plus1_plus1" : "");
+      const modeInput = form.querySelector('[name="ava_mode"]');
+      if (modeInput) modeInput.value = mode;
+      remainingEl.textContent = String(2 - total);
+    };
+    avaPanel.addEventListener("click", (event) => {
+      const plus = event.target.closest("[data-ava-plus]");
+      const minus = event.target.closest("[data-ava-minus]");
+      const key = plus?.dataset.key || minus?.dataset.key;
+      if (!key) return;
+      const row = avaPanel.querySelector(`[data-ava-row][data-key="${key}"]`);
+      const base = Number(row?.dataset.base || 0);
+      const total = keys.reduce((sum, item) => sum + increments[item], 0);
+      if (plus && total < 2 && increments[key] < 2 && base + increments[key] < limit) increments[key] += 1;
+      if (minus && increments[key] > 0) increments[key] -= 1;
+      syncAva();
+    });
+    syncAva();
+  })();
+</script>
 {% endblock %}
