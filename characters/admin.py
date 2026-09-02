@@ -16,6 +16,9 @@ from .models import (
     CharacterRuleException,
     CharacterSkill,
     CharacterTechnique,
+    CharacterTechniqueActivation,
+    CharacterTechniqueGrade,
+    CharacterTechniqueUse,
     CharacterWeapon,
     CombatStyle,
     CombatStyleLevel,
@@ -39,6 +42,7 @@ class SkillInline(admin.TabularInline): model=CharacterSkill; extra=0; autocompl
 class AttributeInline(admin.TabularInline): model=CharacterAttribute; extra=0; readonly_fields=('final_value',)
 class WeaponInline(admin.StackedInline): model=CharacterWeapon; extra=0
 class TechniqueInline(admin.StackedInline): model=CharacterTechnique; extra=0
+class TechniqueGradeInline(admin.TabularInline): model=CharacterTechniqueGrade; extra=0; max_num=3
 class HitPointComponentInline(admin.TabularInline): model=CharacterHitPointComponent; extra=0; readonly_fields=('created_at',)
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
@@ -163,16 +167,37 @@ class CharacterWeaponAdmin(admin.ModelAdmin):
 
 @admin.register(CharacterTechnique)
 class CharacterTechniqueAdmin(admin.ModelAdmin):
-    list_display=('name','character','campaign','category','technique_type','source','level_acquired','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','source_type','is_available','is_featured','sort_order')
-    list_filter=('character__campaign','category','technique_type','required_weapon_type','attribute_modifier','source_type','level_acquired','is_available','is_featured')
+    list_display=('name','character','campaign','usage_mode','category','technique_type','source','level_acquired','required_weapon_type','range_text','damage_die','attribute_modifier','power_points_cost','source_type','is_available','is_featured','sort_order')
+    list_filter=('character__campaign','usage_mode','category','technique_type','required_weapon_type','attribute_modifier','source_type','level_acquired','is_available','is_featured')
     search_fields=('name','source','character__name','character__user__username','required_weapon_type','description')
     autocomplete_fields=('character',)
     readonly_fields=('created_at','updated_at')
     list_select_related=('character','character__campaign','character__user')
     list_editable=('is_available','is_featured','sort_order')
+    inlines=(TechniqueGradeInline,)
     @admin.display(description='Campanha', ordering='character__campaign__name')
     def campaign(self,obj): return obj.character.campaign
     def save_model(self,request,obj,form,change): obj.full_clean(); super().save_model(request,obj,form,change)
+
+@admin.register(CharacterTechniqueActivation)
+class CharacterTechniqueActivationAdmin(admin.ModelAdmin):
+    list_display=('technique','character','status','rounds_maintained','activation_cost','maintenance_cost','activated_by','activated_at','ended_at')
+    list_filter=('status','technique__character__campaign','activated_at')
+    search_fields=('technique__name','technique__character__name','activated_by__username')
+    readonly_fields=('technique','status','rounds_maintained','activation_cost','maintenance_cost','activated_by','activated_at','ended_at')
+    list_select_related=('technique','technique__character','activated_by')
+    @admin.display(description='Personagem',ordering='technique__character__name')
+    def character(self,obj): return obj.technique.character
+
+@admin.register(CharacterTechniqueUse)
+class CharacterTechniqueUseAdmin(admin.ModelAdmin):
+    list_display=('technique','character','kind','grade','power_points_spent','used_by','created_at','undone_at')
+    list_filter=('kind','grade','technique__character__campaign','created_at','undone_at')
+    search_fields=('technique__name','technique__character__name','used_by__username')
+    readonly_fields=('technique','activation','kind','grade','power_points_spent','used_by','created_at','undone_at','undone_by')
+    list_select_related=('technique','technique__character','used_by')
+    @admin.display(description='Personagem',ordering='technique__character__name')
+    def character(self,obj): return obj.technique.character
 
 @admin.register(CharacterLevelUpAuthorization)
 class CharacterLevelUpAuthorizationAdmin(admin.ModelAdmin):

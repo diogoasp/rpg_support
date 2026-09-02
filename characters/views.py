@@ -44,10 +44,12 @@ from .level_up_service import (
     save_level_up_draft,
     start_level_up,
 )
-from .models import CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterWeapon, Species
+from .models import CANONICAL_ATTRIBUTES, Character, CharacterCondition, CharacterCreation, CharacterFeature, CharacterLevelUp, CharacterLevelUpAuthorization, CharacterLevelUpHistory, CharacterProficiency, CharacterRuleException, CharacterTechnique, CharacterTechniqueActivation, CharacterWeapon, Species
 from .print_sheet_service import print_sheet_context
 from .services import (
     add_character_condition,
+    end_continuous_technique,
+    maintain_continuous_technique,
     create_player_feature,
     create_player_technique,
     create_player_weapon,
@@ -72,7 +74,8 @@ from .services import (
 )
 
 def rich_queryset():
-    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=CharacterTechnique.objects.order_by('sort_order')),Prefetch('weapons',queryset=CharacterWeapon.objects.filter(is_available=True).order_by('sort_order','name')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)),Prefetch('level_up_authorizations',queryset=CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by('-created_at'),to_attr='active_level_up_authorizations'),Prefetch('level_up_history',queryset=CharacterLevelUpHistory.objects.order_by('-created_at'),to_attr='recent_level_up_history'), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
+    technique_queryset=CharacterTechnique.objects.order_by('sort_order').prefetch_related('grades',Prefetch('activations',queryset=CharacterTechniqueActivation.objects.filter(status=CharacterTechniqueActivation.Status.ACTIVE),to_attr='active_activation_records'))
+    return Character.objects.select_related('campaign','user').prefetch_related(Prefetch('conditions',queryset=CharacterCondition.objects.filter(is_active=True)),Prefetch('techniques',queryset=technique_queryset),Prefetch('weapons',queryset=CharacterWeapon.objects.filter(is_available=True).order_by('sort_order','name')),Prefetch('features',queryset=CharacterFeature.objects.filter(is_available=True)),Prefetch('level_up_authorizations',queryset=CharacterLevelUpAuthorization.objects.filter(status__in=(CharacterLevelUpAuthorization.Status.PENDING,CharacterLevelUpAuthorization.Status.IN_PROGRESS)).order_by('-created_at'),to_attr='active_level_up_authorizations'),Prefetch('level_up_history',queryset=CharacterLevelUpHistory.objects.order_by('-created_at'),to_attr='recent_level_up_history'), 'skills__skill', Prefetch('rule_proficiencies',queryset=CharacterProficiency.objects.select_related('proficiency')), Prefetch('inventory_items',queryset=__import__('inventory.models',fromlist=['InventoryItem']).InventoryItem.objects.filter(is_active=True,is_visible=True)))
 def own_character(request,slug=None):
     q=rich_queryset().filter(user=request.user,campaign__players=request.user)
     if slug:q=q.filter(campaign__slug=slug)
@@ -129,6 +132,8 @@ def _posted_level_up_entries(post,prefix):
                 "name": name,
                 "source": post.getlist("technique_source[]")[index] if index < len(post.getlist("technique_source[]")) else "",
                 "description": post.getlist("technique_description[]")[index] if index < len(post.getlist("technique_description[]")) else "",
+                "effect_summary": post.getlist("technique_effect_summary[]")[index] if index < len(post.getlist("technique_effect_summary[]")) else "",
+                "usage_mode": post.getlist("technique_usage_mode[]")[index] if index < len(post.getlist("technique_usage_mode[]")) else CharacterTechnique.UsageMode.INSTANT,
                 "action_type": post.getlist("technique_action_type[]")[index] if index < len(post.getlist("technique_action_type[]")) else "action",
                 "range_text": post.getlist("technique_range_text[]")[index] if index < len(post.getlist("technique_range_text[]")) else "",
                 "damage_text": post.getlist("technique_damage_text[]")[index] if index < len(post.getlist("technique_damage_text[]")) else "",
@@ -141,6 +146,14 @@ def _posted_level_up_entries(post,prefix):
                 "is_available": True,
                 "is_featured": _bool_from_post(post.getlist("technique_is_featured[]")[index]) if index < len(post.getlist("technique_is_featured[]")) else False,
                 "sort_order": post.getlist("technique_sort_order[]")[index] if index < len(post.getlist("technique_sort_order[]")) else 0,
+                "grades": [
+                    {
+                        "grade":grade,
+                        "effect_summary":post.getlist(f"technique_grade_{grade}_effect_summary[]")[index] if index < len(post.getlist(f"technique_grade_{grade}_effect_summary[]")) else "",
+                        "description":post.getlist(f"technique_grade_{grade}_description[]")[index] if index < len(post.getlist(f"technique_grade_{grade}_description[]")) else "",
+                    }
+                    for grade in range(3)
+                ],
             })
         else:
             entries.append({
@@ -257,9 +270,9 @@ class PlayerTechniqueManageView(PlayerRequiredMixin,View):
         if form.is_valid():
             try:
                 if technique:
-                    update_player_technique(actor=request.user,technique=technique,**form.cleaned_data)
+                    update_player_technique(actor=request.user,technique=technique,grades=form.grade_data(),**form.technique_data())
                 else:
-                    create_player_technique(actor=request.user,character=character,**form.cleaned_data)
+                    create_player_technique(actor=request.user,character=character,grades=form.grade_data(),**form.technique_data())
             except (ValidationError,PermissionDenied) as exc:
                 form.add_error(None,exc)
         if form.errors:
@@ -287,15 +300,38 @@ class PlayerTechniqueUseView(PlayerRequiredMixin,View):
         technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
         try:
             if self.undo:
-                undo_player_technique_use(actor=request.user,technique=technique)
-                feedback=f'Uso desfeito: {technique.name} · +{technique.power_points_cost or 0} PP'
+                use=undo_player_technique_use(actor=request.user,technique=technique)
+                feedback=f'Uso desfeito: {technique.name} · +{use.power_points_spent} PP'
             else:
-                use_player_technique(actor=request.user,technique=technique)
-                feedback=f'{technique.name} usado · -{technique.power_points_cost or 0} PP'
+                grade=request.POST.get('grade') if technique.usage_mode==CharacterTechnique.UsageMode.GRADED else None
+                use=use_player_technique(actor=request.user,technique=technique,grade=grade)
+                grade_label=f' no Grau {use.grade}' if use.grade is not None else ''
+                verb='ativada' if use.kind=='activate' else 'usado'
+                feedback=f'{technique.name} {verb}{grade_label} · -{use.power_points_spent} PP'
+        except ValidationError as exc:
+            feedback=' '.join(exc.messages) if hasattr(exc,'messages') else str(exc)
+            use=None
+        context=player_sheet_fragment_context(own_character(request,slug))
+        context.update({'feedback_message':feedback,'feedback_is_error':use is None and not self.undo,'feedback_undo_technique':None if self.undo or use is None else technique})
+        return render(request,'characters/partials/player_play_technique_update.html',context)
+
+class PlayerContinuousTechniqueView(PlayerRequiredMixin,View):
+    action='maintain'
+    def post(self,request,slug,technique_pk):
+        character=own_character(request,slug)
+        technique=get_object_or_404(CharacterTechnique.objects.select_related('character__campaign','character__user'),pk=technique_pk,character=character)
+        use=None
+        try:
+            if self.action=='maintain':
+                use=maintain_continuous_technique(actor=request.user,technique=technique)
+                feedback=f'{technique.name} mantida · -{use.power_points_spent} PP'
+            else:
+                end_continuous_technique(actor=request.user,technique=technique)
+                feedback=f'{technique.name} encerrada'
         except ValidationError as exc:
             feedback=' '.join(exc.messages) if hasattr(exc,'messages') else str(exc)
         context=player_sheet_fragment_context(own_character(request,slug))
-        context.update({'feedback_message':feedback,'feedback_is_error':'insuficiente' in feedback.lower() or 'indisponível' in feedback.lower(),'feedback_undo_technique':None if self.undo else technique})
+        context.update({'feedback_message':feedback,'feedback_is_error':self.action=='maintain' and use is None,'feedback_undo_technique':technique if use else None})
         return render(request,'characters/partials/player_play_technique_update.html',context)
 
 class PlayerRestActionView(PlayerRequiredMixin,View):
@@ -626,7 +662,7 @@ class PlayerLevelUpWizardView(PlayerRequiredMixin,View):
         form=form or LevelUpDraftForm(character=process.character,requirements=requirements,initial={"hp_method":process.hp_method,"hp_roll_result":process.hp_roll_result,**{f"ava_{key}":process.selected_attribute_increases.get(key,0) for key in ('strength','dexterity','constitution','wisdom','willpower','presence')},"ava_mode":process.selected_attribute_increases.get("mode","")})
         preview=preview or preview_level_up(process,process.selected_attribute_increases,process.hp_method,process.hp_roll_result)
         ava_fields=[form[f'ava_{key}'] for key in ('strength','dexterity','constitution','wisdom','willpower','presence')]
-        return {'authorization':authorization,'process':process,'character':process.character,'campaign':process.character.campaign,'requirements':requirements,'form':form,'ava_fields':ava_fields,'preview':preview,'attribute_choices':CANONICAL_ATTRIBUTES,'technique_actions':CharacterTechnique.ACTIONS,'technique_categories':CharacterTechnique.Category.choices,'technique_types':CharacterTechnique.TechniqueType.choices}
+        return {'authorization':authorization,'process':process,'character':process.character,'campaign':process.character.campaign,'requirements':requirements,'form':form,'ava_fields':ava_fields,'preview':preview,'attribute_choices':CANONICAL_ATTRIBUTES,'technique_actions':CharacterTechnique.ACTIONS,'technique_categories':CharacterTechnique.Category.choices,'technique_types':CharacterTechnique.TechniqueType.choices,'technique_usage_modes':CharacterTechnique.UsageMode.choices}
     def get(self,request,slug):
         authorization=self._authorization(request,slug)
         try:

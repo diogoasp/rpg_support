@@ -143,6 +143,10 @@ class CharacterTechnique(models.Model):
         COMBAT='combat','Técnica com arma'
         BUFF='buff','Buff'
         HEAL='heal','Cura'
+    class UsageMode(models.TextChoices):
+        INSTANT='instant','Uso imediato'
+        CONTINUOUS='continuous','Efeito contínuo'
+        GRADED='graded','Uso em graus'
     ATTACK_TYPES=(TechniqueType.UNARMED,TechniqueType.BASIC,TechniqueType.INNATE,TechniqueType.COMBAT)
     SUPPORT_TYPES=(TechniqueType.BUFF,TechniqueType.HEAL)
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='techniques',db_index=True)
@@ -153,9 +157,11 @@ class CharacterTechnique(models.Model):
     range_text=models.CharField(max_length=100,blank=True)
     damage_text=models.CharField(max_length=150,blank=True)
     damage_die=models.CharField('dado de dano/cura',max_length=40,blank=True)
+    effect_summary=models.CharField('resumo do efeito',max_length=220,blank=True)
     attribute_modifier=models.CharField('modificador de atributo',max_length=20,choices=CANONICAL_ATTRIBUTES,default='strength')
     required_weapon_type=models.CharField('tipo de arma requerida',max_length=100,blank=True)
     power_points_cost=models.PositiveSmallIntegerField('PP para uso',default=0)
+    usage_mode=models.CharField('modalidade de uso',max_length=20,choices=UsageMode.choices,default=UsageMode.INSTANT,db_index=True)
     category=models.CharField('categoria',max_length=20,choices=Category.choices,default=Category.ATTACK)
     technique_type=models.CharField('tipo de técnica',max_length=20,choices=TechniqueType.choices,default=TechniqueType.INNATE)
     is_available=models.BooleanField(default=True)
@@ -177,12 +183,75 @@ class CharacterTechnique(models.Model):
             raise ValidationError({'technique_type':'Suportes aceitam apenas Buff ou Cura.'})
         if self.technique_type in (self.TechniqueType.BASIC,self.TechniqueType.COMBAT) and not self.required_weapon_type:
             raise ValidationError({'required_weapon_type':'Informe o tipo de arma requerida para este tipo de técnica.'})
+        if self.usage_mode==self.UsageMode.GRADED and self.power_points_cost:
+            raise ValidationError({'power_points_cost':'Técnicas em graus calculam o custo pelo grau e devem manter o custo base em 0 PP.'})
     @property
     def effective_damage_die(self): return self.damage_die or self.damage_text
     @property
     def attribute_modifier_value(self): return self.character.attribute_modifier(self.attribute_modifier)
     @property
+    def maintenance_power_points_cost(self): return 1 if self.usage_mode==self.UsageMode.CONTINUOUS else 0
+    @property
+    def active_activation(self):
+        prefetched=getattr(self,'active_activation_records',None)
+        if prefetched is not None: return prefetched[0] if prefetched else None
+        return self.activations.filter(status=CharacterTechniqueActivation.Status.ACTIVE).first()
+    @property
     def is_player_editable(self): return self.source_type==CharacterRecordSource.PLAYER
+
+class CharacterTechniqueGrade(models.Model):
+    technique=models.ForeignKey(CharacterTechnique,on_delete=models.CASCADE,related_name='grades')
+    grade=models.PositiveSmallIntegerField('grau',validators=[MinValueValidator(0),MaxValueValidator(2)])
+    effect_summary=models.CharField('resumo do efeito',max_length=220)
+    description=models.TextField('descrição complementar',blank=True)
+
+    class Meta:
+        ordering=('grade',)
+        constraints=[models.UniqueConstraint(fields=('technique','grade'),name='unique_character_technique_grade')]
+
+    def __str__(self): return f'{self.technique.name} - Grau {self.grade}'
+    @property
+    def power_points_cost(self): return self.grade
+
+class CharacterTechniqueActivation(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE='active','Ativa'
+        ENDED='ended','Encerrada'
+    technique=models.ForeignKey(CharacterTechnique,on_delete=models.CASCADE,related_name='activations')
+    status=models.CharField(max_length=12,choices=Status.choices,default=Status.ACTIVE,db_index=True)
+    activated_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='character_technique_activations')
+    activation_cost=models.PositiveSmallIntegerField(default=0)
+    maintenance_cost=models.PositiveSmallIntegerField(default=1)
+    rounds_maintained=models.PositiveSmallIntegerField(default=0)
+    activated_at=models.DateTimeField(auto_now_add=True)
+    ended_at=models.DateTimeField(null=True,blank=True)
+
+    class Meta:
+        ordering=('-activated_at',)
+        constraints=[models.UniqueConstraint(fields=('technique',),condition=models.Q(status='active'),name='unique_active_character_technique')]
+
+    def __str__(self): return f'{self.technique.name} ({self.get_status_display()})'
+
+class CharacterTechniqueUse(models.Model):
+    class Kind(models.TextChoices):
+        USE='use','Uso'
+        ACTIVATE='activate','Ativação'
+        MAINTAIN='maintain','Manutenção'
+    technique=models.ForeignKey(CharacterTechnique,on_delete=models.CASCADE,related_name='uses')
+    activation=models.ForeignKey(CharacterTechniqueActivation,on_delete=models.SET_NULL,null=True,blank=True,related_name='uses')
+    kind=models.CharField(max_length=12,choices=Kind.choices,default=Kind.USE)
+    grade=models.PositiveSmallIntegerField(null=True,blank=True,validators=[MinValueValidator(0),MaxValueValidator(2)])
+    power_points_spent=models.PositiveSmallIntegerField(default=0)
+    used_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='character_technique_uses')
+    created_at=models.DateTimeField(auto_now_add=True,db_index=True)
+    undone_at=models.DateTimeField(null=True,blank=True)
+    undone_by=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='undone_character_technique_uses')
+
+    class Meta:
+        ordering=('-created_at',)
+        indexes=[models.Index(fields=('technique','-created_at')),models.Index(fields=('technique','undone_at'))]
+
+    def __str__(self): return f'{self.technique.name} - {self.get_kind_display()}'
 class CharacterFeature(models.Model):
     character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='features',db_index=True)
     name=models.CharField(max_length=150)

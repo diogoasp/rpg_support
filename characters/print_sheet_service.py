@@ -183,6 +183,15 @@ def printable_technique_row(character, technique, weapon=None):
     else:
         notes = "Some proficiência ao ataque apenas se a técnica ou arma permitir e o personagem for proficiente."
 
+    if technique.usage_mode == CharacterTechnique.UsageMode.CONTINUOUS:
+        cost_label = f"{technique.power_points_cost} para ativar; 1 por rodada"
+        notes = f"Efeito contínuo. {notes}"
+    elif technique.usage_mode == CharacterTechnique.UsageMode.GRADED:
+        cost_label = "Grau 0: 0; Grau 1: 1; Grau 2: 2"
+        notes = "Escolha o grau ao usar. " + notes
+    else:
+        cost_label = str(technique.power_points_cost) if technique.power_points_cost else "-"
+
     return {
         "name": technique.name,
         "action": technique.get_action_type_display(),
@@ -200,7 +209,10 @@ def printable_technique_row(character, technique, weapon=None):
         "formula": formula,
         "result_label": result_label,
         "required_weapon_type": technique.required_weapon_type or "-",
-        "cost": technique.power_points_cost if technique.power_points_cost else "-",
+        "usage_mode": technique.get_usage_mode_display(),
+        "cost": cost_label,
+        "effect_summary": technique.effect_summary,
+        "grades": list(technique.grades.all()),
         "description": technique.description,
         "damage": technique.damage_text,
         "notes": notes,

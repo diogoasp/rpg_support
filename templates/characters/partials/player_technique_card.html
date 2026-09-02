@@ -1,44 +1,44 @@
-<article class="op-play-card op-technique-card {% if not technique.is_available %}is-disabled{% endif %}">
+<article class="op-play-card op-technique-card {% if not technique.is_available %}is-disabled{% endif %} {% if technique.active_activation %}is-active{% endif %}">
   <div class="op-play-card-main">
     <div>
       <h3>{{ technique.name }}{% if technique.source_type != 'player' %}<span class="op-rule-badge">Regra</span>{% endif %}</h3>
-      <p>{{ technique.power_points_cost|default:0 }} PP · {{ technique.get_action_type_display }}</p>
+      <p>{% if technique.usage_mode == 'continuous' %}Ativação {{ technique.power_points_cost|default:0 }} PP · 1 PP/rodada{% elif technique.usage_mode == 'graded' %}Graus 0–2 · {{ technique.get_action_type_display }}{% else %}{{ technique.power_points_cost|default:0 }} PP · {{ technique.get_action_type_display }}{% endif %}</p>
     </div>
-    <strong>
-      {% if technique.damage_die %}{{ technique.damage_die }}{% elif technique.damage_text %}{{ technique.damage_text }}{% else %}Sem dano{% endif %}
-      {% if technique.attribute_modifier_value %} {{ technique.attribute_modifier_value|stringformat:'+d' }}{% endif %}
-    </strong>
+    <strong>{% if technique.effect_summary %}{{ technique.effect_summary }}{% elif technique.damage_die %}{{ technique.damage_die }}{% elif technique.damage_text %}{{ technique.damage_text }}{% else %}Sem dano{% endif %}{% if technique.attribute_modifier_value and technique.usage_mode != 'graded' %} {{ technique.attribute_modifier_value|stringformat:'+d' }}{% endif %}</strong>
   </div>
-  {% if technique.range_text or technique.source %}
-    <p class="op-play-meta">{% if technique.range_text %}{{ technique.range_text }}{% endif %}{% if technique.range_text and technique.source %} · {% endif %}{% if technique.source %}{{ technique.source }}{% endif %}</p>
+  {% if technique.range_text or technique.source %}<p class="op-play-meta">{% if technique.range_text %}{{ technique.range_text }}{% endif %}{% if technique.range_text and technique.source %} · {% endif %}{% if technique.source %}{{ technique.source }}{% endif %}</p>{% endif %}
+
+  {% if technique.usage_mode == 'graded' %}
+    <div class="op-grade-actions" aria-label="Escolha o grau de {{ technique.name }}">
+      {% for grade in technique.grades.all %}
+        <div class="op-grade-action">
+          <div><strong>Grau {{ grade.grade }}</strong><span>{{ grade.effect_summary }}</span></div>
+          {% if can_edit_sheet %}<button class="op-use-button" type="button" {% if grade.power_points_cost > character.current_power_points or not technique.is_available %}disabled{% endif %} hx-post="{% url 'characters:player_technique_use' character.campaign.slug technique.pk %}" hx-vals='{"grade":"{{ grade.grade }}"}' hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Usar · {{ grade.power_points_cost }} PP</button>{% endif %}
+        </div>
+      {% empty %}<p class="op-play-warning">Os efeitos por grau ainda não foram cadastrados.</p>{% endfor %}
+    </div>
+  {% elif technique.usage_mode == 'continuous' %}
+    {% with activation=technique.active_activation %}
+      {% if activation %}
+        <div class="op-active-technique-status" role="status"><strong>Ativa</strong><span>{{ activation.rounds_maintained }} rodada{{ activation.rounds_maintained|pluralize }} mantida{{ activation.rounds_maintained|pluralize }}</span></div>
+        {% if can_edit_sheet %}<div class="op-play-card-actions op-continuous-actions"><button class="op-use-button" type="button" {% if character.current_power_points < 1 %}disabled{% endif %} hx-post="{% url 'characters:player_technique_maintain' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Manter · 1 PP</button><button class="op-detail-button" type="button" hx-post="{% url 'characters:player_technique_end' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Encerrar</button></div>{% endif %}
+        {% if character.current_power_points < 1 %}<p class="op-play-warning">Sem PP para manter. Encerre a técnica ou recupere PP.</p>{% endif %}
+      {% else %}
+        {% if technique.power_points_cost > character.current_power_points %}<p class="op-play-warning">{{ technique.power_points_cost }} PP necessários. Você possui {{ character.current_power_points }} PP.</p>{% endif %}
+        {% if can_edit_sheet %}<button class="op-use-button op-use-button-full" type="button" {% if technique.power_points_cost > character.current_power_points or not technique.is_available %}disabled{% endif %} hx-post="{% url 'characters:player_technique_use' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Ativar · {{ technique.power_points_cost }} PP</button>{% endif %}
+      {% endif %}
+    {% endwith %}
+  {% else %}
+    {% if technique.power_points_cost > character.current_power_points %}<p class="op-play-warning">{{ technique.power_points_cost }} PP necessários. Você possui {{ character.current_power_points }} PP.</p>{% endif %}
+    {% if can_edit_sheet %}<button class="op-use-button op-use-button-full" type="button" {% if technique.power_points_cost > character.current_power_points or not technique.is_available %}disabled{% endif %} hx-post="{% url 'characters:player_technique_use' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Usar · {{ technique.power_points_cost|default:0 }} PP</button>{% endif %}
   {% endif %}
-  {% if technique.power_points_cost > character.current_power_points %}
-    <p class="op-play-warning">{{ technique.power_points_cost }} PP necessários. Você possui {{ character.current_power_points }} PP.</p>
-  {% endif %}
-  <div class="op-play-card-actions">
-    {% if can_edit_sheet %}
-      <button class="op-use-button"
-              type="button"
-              {% if technique.power_points_cost > character.current_power_points or not technique.is_available %}disabled{% endif %}
-              hx-post="{% url 'characters:player_technique_use' character.campaign.slug technique.pk %}"
-              hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-              hx-target="#{{ technique_target_id|default:'player-technique-list' }}"
-              hx-swap="outerHTML">Usar</button>
-    {% endif %}
-    <button class="op-detail-button" type="button" data-bs-toggle="collapse" data-bs-target="#technique-detail-{{ card_prefix|default:'all' }}-{{ technique.pk }}" aria-expanded="false" aria-controls="technique-detail-{{ card_prefix|default:'all' }}-{{ technique.pk }}">Detalhes</button>
-  </div>
+
+  <button class="op-detail-button op-detail-button-full" type="button" data-bs-toggle="collapse" data-bs-target="#technique-detail-{{ card_prefix|default:'all' }}-{{ technique.pk }}" aria-expanded="false" aria-controls="technique-detail-{{ card_prefix|default:'all' }}-{{ technique.pk }}">Detalhes</button>
   <div class="collapse op-play-details" id="technique-detail-{{ card_prefix|default:'all' }}-{{ technique.pk }}">
     {% if technique.description %}<p>{{ technique.description }}</p>{% endif %}
     {% if technique.damage_text %}<p><strong>Dano/cura:</strong> {{ technique.damage_text }}</p>{% endif %}
     <p><strong>Atributo:</strong> {{ technique.get_attribute_modifier_display }} {{ technique.attribute_modifier_value|stringformat:'+d' }}</p>
-    {% if can_edit_sheet %}
-      <div class="op-card-actions">
-        {% if technique.is_player_editable %}
-          <button class="op-mini-action" hx-get="{% url 'characters:player_technique_update' character.campaign.slug technique.pk %}" hx-target="#modal-content">Editar</button>
-          <button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_technique_delete' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML" hx-confirm="Remover esta técnica da ficha?">Remover</button>
-        {% endif %}
-        <button class="op-mini-action" hx-post="{% url 'characters:player_technique_duplicate' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Duplicar</button>
-      </div>
-    {% endif %}
+    {% if technique.usage_mode == 'graded' %}{% for grade in technique.grades.all %}{% if grade.description %}<p><strong>Grau {{ grade.grade }}:</strong> {{ grade.description }}</p>{% endif %}{% endfor %}{% endif %}
+    {% if can_edit_sheet %}<div class="op-card-actions">{% if technique.is_player_editable %}<button class="op-mini-action" hx-get="{% url 'characters:player_technique_update' character.campaign.slug technique.pk %}" hx-target="#modal-content">Editar</button><button class="op-mini-action op-mini-danger" hx-post="{% url 'characters:player_technique_delete' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML" hx-confirm="Remover esta técnica da ficha?">Remover</button>{% endif %}<button class="op-mini-action" hx-post="{% url 'characters:player_technique_duplicate' character.campaign.slug technique.pk %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#{{ technique_target_id|default:'player-technique-list' }}" hx-swap="outerHTML">Duplicar</button></div>{% endif %}
   </div>
 </article>

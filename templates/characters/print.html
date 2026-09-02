@@ -136,7 +136,7 @@
         {% for technique in technique_rows %}
           <div class="combat-card">
             <h3>{{ technique.name }} <span class="muted">({{ technique.action }})</span></h3>
-            <p><strong>{{ technique.category }}</strong> · {{ technique.technique_type }} · <strong>PP:</strong> {{ technique.cost }}</p>
+            <p><strong>{{ technique.category }}</strong> · {{ technique.technique_type }} · {{ technique.usage_mode }} · <strong>PP:</strong> {{ technique.cost }}</p>
             <div class="attack-test-box">
               <strong>Teste de ataque</strong>
               {{ technique.attack_test }} · Proficiência: {% if technique.is_proficient %}sim{% else %}não{% endif %}
@@ -150,6 +150,8 @@
               {% endif %}
             </div>
             <p><strong>Arma requerida:</strong> {{ technique.required_weapon_type }} · <strong>Armas compatíveis:</strong> {{ technique.matching_weapons }}</p>
+            {% if technique.effect_summary %}<p><strong>Efeito:</strong> {{ technique.effect_summary }}</p>{% endif %}
+            {% if technique.grades %}<div class="grade-list">{% for grade in technique.grades %}<p><strong>Grau {{ grade.grade }} ({{ grade.power_points_cost }} PP):</strong> {{ grade.effect_summary }}{% if grade.description %} — {{ grade.description }}{% endif %}</p>{% endfor %}</div>{% endif %}
             <p>{{ technique.description }} {% if technique.damage %}<strong>{{ technique.damage }}</strong>{% endif %}</p>
             <p class="muted">{{ technique.notes }}</p>
           </div>

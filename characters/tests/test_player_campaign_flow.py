@@ -13,6 +13,9 @@ from characters.models import (
     CharacterRecordSource,
     CharacterSkill,
     CharacterTechnique,
+    CharacterTechniqueActivation,
+    CharacterTechniqueGrade,
+    CharacterTechniqueUse,
     CharacterWeapon,
     Skill,
 )
@@ -428,6 +431,39 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertNotContains(response, "<span><strong>Dado</strong><br>Conforme descrição</span>", html=True)
         self.assertNotContains(response, "<span><strong>Buff</strong><br>(Conforme descrição +0) / 2</span>", html=True)
 
+    def test_print_sheet_describes_continuous_and_graded_techniques(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        CharacterTechnique.objects.create(
+            character=character,
+            name="Postura Glacial",
+            usage_mode=CharacterTechnique.UsageMode.CONTINUOUS,
+            power_points_cost=2,
+            effect_summary="1d8 nos ataques e 1d8 de redução de dano",
+        )
+        graded = CharacterTechnique.objects.create(
+            character=character,
+            name="Hit Me With Your Best Shot",
+            usage_mode=CharacterTechnique.UsageMode.GRADED,
+            category=CharacterTechnique.Category.SUPPORT,
+            technique_type=CharacterTechnique.TechniqueType.HEAL,
+        )
+        CharacterTechniqueGrade.objects.bulk_create([
+            CharacterTechniqueGrade(technique=graded, grade=0, effect_summary="Cura 50% do ataque básico"),
+            CharacterTechniqueGrade(technique=graded, grade=1, effect_summary="Cura 100% do ataque básico"),
+            CharacterTechniqueGrade(technique=graded, grade=2, effect_summary="Cura 200% e concede vantagem"),
+        ])
+        self.client.force_login(self.player)
+
+        response = self.client.get(reverse("characters:print", kwargs={"slug": self.c1.slug}))
+
+        self.assertContains(response, "Efeito contínuo")
+        self.assertContains(response, "2 para ativar; 1 por rodada")
+        self.assertContains(response, "1d8 nos ataques e 1d8 de redução de dano")
+        self.assertContains(response, "Grau 0 (0 PP):")
+        self.assertContains(response, "Cura 50% do ataque básico")
+        self.assertContains(response, "Grau 2 (2 PP):")
+        self.assertContains(response, "Cura 200% e concede vantagem")
+
     def test_print_sheet_base_unarmed_attack_uses_only_unarmed_level_die(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
         character.strength = 14
@@ -528,6 +564,13 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "- Dano")
         self.assertContains(response, "+ Recuperar")
         self.assertContains(response, "Favoritas")
+        self.assertContains(response, "data-open-reference-sheet")
+        self.assertEqual(response.content.count(b"- Dano"), 1)
+        self.assertEqual(response.content.count(b"Corte R\xc3\xa1pido usado"), 0)
+
+        damage_form = self.client.get(reverse("characters:player_damage", kwargs={"slug": self.c1.slug}), HTTP_HX_REQUEST="true")
+        self.assertContains(damage_form, 'class="modal-body op-mobile-action-form"')
+        self.assertContains(damage_form, 'inputmode="numeric"')
 
     def test_player_can_use_technique_and_undo_power_point_spend(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
@@ -550,6 +593,91 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         character.refresh_from_db()
         self.assertEqual(character.current_power_points, 4)
+
+        response = self.client.post(reverse("characters:player_technique_undo", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 4)
+        self.assertContains(response, "Não há uso")
+
+    def test_player_uses_graded_technique_with_cost_derived_from_grade(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 4
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Hit Me With Your Best Shot", usage_mode=CharacterTechnique.UsageMode.GRADED)
+        CharacterTechniqueGrade.objects.bulk_create([
+            CharacterTechniqueGrade(technique=technique, grade=0, effect_summary="Cura 50% do ataque básico"),
+            CharacterTechniqueGrade(technique=technique, grade=1, effect_summary="Cura 100% do ataque básico"),
+            CharacterTechniqueGrade(technique=technique, grade=2, effect_summary="Cura 200% e concede vantagem"),
+        ])
+        self.client.force_login(self.player)
+
+        response = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), {"grade": 2}, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 2)
+        use = CharacterTechniqueUse.objects.get(technique=technique)
+        self.assertEqual((use.grade, use.power_points_spent), (2, 2))
+        self.assertContains(response, "Grau 2")
+
+    def test_graded_technique_rejects_missing_grade_and_insufficient_pp(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 2
+        character.current_power_points = 1
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Técnica graduada", usage_mode=CharacterTechnique.UsageMode.GRADED)
+        for grade in range(3):
+            CharacterTechniqueGrade.objects.create(technique=technique, grade=grade, effect_summary=f"Efeito {grade}")
+        self.client.force_login(self.player)
+
+        missing = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        insufficient = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), {"grade": 2}, HTTP_HX_REQUEST="true")
+
+        self.assertContains(missing, "Escolha o grau")
+        self.assertContains(insufficient, "PP insuficiente")
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 1)
+
+    def test_player_activates_maintains_and_ends_continuous_technique(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 5
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Postura Glacial", usage_mode=CharacterTechnique.UsageMode.CONTINUOUS, power_points_cost=2, effect_summary="1d8 nos ataques e 1d8 de redução")
+        self.client.force_login(self.player)
+
+        activated = self.client.post(reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        maintained = self.client.post(reverse("characters:player_technique_maintain", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+
+        self.assertContains(activated, "ativada")
+        self.assertContains(maintained, "mantida")
+        character.refresh_from_db()
+        activation = CharacterTechniqueActivation.objects.get(technique=technique)
+        self.assertEqual(character.current_power_points, 2)
+        self.assertEqual(activation.rounds_maintained, 1)
+
+        ended = self.client.post(reverse("characters:player_technique_end", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        self.assertContains(ended, "encerrada")
+        activation.refresh_from_db()
+        self.assertEqual(activation.status, CharacterTechniqueActivation.Status.ENDED)
+
+    def test_continuous_technique_cannot_be_activated_twice(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.max_power_points = 6
+        character.current_power_points = 6
+        character.save(update_fields=["max_power_points", "current_power_points"])
+        technique = CharacterTechnique.objects.create(character=character, name="Postura", usage_mode=CharacterTechnique.UsageMode.CONTINUOUS, power_points_cost=2)
+        self.client.force_login(self.player)
+        url = reverse("characters:player_technique_use", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk})
+
+        self.client.post(url, HTTP_HX_REQUEST="true")
+        response = self.client.post(url, HTTP_HX_REQUEST="true")
+
+        self.assertContains(response, "já está ativa")
+        character.refresh_from_db()
+        self.assertEqual(character.current_power_points, 4)
+        self.assertEqual(CharacterTechniqueActivation.objects.filter(technique=technique, status="active").count(), 1)
 
     def test_player_cannot_use_technique_without_enough_power_points(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)
@@ -690,6 +818,39 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         technique.refresh_from_db()
         self.assertFalse(technique.is_available)
+
+    def test_player_creates_and_duplicates_graded_technique_with_all_grades(self):
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.client.force_login(self.player)
+        payload = {
+            "name": "Tiro Medicinal",
+            "description": "Munição de cura.",
+            "effect_summary": "Cura conforme o grau",
+            "usage_mode": CharacterTechnique.UsageMode.GRADED,
+            "action_type": "action",
+            "attribute_modifier": "dexterity",
+            "power_points_cost": 99,
+            "category": CharacterTechnique.Category.SUPPORT,
+            "technique_type": CharacterTechnique.TechniqueType.HEAL,
+            "is_available": "on",
+            "grade_0_effect_summary": "Cura 50%",
+            "grade_0_description": "Metade do dano básico.",
+            "grade_1_effect_summary": "Cura 100%",
+            "grade_1_description": "Mesmo valor do dano básico.",
+            "grade_2_effect_summary": "Cura 200% e vantagem",
+            "grade_2_description": "Duas vezes o dano e vantagem no próximo ataque.",
+        }
+
+        response = self.client.post(reverse("characters:player_technique_create", kwargs={"slug": self.c1.slug}), payload, HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        technique = CharacterTechnique.objects.get(character=character, name="Tiro Medicinal")
+        self.assertEqual(technique.power_points_cost, 0)
+        self.assertEqual(list(technique.grades.values_list("grade", flat=True)), [0, 1, 2])
+
+        self.client.post(reverse("characters:player_technique_duplicate", kwargs={"slug": self.c1.slug, "technique_pk": technique.pk}), HTTP_HX_REQUEST="true")
+        duplicate = CharacterTechnique.objects.get(character=character, name="Tiro Medicinal (cópia)")
+        self.assertEqual(list(duplicate.grades.values_list("effect_summary", flat=True)), ["Cura 50%", "Cura 100%", "Cura 200% e vantagem"])
 
     def test_player_cannot_remove_system_technique(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)

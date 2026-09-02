@@ -139,7 +139,9 @@
     const abilityBox = document.querySelector("#level-up-abilities");
     const addTemplate = (id) => {
       const template = document.querySelector(id);
-      abilityBox.appendChild(template.content.firstElementChild.cloneNode(true));
+      const entry = template.content.firstElementChild.cloneNode(true);
+      abilityBox.appendChild(entry);
+      if (window.initializeTechniqueForms) window.initializeTechniqueForms(entry);
     };
     document.querySelector("[data-add-technique]")?.addEventListener("click", () => addTemplate("#technique-template"));
     document.querySelector("[data-add-feature]")?.addEventListener("click", () => addTemplate("#feature-template"));

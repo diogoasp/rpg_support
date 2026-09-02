@@ -36,10 +36,11 @@
       </section>
 
       <nav class="op-play-nav" aria-label="Navegação da ficha de jogo">
-        <a href="#jogar-recursos"><span>♥</span>Recursos</a>
-        <a href="#jogar-habilidades"><span>⚔</span>Habilidades</a>
-        <a href="#jogar-itens"><span>▣</span>Itens</a>
-        <a href="#jogar-descanso"><span>☾</span>Descanso</a>
+        <a href="#jogar-recursos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>Recursos</a>
+        <a href="#jogar-habilidades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 4.5 5 5M3 21l6.5-6.5m5-5L19 5l-2-2-4.5 4.5M5 19l-2 2m6.5-6.5 5 5 6.5-6.5-5-5"/></svg>Técnicas</a>
+        <a href="#jogar-itens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 13H5L6 8Zm3 0V5a3 3 0 0 1 6 0v3"/></svg>Itens</a>
+        <a href="#jogar-descanso"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8 8 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></svg>Descanso</a>
+        <button type="button" data-open-reference-sheet><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h12a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2V3Zm2 14h12M8 7h6M8 11h6"/></svg>Ficha</button>
       </nav>
 
       <section id="jogar-habilidades" class="op-play-section">
@@ -71,7 +72,8 @@
     </div>
   {% endif %}
 
-  <div class="op-sheet-page">
+  <div class="op-sheet-page{% if can_edit_sheet %} op-player-reference-sheet{% endif %}" id="player-reference-sheet">
+    {% if can_edit_sheet %}<button class="op-reference-back" type="button" data-close-reference-sheet>Voltar a Jogar</button>{% endif %}
     <div id="sheet" class="op-sheet">
       <svg class="op-corner op-corner-tl" viewBox="0 0 120 120">
         <use href="#op-ornament-corner" />
@@ -218,7 +220,7 @@
                 </tbody>
               </table>
 
-              {% include 'characters/partials/player_resource_panel.html' with resource_panel_id='player-resource-panel-reference' %}
+              {% include 'characters/partials/player_resource_panel.html' with resource_panel_id='player-resource-panel-reference' can_edit_sheet=False %}
             </div>
           </section>
 
@@ -240,8 +242,8 @@
             <p class="op-subsection-title">
               <span class="op-chapter-num-sub">5.2</span> Técnicas
             </p>
-            {% include 'characters/partials/player_technique_list.html' with technique_list_id='player-technique-list-reference' %}
-            {% include 'characters/partials/player_condition_list.html' with condition_list_id='player-condition-list-reference' %}
+            {% include 'characters/partials/player_technique_list.html' with technique_list_id='player-technique-list-reference' can_edit_sheet=False %}
+            {% include 'characters/partials/player_condition_list.html' with condition_list_id='player-condition-list-reference' can_edit_sheet=False %}
           </section>
         </div>
 

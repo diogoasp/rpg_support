@@ -18,6 +18,8 @@ path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/duplicar/',views.
 path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/excluir/',views.PlayerTechniqueDeleteView.as_view(),name='player_technique_delete'),
 path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/usar/',views.PlayerTechniqueUseView.as_view(),name='player_technique_use'),
 path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/desfazer-uso/',views.PlayerTechniqueUseView.as_view(undo=True),name='player_technique_undo'),
+path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/manter/',views.PlayerContinuousTechniqueView.as_view(action='maintain'),name='player_technique_maintain'),
+path('personagem/<slug:slug>/ficha/tecnicas/<int:technique_pk>/encerrar/',views.PlayerContinuousTechniqueView.as_view(action='end'),name='player_technique_end'),
 path('personagem/<slug:slug>/ficha/armas/nova/',views.PlayerWeaponManageView.as_view(),name='player_weapon_create'),
 path('personagem/<slug:slug>/ficha/armas/<int:weapon_pk>/editar/',views.PlayerWeaponManageView.as_view(),name='player_weapon_update'),
 path('personagem/<slug:slug>/ficha/armas/<int:weapon_pk>/excluir/',views.PlayerWeaponDeleteView.as_view(),name='player_weapon_delete'),

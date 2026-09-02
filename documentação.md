@@ -2064,12 +2064,13 @@ A primeira dobra mostra:
 - botões grandes de dano, cura, gastar e recuperar;
 - condições ativas em chips.
 
-A navegação interna usa quatro âncoras principais:
+A navegação interna usa cinco ações principais:
 
 - Recursos;
 - Habilidades;
 - Itens;
-- Descanso.
+- Descanso;
+- Ficha, que abre a referência completa sem manter controles operacionais duplicados em tela.
 
 Na seção de habilidades, técnicas são cards compactos em coluna única. Favoritas aparecem antes das demais, usando `is_featured`. O card mostra nome, custo em PP, ação, dano/cura resumido e botões `Usar` e `Detalhes`. Descrições longas ficam recolhidas em detalhes, para evitar muro de texto em combate.
 
@@ -2085,6 +2086,48 @@ Descanso possui três ações grandes em coluna:
 
 No mobile da ficha do jogador, a navegação global pesada é ocultada para priorizar a tela de jogo. A ficha completa continua disponível abaixo como referência, mas não é a primeira interação da sessão.
 
+### Revisão mobile da tela Jogar
+
+A tela Jogar trata mobile como plataforma principal, com largura de referência entre 320 e 430 px. A revisão eliminou a renderização simultânea da superfície de jogo e da ficha completa, reduziu a quantidade de elementos concorrendo pela atenção e manteve as ações de combate ao alcance do polegar.
+
+O template mantém uma única fonte visual para cada ação durante o jogo:
+
+- a superfície Jogar concentra PV, PP, condições, habilidades, itens e descanso;
+- a ficha completa permanece disponível como referência, mas não repete controles operacionais no fluxo mobile;
+- fragments HTMX devem ter um único alvo operacional e IDs únicos;
+- botões de uso frequente devem ter pelo menos 44 px de área de toque e espaçamento suficiente para uso com uma mão;
+- textos operacionais devem usar no mínimo 16 px, preservando contraste e zoom do navegador;
+- não deve existir rolagem horizontal entre 320 e 430 px.
+
+Os formulários de dano, cura, gasto e recuperação de PP funcionam como bottom sheet de largura total no mobile. O componente possui:
+
+- cabeçalho compacto e botão de fechar com alvo de toque adequado;
+- valor atual visível;
+- campo numérico com `inputmode="numeric"`, altura mínima de 56 px e fonte legível;
+- botão Aplicar fixo ou imediatamente acessível sem ser encoberto pelo teclado;
+- erros junto ao campo e feedback HTMX sem recarregar a página;
+- fechamento automático após sucesso;
+- preservação do foco e possibilidade clara de cancelar.
+
+A estilização global de `.modal-content` não deve impor padding, bordas ou altura que conflitem com `modal-fullscreen-sm-down`. Cabeçalho e corpo controlam seus próprios espaçamentos, respeitando `100dvh`, safe areas e a abertura do teclado virtual.
+
+A validação visual de regressão deve cobrir 320x568, 360x800, 375x812, 390x844, 412x915 e 430x932. Os cenários incluem abertura e envio dos quatro formulários de recurso, lista curta e longa de habilidades, PP insuficiente, toast com desfazer e navegação entre Recursos, Habilidades, Itens, Descanso e Ficha.
+
+### Técnicas contínuas e em graus
+
+`CharacterTechnique.usage_mode` preserva as técnicas atuais como uso imediato e acrescenta duas modalidades explícitas:
+
+- contínua: desconta o custo inicial de `power_points_cost` ao ativar e 1 PP a cada manutenção manual por rodada;
+- em graus: oferece graus 0, 1 e 2, com custos derivados de 0, 1 e 2 PP e texto de efeito próprio para cada grau.
+
+O estado ativo de uma técnica contínua fica separado da definição em `CharacterTechniqueActivation`. Cada ativação registra o custo inicial, o custo de manutenção de 1 PP e a quantidade de rodadas mantidas. `CharacterTechniqueUse` registra ativação, manutenção ou uso imediato, grau quando aplicável, custo efetivamente descontado, usuário e eventual desfazer. Assim, o desfazer devolve exatamente o valor daquela operação e não pode ser repetido.
+
+Os efeitos dos graus ficam em `CharacterTechniqueGrade`, com um registro obrigatório para cada grau de 0 a 2. O custo não é digitado: corresponde ao próprio grau. Na tela Jogar, uma técnica contínua alterna entre `Ativar`, `Manter` e `Encerrar`, exibindo seu estado e quantidade de rodadas mantidas. Uma técnica em graus oferece ação direta para cada grau e desabilita somente os graus cujo custo excede o PP disponível. A ficha completa e a impressão apresentam custos e efeitos sem depender do estado transitório da sessão.
+
+Registros existentes recebem a modalidade imediata por padrão na migration, sem classificação automática por nome ou descrição. Cadastro manual, Django Admin, duplicação e passagem de nível preservam a modalidade e os graus vinculados. A passagem de nível continua criando registros protegidos com `source_type=level_up`; o jogador pode cadastrar e ajustar os graus durante o rascunho, mas não remover acidentalmente a técnica depois da confirmação.
+
+Os serviços `use_player_technique()`, `activate_continuous_technique()`, `maintain_continuous_technique()`, `end_continuous_technique()` e `undo_player_technique_use()` validam ownership e disponibilidade no backend, bloqueiam técnica e personagem com `select_for_update()` e atualizam PP em transação. Os efeitos descritos pela técnica continuam sendo informação de mesa: esta entrega não aplica automaticamente cura, vantagem, bônus de ataque ou redução de dano.
+
 ### Testes
 
 Foram adicionados testes em `characters/tests/test_player_campaign_flow.py` cobrindo:
@@ -2093,6 +2136,10 @@ Foram adicionados testes em `characters/tests/test_player_campaign_flow.py` cobr
 - jogador altera PP atual com limites sem alterar PP máximo;
 - jogador usa técnica, gasta PP e desfaz;
 - jogador não usa técnica sem PP suficiente;
+- técnica contínua ativa uma única vez, desconta o custo inicial, mantém por 1 PP e pode ser encerrada;
+- técnica em graus deriva custos 0, 1 e 2, exige grau válido e respeita PP disponível;
+- cadastro, edição, duplicação e passagem de nível preservam os três efeitos de uma técnica em graus;
+- impressão descreve modalidade, custo e efeitos das técnicas contínuas e em graus;
 - jogador usa item consumível;
 - jogador aplica descanso curto/longo;
 - jogador inicia recuperação de grande dano;

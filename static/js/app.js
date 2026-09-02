@@ -1,7 +1,10 @@
 document.body.addEventListener("htmx:afterSwap", (event) => {
   if (event.detail.target.id === "modal-content") {
-    bootstrap.Modal.getOrCreateInstance(document.querySelector("#quickModal")).show();
+    const modalElement = document.querySelector("#quickModal");
+    modalElement?.classList.toggle("op-mobile-sheet-modal", Boolean(event.detail.target.querySelector(".op-mobile-action-form")));
+    bootstrap.Modal.getOrCreateInstance(modalElement).show();
   }
+  initializeTechniqueForms(event.detail.target);
 });
 
 document.body.addEventListener("modal:close", () => {
@@ -34,6 +37,36 @@ document.querySelector("#quickModal")?.addEventListener("hidden.bs.modal", () =>
   const modalContent = document.querySelector("#modal-content");
   if (modalContent) {
     modalContent.innerHTML = "";
+  }
+  document.querySelector("#quickModal")?.classList.remove("op-mobile-sheet-modal");
+});
+
+function initializeTechniqueForms(root = document) {
+  root.querySelectorAll?.("[data-technique-form], [data-entry]").forEach((container) => {
+    const select = container.querySelector("[data-technique-usage-mode]");
+    if (!select || select.dataset.usageReady) return;
+    select.dataset.usageReady = "true";
+    const sync = () => {
+      const mode = select.value;
+      container.querySelectorAll("[data-continuous-fields]").forEach((element) => { element.hidden = mode !== "continuous"; });
+      container.querySelectorAll("[data-graded-fields]").forEach((element) => { element.hidden = mode !== "graded"; });
+      container.querySelectorAll(".op-technique-cost-field, [data-technique-cost]").forEach((element) => { element.hidden = mode === "graded"; });
+    };
+    select.addEventListener("change", sync);
+    sync();
+  });
+}
+
+initializeTechniqueForms();
+
+document.body.addEventListener("click", (event) => {
+  if (event.target.closest("[data-open-reference-sheet]")) {
+    document.body.classList.add("op-reference-open");
+    document.querySelector("#player-reference-sheet")?.scrollIntoView({ block: "start" });
+  }
+  if (event.target.closest("[data-close-reference-sheet]")) {
+    document.body.classList.remove("op-reference-open");
+    document.querySelector(".op-mobile-play-shell")?.scrollIntoView({ block: "start" });
   }
 });
 

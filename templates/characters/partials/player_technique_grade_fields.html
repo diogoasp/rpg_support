@@ -1,0 +1,10 @@
+<label class="op-mobile-field">
+  <span>{{ summary.label }}</span>
+  {{ summary }}
+  {% if summary.errors %}<small class="op-form-errors" role="alert">{{ summary.errors }}</small>{% endif %}
+</label>
+<label class="op-mobile-field">
+  <span>{{ description.label }}</span>
+  {{ description }}
+  {% if description.errors %}<small class="op-form-errors" role="alert">{{ description.errors }}</small>{% endif %}
+</label>

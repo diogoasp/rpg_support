@@ -1,4 +1,4 @@
-<div id="op-play-toast" class="op-play-toast {% if feedback_is_error %}is-error{% endif %}" {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
+<div id="op-play-toast" class="op-play-toast {% if feedback_is_error %}is-error{% endif %}" role="status" aria-live="polite" {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
   {% if feedback_message %}
     <span>{{ feedback_message }}</span>
     {% if feedback_undo_technique %}

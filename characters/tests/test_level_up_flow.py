@@ -23,6 +23,7 @@ from characters.models import (
     CharacterLevelUpAuthorization,
     CharacterRecordSource,
     CharacterTechnique,
+    CharacterTechniqueGrade,
     CombatStyleLevel,
 )
 
@@ -229,6 +230,32 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(feature.level_acquired, 3)
         self.assertIn("adquirid", feature.source)
         self.assertEqual(CharacterTechnique.objects.filter(character=character, source_type=CharacterRecordSource.LEVEL_UP).count(), 2)
+
+    def test_level_up_preserves_graded_technique_structure(self):
+        character = make_character(self.campaign, self.player, level=2, combat_style="Atirador", max_hp=20, current_hp=15, max_power_points=4, current_power_points=4)
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+        grades = [
+            {"grade": 0, "effect_summary": "Cura 50%"},
+            {"grade": 1, "effect_summary": "Cura 100%"},
+            {"grade": 2, "effect_summary": "Cura 200% e vantagem"},
+        ]
+
+        save_level_up_draft(self.player, process, draft_techniques=[{
+            "name": "Hit Me With Your Best Shot",
+            "usage_mode": CharacterTechnique.UsageMode.GRADED,
+            "power_points_cost": 8,
+            "category": CharacterTechnique.Category.SUPPORT,
+            "technique_type": CharacterTechnique.TechniqueType.HEAL,
+            "grades": grades,
+        }])
+        complete_level_up(self.player, process)
+
+        technique = CharacterTechnique.objects.get(character=character, name="Hit Me With Your Best Shot")
+        self.assertEqual(technique.usage_mode, CharacterTechnique.UsageMode.GRADED)
+        self.assertEqual(technique.power_points_cost, 0)
+        self.assertEqual(technique.source_type, CharacterRecordSource.LEVEL_UP)
+        self.assertEqual(CharacterTechniqueGrade.objects.filter(technique=technique).count(), 3)
 
     def test_level_4_ava_plus_two_recalculates_constitution_hp_and_profession(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=17, max_hp=39, current_hp=20, max_power_points=6, current_power_points=1, favorite_weapon="Bazuca", profession_subdivision="Veterano")

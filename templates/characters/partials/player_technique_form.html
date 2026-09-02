@@ -1,12 +1,36 @@
-<div class="modal-header">
+<div class="modal-header op-mobile-modal-header">
   <h2 class="modal-title h5">{% if technique %}Editar técnica{% else %}Nova técnica{% endif %}</h2>
   <button class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 </div>
-<form class="modal-body"
+<form class="modal-body op-technique-editor"
       hx-post="{% if technique %}{% url 'characters:player_technique_update' character.campaign.slug technique.pk %}{% else %}{% url 'characters:player_technique_create' character.campaign.slug %}{% endif %}"
       hx-target="#player-technique-list"
-      hx-swap="outerHTML">
+      hx-swap="outerHTML"
+      data-technique-form>
   {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-primary" type="submit">Salvar</button>
+  {% if form.non_field_errors %}<div class="op-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="op-technique-form-grid">
+    {% for field in form %}
+      {% if not field.name|slice:':6' == 'grade_' %}
+        <label class="op-mobile-field {% if field.name == 'description' %}op-technique-field-wide{% endif %} {% if field.name == 'power_points_cost' %}op-technique-cost-field{% endif %}">
+          <span>{{ field.label }}</span>
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+          {% if field.errors %}<small class="op-form-errors" role="alert">{{ field.errors }}</small>{% endif %}
+        </label>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p class="op-continuous-help" data-continuous-fields hidden>Ao ativar, o custo acima é descontado. Enquanto estiver ativa, a técnica custa 1 PP por rodada.</p>
+  <fieldset class="op-grade-editor" data-graded-fields hidden>
+    <legend>Efeitos por grau</legend>
+    <p>O custo é automático: Grau 0 custa 0 PP, Grau 1 custa 1 PP e Grau 2 custa 2 PP.</p>
+    <div class="op-grade-editor-row"><strong>Grau 0 · 0 PP</strong>{% include 'characters/partials/player_technique_grade_fields.html' with summary=form.grade_0_effect_summary description=form.grade_0_description %}</div>
+    <div class="op-grade-editor-row"><strong>Grau 1 · 1 PP</strong>{% include 'characters/partials/player_technique_grade_fields.html' with summary=form.grade_1_effect_summary description=form.grade_1_description %}</div>
+    <div class="op-grade-editor-row"><strong>Grau 2 · 2 PP</strong>{% include 'characters/partials/player_technique_grade_fields.html' with summary=form.grade_2_effect_summary description=form.grade_2_description %}</div>
+  </fieldset>
+  <div class="op-mobile-form-actions">
+    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+    <button class="btn btn-primary op-mobile-submit" type="submit">Salvar técnica</button>
+  </div>
 </form>

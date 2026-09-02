@@ -988,6 +988,18 @@
 }
 
 .op-mobile-play-shell {
+  --sheet-parchment-light: #ECDDB4;
+  --sheet-parchment-mid: #DFC793;
+  --sheet-ink: #3B2A1C;
+  --sheet-wood: #6B4423;
+  --sheet-wood-dark: #3A2311;
+  --sheet-seal-red: #7C2A22;
+  --sheet-seal-blue: #2E4B5E;
+  --sheet-gold: #B4863E;
+  --sheet-gold-bright: #D6A94F;
+  --sheet-font-display: 'Cinzel Decorative', 'Cinzel', serif;
+  --sheet-font-title: 'Cinzel', serif;
+  --sheet-font-body: 'IM Fell English', 'Alegreya', serif;
   --play-bg: #eddbad;
   --play-panel: rgba(255, 248, 224, .84);
   --play-ink: #2e2117;
@@ -999,6 +1011,33 @@
   margin: 0 auto 28px;
   color: var(--play-ink);
   font-family: var(--sheet-font-body);
+}
+
+.op-player-reference-sheet {
+  display: none;
+}
+
+body.op-reference-open .op-mobile-play-shell {
+  display: none;
+}
+
+body.op-reference-open .op-player-reference-sheet {
+  display: block;
+}
+
+.op-reference-back {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  min-height: 48px;
+  margin: 0 auto 12px;
+  padding: 10px 18px;
+  display: block;
+  border: 1px solid var(--sheet-gold);
+  border-radius: 8px;
+  background: var(--sheet-wood-dark);
+  color: var(--sheet-parchment-light);
+  font: 800 .9rem var(--sheet-font-title);
 }
 
 .op-play-hero {
@@ -1083,7 +1122,7 @@
   top: 0;
   z-index: 12;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   margin: 10px -2px 12px;
   padding: 6px;
@@ -1093,7 +1132,8 @@
   box-shadow: 0 8px 22px rgba(0,0,0,.25);
 }
 
-.op-play-nav a {
+.op-play-nav a,
+.op-play-nav button {
   min-height: 48px;
   display: flex;
   flex-direction: column;
@@ -1104,10 +1144,19 @@
   color: var(--sheet-parchment-light);
   text-decoration: none;
   font: 700 .76rem/1.1 var(--sheet-font-title);
+  border: 0;
+  background: transparent;
+  padding: 3px 1px;
 }
 
-.op-play-nav span {
-  font-size: 1.05rem;
+.op-play-nav svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .op-play-filter-chips {
@@ -1219,6 +1268,61 @@
   border: 0;
   background: var(--sheet-seal-red);
   color: var(--sheet-parchment-light);
+}
+
+.op-use-button-full,
+.op-detail-button-full {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.op-detail-button-full {
+  min-height: 44px;
+}
+
+.op-technique-card.is-active {
+  border-left-color: var(--play-green);
+}
+
+.op-active-technique-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: rgba(47, 106, 67, .14);
+  color: var(--play-green);
+}
+
+.op-grade-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.op-grade-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(104px, auto);
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border: 1px solid rgba(107,68,35,.3);
+  border-radius: 7px;
+  background: rgba(255,255,255,.34);
+}
+
+.op-grade-action div,
+.op-grade-action span {
+  display: block;
+  min-width: 0;
+}
+
+.op-grade-action span {
+  margin-top: 2px;
+  color: var(--play-muted);
+  font-size: .9rem;
+  line-height: 1.25;
 }
 
 .op-use-button:disabled {
@@ -1335,6 +1439,65 @@
   font-size: 1rem;
 }
 
+.op-technique-editor {
+  display: grid;
+  gap: 16px;
+}
+
+.op-technique-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.op-technique-field-wide {
+  grid-column: 1 / -1;
+}
+
+.op-technique-editor input:not([type="checkbox"]),
+.op-technique-editor select,
+.op-technique-editor textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--sheet-wood);
+  border-radius: 6px;
+  background: rgba(255,255,255,.55);
+  color: var(--sheet-ink);
+  padding: 8px 10px;
+  font-size: 1rem;
+}
+
+.op-continuous-help,
+.op-grade-editor {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--sheet-wood);
+  border-radius: 8px;
+  background: rgba(35,79,103,.1);
+}
+
+.op-grade-editor legend {
+  float: none;
+  width: auto;
+  margin: 0;
+  padding: 0 4px;
+  font: 800 1rem var(--sheet-font-title);
+}
+
+.op-grade-editor-row {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(107,68,35,.28);
+}
+
+.op-mobile-form-actions {
+  display: grid;
+  grid-template-columns: minmax(0,.7fr) minmax(0,1.3fr);
+  gap: 8px;
+}
+
 .op-mobile-current {
   margin: 0;
   font-size: 1.1rem;
@@ -1398,6 +1561,28 @@
   .op-mobile-play-shell {
     margin: -2px auto 12px;
     font-size: 16px;
+  }
+
+  .op-play-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .op-play-filter-chips {
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+
+  .op-play-card-main {
+    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+  }
+
+  .op-play-card-main > strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: left;
   }
 
   .op-sheet {
@@ -1481,6 +1666,20 @@
     padding: 8px 10px;
   }
 
+  .op-play-nav a,
+  .op-play-nav button {
+    font-size: .67rem;
+  }
+
+  .op-technique-form-grid,
+  .op-grade-action {
+    grid-template-columns: 1fr;
+  }
+
+  .op-grade-action .op-use-button {
+    width: 100%;
+  }
+
   .op-conditions-strip {
     margin-top: 10px;
     gap: 8px;
@@ -1506,8 +1705,38 @@
     height: 28px;
   }
 
-  .modal-content {
+  #quickModal.op-mobile-sheet-modal .modal-dialog {
     min-height: 100dvh;
+    height: auto;
+    margin: 0;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  #quickModal.op-mobile-sheet-modal .modal-content {
+    width: 100%;
+    min-height: 0;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    margin: 0;
+    padding: 0 !important;
+    overflow: auto;
+    border-width: 1px 0 0 !important;
+    border-radius: 14px 14px 0 0;
+  }
+
+  #quickModal.op-mobile-sheet-modal .modal-header {
+    padding: 14px 16px 10px;
+  }
+
+  #quickModal.op-mobile-sheet-modal .modal-body {
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  }
+
+  #quickModal.op-mobile-sheet-modal .op-mobile-submit {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    min-height: 52px;
   }
 }
 

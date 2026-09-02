@@ -15,6 +15,7 @@ from .models import (
     CharacterLevelUpCorrection,
     CharacterLevelUpHistory,
     CharacterTechnique,
+    CharacterTechniqueGrade,
     CombatStyle,
     CombatStyleLevel,
     CombatStyleLevelFeature,
@@ -303,7 +304,7 @@ def validate_technique_choices(style_level, selected_ids):
     return list(CombatStyleTechniqueOption.objects.filter(pk__in=selected_ids, combat_style_level=style_level))
 
 
-TECHNIQUE_DRAFT_FIELDS = ("name","source","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
+TECHNIQUE_DRAFT_FIELDS = ("name","source","description","effect_summary","usage_mode","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
 FEATURE_DRAFT_FIELDS = ("name","source","description","is_available","sort_order")
 
 
@@ -324,6 +325,8 @@ def validate_level_up_draft_techniques(character, to_level, entries):
             raise ValidationError(f"Técnica {index}: informe o nome.")
         data["source"] = (data.get("source") or character.combat_style or "Estilo de Combate").strip()
         data["description"] = data.get("description") or ""
+        data["effect_summary"] = data.get("effect_summary") or ""
+        data["usage_mode"] = data.get("usage_mode") or CharacterTechnique.UsageMode.INSTANT
         data["action_type"] = data.get("action_type") or "action"
         data["range_text"] = data.get("range_text") or ""
         data["damage_text"] = data.get("damage_text") or ""
@@ -331,6 +334,8 @@ def validate_level_up_draft_techniques(character, to_level, entries):
         data["attribute_modifier"] = data.get("attribute_modifier") or "strength"
         data["required_weapon_type"] = data.get("required_weapon_type") or ""
         data["power_points_cost"] = int(data.get("power_points_cost") or 0)
+        if data["usage_mode"] == CharacterTechnique.UsageMode.GRADED:
+            data["power_points_cost"] = 0
         data["category"] = data.get("category") or CharacterTechnique.Category.ATTACK
         data["technique_type"] = data.get("technique_type") or CharacterTechnique.TechniqueType.INNATE
         data["is_available"] = bool(data.get("is_available", True))
@@ -338,6 +343,17 @@ def validate_level_up_draft_techniques(character, to_level, entries):
         data["sort_order"] = int(data.get("sort_order") or 0)
         candidate = CharacterTechnique(character=character, **data)
         candidate.full_clean(exclude=("source_type","created_by","level_acquired"))
+        grades=[]
+        if data["usage_mode"] == CharacterTechnique.UsageMode.GRADED:
+            received={int(item.get("grade")):item for item in entry.get("grades",[]) if item.get("grade") is not None}
+            if set(received)!={0,1,2}:
+                raise ValidationError(f"Técnica {index}: informe os Graus 0, 1 e 2.")
+            for grade in range(3):
+                summary=(received[grade].get("effect_summary") or "").strip()
+                if not summary:
+                    raise ValidationError(f"Técnica {index}: informe o efeito do Grau {grade}.")
+                grades.append({"grade":grade,"effect_summary":summary,"description":received[grade].get("description") or ""})
+        data["grades"]=grades
         normalized.append(data)
     return normalized
 
@@ -574,6 +590,8 @@ def complete_level_up(actor, process):
             character=character,
             source=source_with_acquired_level(entry.get("source"), process.to_level),
             description=entry.get("description",""),
+            effect_summary=entry.get("effect_summary",""),
+            usage_mode=entry.get("usage_mode") or CharacterTechnique.UsageMode.INSTANT,
             name=entry["name"],
             action_type=entry.get("action_type","action"),
             range_text=entry.get("range_text",""),
@@ -593,6 +611,8 @@ def complete_level_up(actor, process):
         )
         technique.full_clean()
         technique.save()
+        for grade in entry.get("grades",[]):
+            CharacterTechniqueGrade.objects.create(technique=technique,**grade)
         created_techniques.append(technique)
     created_features = []
     for entry in draft_features:

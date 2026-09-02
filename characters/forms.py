@@ -40,11 +40,56 @@ class ConditionForm(forms.ModelForm):
     class Meta: model=CharacterCondition; fields=('name','description')
 
 class PlayerTechniqueForm(forms.ModelForm):
+    grade_0_effect_summary=forms.CharField(label="Efeito do Grau 0",required=False,max_length=220)
+    grade_0_description=forms.CharField(label="Detalhes do Grau 0",required=False,widget=forms.Textarea(attrs={"rows":2}))
+    grade_1_effect_summary=forms.CharField(label="Efeito do Grau 1",required=False,max_length=220)
+    grade_1_description=forms.CharField(label="Detalhes do Grau 1",required=False,widget=forms.Textarea(attrs={"rows":2}))
+    grade_2_effect_summary=forms.CharField(label="Efeito do Grau 2",required=False,max_length=220)
+    grade_2_description=forms.CharField(label="Detalhes do Grau 2",required=False,widget=forms.Textarea(attrs={"rows":2}))
+
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.fields["usage_mode"].required=False
+        self.fields["usage_mode"].initial=CharacterTechnique.UsageMode.INSTANT
+        self.fields["sort_order"].required=False
+        self.fields["sort_order"].initial=0
+        if self.instance and self.instance.pk:
+            for grade in self.instance.grades.all():
+                self.fields[f"grade_{grade.grade}_effect_summary"].initial=grade.effect_summary
+                self.fields[f"grade_{grade.grade}_description"].initial=grade.description
+
+    def clean(self):
+        cleaned=super().clean()
+        cleaned["usage_mode"]=cleaned.get("usage_mode") or CharacterTechnique.UsageMode.INSTANT
+        cleaned["sort_order"]=cleaned.get("sort_order") or 0
+        if cleaned.get("usage_mode")==CharacterTechnique.UsageMode.GRADED:
+            cleaned["power_points_cost"]=0
+            for grade in range(3):
+                field=f"grade_{grade}_effect_summary"
+                if not (cleaned.get(field) or "").strip():
+                    self.add_error(field,f"Informe o efeito do Grau {grade}.")
+        return cleaned
+
+    def technique_data(self):
+        return {field:self.cleaned_data[field] for field in self._meta.fields}
+
+    def grade_data(self):
+        if self.cleaned_data.get("usage_mode")!=CharacterTechnique.UsageMode.GRADED:
+            return []
+        return [
+            {
+                "grade":grade,
+                "effect_summary":self.cleaned_data[f"grade_{grade}_effect_summary"].strip(),
+                "description":self.cleaned_data.get(f"grade_{grade}_description","") or "",
+            }
+            for grade in range(3)
+        ]
+
     class Meta:
         model=CharacterTechnique
-        fields=("name","source","description","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
-        labels={"name":"Nome","source":"Origem","description":"Descrição","action_type":"Ação","range_text":"Alcance","damage_text":"Texto de dano/cura","damage_die":"Dado de dano/cura","attribute_modifier":"Atributo usado","required_weapon_type":"Tipo de arma requerida","power_points_cost":"PP","category":"Categoria","technique_type":"Tipo","is_available":"Disponível","is_featured":"Destaque","sort_order":"Ordem"}
-        widgets={"description":forms.Textarea(attrs={"rows":3}),"damage_text":forms.TextInput(attrs={"placeholder":"Ex.: 2d8 de dano cortante"})}
+        fields=("name","source","description","effect_summary","usage_mode","action_type","range_text","damage_text","damage_die","attribute_modifier","required_weapon_type","power_points_cost","category","technique_type","is_available","is_featured","sort_order")
+        labels={"name":"Nome","source":"Origem","description":"Descrição","effect_summary":"Resumo do efeito","usage_mode":"Como a técnica é usada","action_type":"Ação","range_text":"Alcance","damage_text":"Texto de dano/cura","damage_die":"Dado de dano/cura","attribute_modifier":"Atributo usado","required_weapon_type":"Tipo de arma requerida","power_points_cost":"Custo de uso ou ativação (PP)","category":"Categoria","technique_type":"Tipo","is_available":"Disponível","is_featured":"Destaque","sort_order":"Ordem"}
+        widgets={"description":forms.Textarea(attrs={"rows":3}),"damage_text":forms.TextInput(attrs={"placeholder":"Ex.: 2d8 de dano cortante"}),"effect_summary":forms.TextInput(attrs={"placeholder":"Ex.: +1d8 nos ataques e redução de dano 1d8"}),"usage_mode":forms.Select(attrs={"data-technique-usage-mode":""})}
 
 class PlayerWeaponForm(forms.ModelForm):
     class Meta:
