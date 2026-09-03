@@ -131,6 +131,8 @@ make prod-tunnel-down
 
 O `cloudflared` roda no mesmo Compose e na mesma rede interna do Nginx, então não precisa abrir portas no modem ou roteador.
 
+Para iniciar automaticamente a aplicação e o túnel após reinicializações do homelab, instale a unidade `deploy/systemd/onepiece-rpg.service` conforme a seção **SSL, boot e health** de [OPERATIONS.md](OPERATIONS.md).
+
 ## Livro do Jogador 1.5.7 — criação assistida
 
 O catálogo oficial usado pelo assistente é versionado como `player-book-1.5.7`. Para cadastrar ou atualizar atributos, perícias, espécies, variantes, ancestralidades, estilos, profissões, antecedentes, proficiências, características e equipamentos iniciais junto com os dados de desenvolvimento:

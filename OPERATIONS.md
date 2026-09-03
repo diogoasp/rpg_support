@@ -28,7 +28,15 @@ Copie `.env.example`, substitua ambos os segredos, hosts e origens. Em produçã
 
 ## SSL, boot e health
 
-A estratégia padrão monta certificados do host somente leitura; adapte um server TLS ao template antes de habilitar flags HTTPS. Certificados nunca entram na imagem. O serviço systemd Compose é opcional quando Docker e `restart: unless-stopped` já iniciam no boot; substitua placeholders. `/health/` é liveness sem banco, `/health/ready/` verifica banco/diretórios, e o smoke também consulta login. Nginx usa ferramentas nativas e não ganhou healthcheck próprio para evitar dependência extra.
+A estratégia padrão monta certificados do host somente leitura; adapte um server TLS ao template antes de habilitar flags HTTPS. Certificados nunca entram na imagem. Os serviços usam `restart: unless-stopped` e o Docker deve permanecer habilitado no boot. No homelab, instale também `deploy/systemd/onepiece-rpg.service`: a unidade executa o Compose de produção com o perfil `tunnel`, garantindo que aplicação e Cloudflare Tunnel sejam reconciliados após cada inicialização, mesmo se algum container tiver sido parado anteriormente.
+
+```bash
+sudo install -m 0644 deploy/systemd/onepiece-rpg.service /etc/systemd/system/onepiece-rpg.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now docker.service onepiece-rpg.service
+```
+
+Verifique com `systemctl is-enabled docker onepiece-rpg`, `systemctl is-active docker onepiece-rpg` e `make prod-ps`. `/health/` é liveness sem banco, `/health/ready/` verifica banco/diretórios, e o smoke também consulta login. Nginx usa ferramentas nativas e não ganhou healthcheck próprio para evitar dependência extra.
 
 ## Rollback e troubleshooting
 
