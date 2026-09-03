@@ -7,7 +7,7 @@
   Ficha completa
 {% endblock %}
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/character-sheet.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/character-sheet.css' %}?v=technique-modes-20260902" />
   {% if level_up_authorization %}
     <div class="alert alert-primary d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
       <span>Seu personagem está pronto para passar ao nível {{ level_up_authorization.to_level }}.</span>
