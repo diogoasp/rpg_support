@@ -1980,6 +1980,18 @@ Cobertura adicionada:
 - A criação atual ainda calcula PP inicial por regra anterior; a passagem de nível usa `level * 2` sem alterar criação fora do escopo.
 - Técnicas personalizadas previstas pelo livro dependem de aprovação do mestre; o fluxo inicial cadastra e exige as técnicas predefinidas localizadas nas tabelas de progressão do Capítulo 3.
 
+## Correção da passagem do nível 3 para o 4
+
+O cálculo da passagem de nível preserva o valor atual de PV quando os componentes históricos estão incompletos. Isso é necessário para personagens criados antes do registro completo de `CharacterHitPointComponent`: componentes parciais não são tratados como uma composição completa capaz de substituir o PV auditado.
+
+Na passagem, o sistema soma ao máximo atual apenas o ganho do novo Dado de Vida, o modificador de Constituição do nível novo e a retroatividade da diferença do modificador de Constituição sobre os níveis já alcançados. Com componentes para todos os níveis, a recomposição histórica continua sendo usada. O PV atual acompanha somente a diferença do máximo.
+
+Efeitos numéricos de features são representados por `CharacterDerivedEffect`, vinculado à feature quando possível. A implementação reconhece as seguintes fórmulas defensivas: `Defesa Ofensiva`, `Defesa Aprimorada` e `Armadura de Músculos`. A conclusão do level up usa a mesma função de CR da prévia; não atribui genericamente `10 + Destreza`.
+
+O comando `python manage.py reconcile_character_derived_effects` executa uma simulação. Use `--apply` somente após revisar a saída. A reconciliação é idempotente e reconhece apenas features com efeito inequívoco: Defesa Ofensiva, Defesa Aprimorada, Armadura de Músculos e Robusto. Features como Corpo Vigoroso exigem registro adicional das duas rolagens físicas e permanecem sem automação até essa informação existir.
+
+Personagens legados não têm seus PV ou CR corrigidos automaticamente por migration. Primeiro deve-se executar a simulação, revisar a memória de cálculo por personagem e só então aplicar os efeitos estruturados em uma janela controlada.
+
 ## Autonomia do jogador na manutenção da ficha
 
 A ficha completa do jogador passa a ser também a tela de manutenção cotidiana do personagem. A separação adotada é:

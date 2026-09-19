@@ -1,6 +1,6 @@
 import random
 
-from .models import CANONICAL_ATTRIBUTES, CharacterCreation
+from .models import CANONICAL_ATTRIBUTES, CharacterCreation, CombatStyle, RULESET_PLAYER_BOOK_1_5_7
 
 ATTRIBUTE_KEYS = [key for key, _ in CANONICAL_ATTRIBUTES]
 ATTRIBUTE_LABELS = dict(CANONICAL_ATTRIBUTES)
@@ -68,6 +68,34 @@ def calculate_resistance_class(dexterity_modifier, additive_bonus=0, substitute_
     if substitute_formula is not None:
         return int(substitute_formula) + int(additive_bonus)
     return 10 + int(dexterity_modifier) + int(additive_bonus)
+
+
+def calculate_character_resistance_class(character, *, level=None, attribute_values=None, proficiency_bonus=None):
+    """Resolve the character's defensive formula without overwriting feature rules."""
+    values = {key: int(getattr(character, key)) for key, _ in CANONICAL_ATTRIBUTES}
+    values.update({key: int(value) for key, value in (attribute_values or {}).items() if key in values})
+    level = int(level or character.level)
+    proficiency_bonus = int(proficiency_bonus if proficiency_bonus is not None else character.proficiency_bonus)
+    modifiers = {key: calculate_attribute_modifier(value) for key, value in values.items()}
+    feature_names = set(character.features.filter(is_available=True).values_list('name', flat=True))
+    effects = character.derived_effects.filter(is_active=True)
+    formula_effect = effects.filter(effect_type='cr_formula').first()
+    bonus = sum(effect.value for effect in effects.filter(effect_type='cr_bonus'))
+    style = CombatStyle.objects.filter(name=character.combat_style, ruleset_version=RULESET_PLAYER_BOOK_1_5_7).first()
+    style_primary = ((style.primary_attributes or ['dexterity'])[0] if style else 'dexterity')
+
+    if formula_effect and formula_effect.formula == 'defesa_aprimorada':
+        primary = formula_effect.parameters.get('primary_attribute', 'strength')
+        con_limit = 1 if level == 1 else max(0, level // 2)
+        return 10 + modifiers.get(primary, modifiers['strength']) + min(modifiers['constitution'], con_limit) + bonus
+    if formula_effect and formula_effect.formula == 'defesa_ofensiva':
+        primary = formula_effect.parameters.get('primary_attribute', 'dexterity')
+        return 10 + modifiers.get(primary, modifiers['dexterity']) + proficiency_bonus // 2 + bonus
+    if formula_effect and formula_effect.formula == 'strength':
+        return 10 + modifiers['strength'] + bonus
+    if feature_names.intersection({'Defesa Aprimorada', 'Defesa Ofensiva', 'Armadura de Músculos'}):
+        return int(character.armor_class)
+    return 10 + modifiers['dexterity'] + bonus
 
 
 def calculate_initiative(dexterity_modifier, other_bonus=0):

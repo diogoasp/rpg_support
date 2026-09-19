@@ -287,6 +287,28 @@ class CharacterChangeLog(models.Model):
         indexes=[models.Index(fields=('character','-created_at')),models.Index(fields=('action','object_type'))]
     def __str__(self): return f"{self.character} · {self.description}"
 
+class CharacterDerivedEffect(models.Model):
+    class EffectType(models.TextChoices):
+        HP_FLAT='hp_flat','PV fixo'
+        HP_PER_LEVEL='hp_per_level','PV por nível'
+        CR_BONUS='cr_bonus','Bônus de CR'
+        CR_FORMULA='cr_formula','Fórmula de CR'
+    character=models.ForeignKey(Character,on_delete=models.CASCADE,related_name='derived_effects',db_index=True)
+    feature=models.ForeignKey(CharacterFeature,on_delete=models.SET_NULL,null=True,blank=True,related_name='derived_effects')
+    effect_type=models.CharField(max_length=30,choices=EffectType.choices)
+    value=models.SmallIntegerField(default=0)
+    formula=models.CharField(max_length=60,blank=True)
+    parameters=models.JSONField(default=dict,blank=True)
+    source=models.CharField(max_length=150)
+    applied_through_level=models.PositiveSmallIntegerField(null=True,blank=True)
+    is_active=models.BooleanField(default=True,db_index=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering=('effect_type','id')
+        indexes=[models.Index(fields=('character','effect_type','is_active'))]
+    def __str__(self): return f'{self.character} · {self.get_effect_type_display()} · {self.source}'
+
 class RuleCatalogMixin(models.Model):
     ruleset_version=models.CharField(max_length=40,default=RULESET_PLAYER_BOOK_1_5_7,db_index=True)
     slug=models.SlugField(max_length=120)

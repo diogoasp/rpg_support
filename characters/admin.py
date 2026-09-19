@@ -7,6 +7,7 @@ from .models import (
     CharacterCondition,
     CharacterCreation,
     CharacterFeature,
+    CharacterDerivedEffect,
     CharacterHitPointComponent,
     CharacterLevelUp,
     CharacterLevelUpAuthorization,
@@ -300,6 +301,15 @@ class CharacterHitPointComponentAdmin(admin.ModelAdmin):
     list_select_related=('character','character__campaign','character__user')
     @admin.display(description='Campanha', ordering='character__campaign__name')
     def campaign(self,obj): return obj.character.campaign
+
+@admin.register(CharacterDerivedEffect)
+class CharacterDerivedEffectAdmin(admin.ModelAdmin):
+    list_display=('character','feature','effect_type','value','formula','applied_through_level','is_active','updated_at')
+    list_filter=('character__campaign','effect_type','formula','is_active')
+    search_fields=('character__name','feature__name','source','formula')
+    autocomplete_fields=('character','feature')
+    readonly_fields=('created_at','updated_at')
+    list_select_related=('character','feature','character__campaign')
 
 @admin.register(CharacterLevelUpCorrection)
 class CharacterLevelUpCorrectionAdmin(admin.ModelAdmin):

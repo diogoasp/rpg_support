@@ -2,13 +2,14 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from .character_calculation_service import calculate_attribute_modifier, calculate_initiative, calculate_proficiency_bonus, calculate_resistance_class
+from .character_calculation_service import calculate_attribute_modifier, calculate_character_resistance_class, calculate_initiative, calculate_proficiency_bonus
 from .models import (
     BasicAbility,
     CANONICAL_ATTRIBUTES,
     Character,
     CharacterBasicAbility,
     CharacterFeature,
+    CharacterDerivedEffect,
     CharacterHitPointComponent,
     CharacterLevelUp,
     CharacterLevelUpAuthorization,
@@ -412,23 +413,30 @@ def recalculate_max_hp(character, to_level, new_constitution=None, new_level_fix
     new_constitution = character.constitution if new_constitution is None else int(new_constitution)
     con_mod = calculate_attribute_modifier(new_constitution)
     components = list(character.hp_components.all())
+    current_level = int(character.level)
+    component_levels = {int(component.source_level) for component in components}
+    complete_history = all(level in component_levels for level in range(1, current_level + 1))
     total = 0
-    for component in components:
-        if component.source_type == "initial":
-            total += component.fixed_hit_die_value + con_mod + component.other_bonus
-        elif component.source_type == "level":
-            total += component.fixed_hit_die_value + con_mod + component.other_bonus
-        else:
-            total += component.other_bonus
-    if components and new_level_fixed_value is not None:
-        total += int(new_level_fixed_value) + con_mod
-    if not components:
+    if complete_history:
+        for component in components:
+            if component.source_type in ("initial", "level"):
+                total += component.fixed_hit_die_value + con_mod + component.other_bonus
+            else:
+                total += component.other_bonus
         if new_level_fixed_value is not None:
-            previous_levels = int(to_level) - 1
-            retroactive_adjustment = apply_constitution_retroactivity(character.constitution_modifier, con_mod, previous_levels)
+            total += int(new_level_fixed_value) + con_mod
+    else:
+        # Legacy characters may have only some level components. Preserve their
+        # audited current total and add only the new level and Constitution delta.
+        if new_level_fixed_value is not None:
+            retroactive_adjustment = apply_constitution_retroactivity(character.constitution_modifier, con_mod, current_level)
             total = int(character.max_hp) + int(new_level_fixed_value) + con_mod + retroactive_adjustment
         else:
-            total = int(character.max_hp) + apply_constitution_retroactivity(character.constitution_modifier, con_mod, character.level)
+            total = int(character.max_hp) + apply_constitution_retroactivity(character.constitution_modifier, con_mod, current_level)
+    if new_level_fixed_value is not None:
+        for effect in character.derived_effects.filter(effect_type=CharacterDerivedEffect.EffectType.HP_PER_LEVEL, is_active=True):
+            applied = int(effect.applied_through_level or current_level)
+            total += max(0, int(to_level) - applied) * int(effect.value)
     return max(1, total)
 
 
@@ -473,6 +481,13 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
         "total_hit_dice": to_level,
         "hit_die_type": style.hit_die,
         "favorite_weapon": character.favorite_weapon,
+        "old_armor_class": character.armor_class,
+        "new_armor_class": calculate_character_resistance_class(
+            character,
+            level=to_level,
+            attribute_values={key: getattr(character, key) + int(increments.get(key, 0) or 0) for key in ATTRIBUTE_KEYS},
+            proficiency_bonus=calculate_proficiency_bonus(to_level),
+        ),
         "favorite_weapon_changed": False,
         "selected_basic_ability": "",
         "attribute_increases": increments,
@@ -540,7 +555,7 @@ def _apply_derived_values(character, preview):
     character.current_hp = preview["new_current_hp"]
     character.max_power_points = preview["new_max_power_points"]
     character.current_power_points = preview["new_current_power_points"]
-    character.armor_class = calculate_resistance_class(character.dexterity_modifier)
+    character.armor_class = preview["new_armor_class"]
     character.initiative = calculate_initiative(character.dexterity_modifier)
     character.favorite_weapon = preview["favorite_weapon"]
 
@@ -584,6 +599,12 @@ def complete_level_up(actor, process):
             "other_bonus": 0,
         },
     )
+    CharacterDerivedEffect.objects.filter(
+        character=character,
+        effect_type=CharacterDerivedEffect.EffectType.HP_PER_LEVEL,
+        is_active=True,
+        applied_through_level__lt=process.to_level,
+    ).update(applied_through_level=process.to_level)
     created_techniques = []
     for entry in draft_techniques:
         technique = CharacterTechnique(

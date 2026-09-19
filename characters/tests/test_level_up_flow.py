@@ -20,12 +20,14 @@ from characters.models import (
     Character,
     CharacterBasicAbility,
     CharacterFeature,
+    CharacterDerivedEffect,
     CharacterLevelUpAuthorization,
     CharacterRecordSource,
     CharacterTechnique,
     CharacterTechniqueGrade,
     CombatStyleLevel,
 )
+from characters.character_calculation_service import calculate_character_resistance_class
 
 
 def make_character(campaign, player, **overrides):
@@ -256,6 +258,47 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual(technique.power_points_cost, 0)
         self.assertEqual(technique.source_type, CharacterRecordSource.LEVEL_UP)
         self.assertEqual(CharacterTechniqueGrade.objects.filter(technique=technique).count(), 3)
+
+    def test_level_4_preserves_legacy_hp_when_components_are_incomplete(self):
+        character = make_character(self.campaign, self.player, level=3, combat_style="Guerreiro-Oni", hit_die_type=12, constitution=14, max_hp=56, current_hp=23, max_power_points=6, current_power_points=2)
+        from characters.models import CharacterHitPointComponent
+        CharacterHitPointComponent.objects.create(character=character, source_type="level", source_level=2, fixed_hit_die_value=7, constitution_modifier_at_calculation=2)
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+        save_level_up_draft(self.player, process, selected_attribute_increases={"mode": "plus2", "strength": 2})
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual(character.max_hp, 65)
+        self.assertEqual(character.current_hp, 32)
+
+    def test_defensive_features_drive_level_up_resistance_class(self):
+        character = make_character(self.campaign, self.player, level=3, combat_style="Atirador", dexterity=18, constitution=14, armor_class=14)
+        CharacterFeature.objects.create(character=character, name="Defesa Ofensiva", source="Habilidade Básica", is_available=True)
+        self.assertEqual(calculate_character_resistance_class(character, level=4, proficiency_bonus=2), 14)
+        effect = CharacterDerivedEffect.objects.create(character=character, effect_type="cr_formula", formula="defesa_ofensiva", source="Teste", parameters={"primary_attribute": "dexterity"})
+        self.assertEqual(calculate_character_resistance_class(character, level=4, proficiency_bonus=2), 15)
+        effect.delete()
+
+    def test_defesa_aprimorada_and_armadura_de_musculos_use_structured_formulas(self):
+        defensive = make_character(self.campaign, self.player, combat_style="Carateca Homem-Peixe", strength=16, dexterity=10, constitution=14, armor_class=14)
+        CharacterFeature.objects.create(character=defensive, name="Defesa Aprimorada", source="Habilidade Básica", is_available=True)
+        CharacterDerivedEffect.objects.create(character=defensive, effect_type="cr_formula", formula="defesa_aprimorada", source="Teste", parameters={"primary_attribute": "strength"})
+        self.assertEqual(calculate_character_resistance_class(defensive, level=4, proficiency_bonus=2), 15)
+
+        muscles = make_character(self.campaign, self.other_player, name="Kuro", combat_style="Guerreiro-Oni", strength=18, dexterity=10, armor_class=14)
+        CharacterFeature.objects.create(character=muscles, name="Armadura de Músculos", source="Singularidade", is_available=True)
+        CharacterDerivedEffect.objects.create(character=muscles, effect_type="cr_formula", formula="strength", source="Teste", parameters={"primary_attribute": "strength"})
+        self.assertEqual(calculate_character_resistance_class(muscles, level=4, proficiency_bonus=2), 14)
+
+    def test_structured_hp_per_level_effect_applies_only_new_level(self):
+        character = make_character(self.campaign, self.player, level=3, combat_style="Carateca Homem-Peixe", hit_die_type=12, max_hp=40, current_hp=40)
+        CharacterDerivedEffect.objects.create(character=character, effect_type="hp_per_level", value=3, source="Robusto", applied_through_level=3)
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+        save_level_up_draft(self.player, process, selected_attribute_increases={"mode": "plus2", "strength": 2})
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual(character.max_hp, 52)
 
     def test_level_4_ava_plus_two_recalculates_constitution_hp_and_profession(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=17, max_hp=39, current_hp=20, max_power_points=6, current_power_points=1, favorite_weapon="Bazuca", profession_subdivision="Veterano")
