@@ -16,5 +16,6 @@ def validate_document(file):
     if file.size > settings.MAX_FILE_UPLOAD_SIZE: raise ValidationError("O arquivo excede 10 MB.")
     if Path(file.name).suffix.lower() not in {'.jpg','.jpeg','.png','.webp','.pdf'}: raise ValidationError("Formato não permitido.")
 def portrait_upload(instance, filename): return safe_upload_path('characters/portraits')(instance, filename)
+def wanted_poster_upload(instance, filename): return safe_upload_path('characters/wanted-posters')(instance, filename)
 def inventory_image_upload(instance, filename): return safe_upload_path('inventory/images')(instance, filename)
 def inventory_file_upload(instance, filename): return safe_upload_path('inventory/files')(instance, filename)

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from .validators import portrait_upload, validate_image
+from .validators import portrait_upload, wanted_poster_upload, validate_image
 
 attribute_validators=[MinValueValidator(1),MaxValueValidator(30)]
 CANONICAL_ATTRIBUTES=(
@@ -39,6 +39,7 @@ class Character(models.Model):
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='characters',db_index=True)
     name=models.CharField('nome',max_length=150)
     portrait=models.ImageField('retrato',upload_to=portrait_upload,validators=[validate_image],blank=True)
+    wanted_poster=models.ImageField('cartaz de procurado',upload_to=wanted_poster_upload,validators=[validate_image],blank=True)
     level=models.PositiveSmallIntegerField('nível',default=1,validators=[MinValueValidator(1),MaxValueValidator(settings.MAX_CHARACTER_LEVEL)])
     species=models.CharField('espécie',max_length=100,blank=True); profession=models.CharField('profissão',max_length=100,blank=True)
     combat_style=models.CharField('estilo de combate',max_length=150,blank=True); background=models.CharField('antecedente',max_length=150,blank=True)

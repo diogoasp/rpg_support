@@ -1,4 +1,8 @@
 from django.core.exceptions import ValidationError
+from io import BytesIO
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 from django.test import TestCase
 from django.urls import reverse
 
@@ -122,6 +126,50 @@ class PlayerCampaignFlowTests(TestCase):
         self.assertContains(response, "Usopp")
         self.assertContains(response, "Atributos")
         self.assertContains(response, "Continuar criação")
+
+    def test_player_can_upload_wanted_poster_from_sheet(self):
+        self.client.force_login(self.player)
+        image = Image.new("RGB", (2, 2), "#9e3025")
+        image_data = BytesIO()
+        image.save(image_data, format="PNG")
+        poster = SimpleUploadedFile("nami-poster.png", image_data.getvalue(), content_type="image/png")
+        response = self.client.post(
+            reverse("characters:sheet", kwargs={"slug": self.c1.slug}),
+            {"name": "Nami", "wanted_poster": poster},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        self.assertTrue(character.wanted_poster.name.startswith("characters/wanted-posters/"))
+        self.assertContains(response, "Cartaz de procurado")
+        self.assertContains(response, character.wanted_poster.url)
+
+    def test_reward_board_is_campaign_isolated_and_uses_portrait_fallback(self):
+        outsider_character = Character.objects.create(
+            campaign=self.c3,
+            user=self.outsider,
+            name="Fora da mesa",
+            bounty=900,
+            portrait="characters/portraits/outside.png",
+        )
+        character = Character.objects.get(campaign=self.c1, user=self.player)
+        character.bounty = 500
+        character.portrait = "characters/portraits/nami.png"
+        character.save(update_fields=["bounty", "portrait"])
+
+        self.client.force_login(self.player)
+        response = self.client.get(reverse("characters:reward_board"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Quadro de recompensas")
+        self.assertContains(response, character.name)
+        self.assertContains(response, "Retrato usado como referência")
+        self.assertNotContains(response, outsider_character.name)
+
+        self.client.force_login(self.other_master)
+        response = self.client.get(reverse("characters:reward_board"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, outsider_character.name)
+        self.assertNotContains(response, character.name)
 
     def test_master_damage_and_heal_character_actions_update_card_and_close_modal(self):
         character = Character.objects.get(campaign=self.c1, user=self.player)

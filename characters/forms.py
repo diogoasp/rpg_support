@@ -19,10 +19,11 @@ class PlayerCharacterSheetForm(forms.ModelForm):
         raise forms.ValidationError("Informe o nome.")
     class Meta:
         model=Character
-        fields=("name","portrait","age","height","weight","dream_path","appearance","personality","dream","notes")
-        labels={"name":"Nome","portrait":"Retrato/ilustração","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
+        fields=("name","portrait","wanted_poster","age","height","weight","dream_path","appearance","personality","dream","notes")
+        labels={"name":"Nome","portrait":"Retrato/ilustração","wanted_poster":"Cartaz de procurado","age":"Idade","height":"Altura","weight":"Peso","dream_path":"Caminho","appearance":"Aparência","personality":"Personalidade","dream":"Sonho","notes":"História e notas"}
         widgets={
             "name":forms.TextInput(attrs={"autocomplete":"off"}),
+            "wanted_poster":forms.ClearableFileInput(attrs={"accept":".jpg,.jpeg,.png,.webp"}),
             "appearance":forms.Textarea(attrs={"rows":4}),
             "personality":forms.Textarea(attrs={"rows":4}),
             "dream":forms.Textarea(attrs={"rows":4}),

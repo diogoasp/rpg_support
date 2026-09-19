@@ -2164,3 +2164,8 @@ Foram adicionados testes em `characters/tests/test_player_campaign_flow.py` cobr
 - bloqueio de característica protegida;
 - criação e remoção de condição;
 - manutenção automática de bônus de perícia e proteção de campos estruturais no form narrativo.
+# Quadro de recompensas
+
+Cada personagem possui um campo de **cartaz de procurado** separado do retrato. O jogador pode enviar ou trocar essa imagem pela própria ficha, usando os mesmos formatos e limite de imagem já aplicados aos retratos. A recompensa numérica continua sendo um dado estrutural administrado pelo mestre.
+
+O menu autenticado possui o acesso **Recompensas**, em `/quadro-de-recompensas/`. Jogadores veem os personagens de suas campanhas; mestres veem os personagens das campanhas que administram. O conteúdo é agrupado por campanha para preservar o isolamento entre mesas. Quando um cartaz não foi enviado, o quadro usa o retrato do personagem como referência visual e sinaliza essa situação.

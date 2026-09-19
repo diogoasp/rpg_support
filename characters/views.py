@@ -6,6 +6,7 @@ from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
+from accounts.models import User
 from campaigns.mixins import MasterRequiredMixin, PlayerRequiredMixin
 from campaigns.models import Campaign
 from ships.models import Ship
@@ -446,6 +447,17 @@ class CharacterPrintView(CharacterSheetView):
         c=super().get_context_data(**kw)
         c.update(print_sheet_context(c['character']))
         return c
+
+class RewardBoardView(LoginRequiredMixin, TemplateView):
+    template_name='characters/reward_board.html'
+
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data(**kwargs)
+        campaigns=Campaign.objects.filter(master=self.request.user,is_active=True) if self.request.user.is_master else Campaign.objects.filter(players=self.request.user,is_active=True)
+        context['campaigns']=campaigns.prefetch_related(
+            Prefetch('characters',Character.objects.select_related('user').filter(user__role=User.Role.PLAYER).order_by('name'),to_attr='reward_board_characters')
+        )
+        return context
 CREATION_FORMS={
     'concept':CharacterCreationConceptForm,
     'species':CharacterCreationSpeciesForm,

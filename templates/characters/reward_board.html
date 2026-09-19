@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Quadro de recompensas{% endblock %}
+{% block page_heading %}Quadro de recompensas{% endblock %}
+{% block content %}
+<section class="reward-board-page">
+  <header class="reward-board-heading">
+    <p class="text-uppercase text-sand mb-1">Cartazes da tripulação</p>
+    <h1>Quadro de recompensas</h1>
+    <p class="mb-0">Os cartazes dos personagens das suas campanhas ficam reunidos aqui.</p>
+  </header>
+
+  {% for campaign in campaigns %}
+    <section class="reward-board" aria-labelledby="reward-board-{{ campaign.pk }}">
+      <div class="reward-board-rope" aria-hidden="true"></div>
+      <div class="reward-board-title">
+        <h2 id="reward-board-{{ campaign.pk }}">{{ campaign.name }}</h2>
+        <span>{{ campaign.reward_board_characters|length }} cartaz{{ campaign.reward_board_characters|length|pluralize:"es" }}</span>
+      </div>
+      <div class="reward-posters">
+        {% for character in campaign.reward_board_characters %}
+          <article class="wanted-poster-card">
+            <div class="poster-pin" aria-hidden="true"></div>
+            <div class="poster-image-wrap">
+              {% if character.wanted_poster %}
+                <img src="{{ character.wanted_poster.url }}" alt="Cartaz de procurado de {{ character.name }}">
+              {% elif character.portrait %}
+                <img src="{{ character.portrait.url }}" alt="Retrato usado no cartaz de {{ character.name }}">
+                <span class="poster-image-note">Retrato usado como referência</span>
+              {% else %}
+                <div class="poster-empty">SEM<br>IMAGEM</div>
+              {% endif %}
+            </div>
+            <div class="poster-copy">
+              <p class="poster-label">PROCURADO</p>
+              <h3>{{ character.name }}</h3>
+              <p class="poster-reward">{{ character.bounty }} <small>BELLY</small></p>
+              <p class="poster-meta">Nível {{ character.level }} · {{ character.combat_style|default:'Estilo não definido' }}</p>
+              {% if character.user_id == user.pk %}
+                <a class="btn btn-sm btn-outline-dark" href="{% url 'characters:sheet' campaign.slug %}">Ver ficha</a>
+              {% elif user.is_master %}
+                <a class="btn btn-sm btn-outline-dark" href="{% url 'characters:master_sheet' character.pk %}">Ver ficha</a>
+              {% endif %}
+            </div>
+          </article>
+        {% empty %}
+          <p class="reward-board-empty">Nenhum personagem cadastrado nesta campanha.</p>
+        {% endfor %}
+      </div>
+    </section>
+  {% empty %}
+    <div class="parchment-card p-4"><h2 class="h4">Nenhuma campanha disponível</h2><p class="mb-0">Você ainda não tem acesso a um quadro de recompensas.</p></div>
+  {% endfor %}
+</section>
+{% endblock %}

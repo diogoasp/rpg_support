@@ -173,6 +173,23 @@
           <span>Tripulação</span>
         </div>
       </header>
+      <section class="wanted-poster-panel" aria-labelledby="wanted-poster-title">
+        <div>
+          <p class="wanted-poster-kicker">Quadro de recompensas</p>
+          <h2 id="wanted-poster-title">Cartaz de procurado</h2>
+          <p class="wanted-poster-bounty">Recompensa: <strong>{{ character.bounty }}</strong> Belly</p>
+          {% if can_edit_sheet %}
+            <a class="btn btn-sm btn-pirate-red" href="#editar-ficha">{% if character.wanted_poster %}Trocar cartaz{% else %}Adicionar cartaz{% endif %}</a>
+          {% endif %}
+        </div>
+        <div class="wanted-poster-preview">
+          {% if character.wanted_poster %}
+            <img src="{{ character.wanted_poster.url }}" alt="Cartaz de procurado de {{ character.name }}">
+          {% else %}
+            <span>Cartaz<br>não registrado</span>
+          {% endif %}
+        </div>
+      </section>
       <div class="op-sheet-body">
         <div class="op-col">
           <section class="op-block">
@@ -409,7 +426,7 @@
       </section>
 
       {% if can_edit_sheet %}
-      <section class="op-block op-edit-block">
+      <section class="op-block op-edit-block" id="editar-ficha">
         <h2 class="op-block-title"><span class="op-chapter-num">✎</span> Editar narrativa e imagem</h2>
         <form method="post" enctype="multipart/form-data" class="op-sheet-form">
           {% csrf_token %}
@@ -423,6 +440,14 @@
               {% if sheet_form.portrait.errors %}
                 <small class="op-form-errors">{{ sheet_form.portrait.errors }}</small>
               {% endif %}
+            </label>
+            <label class="op-form-field op-form-field-file">
+              <span>{{ sheet_form.wanted_poster.label }}</span>
+              {{ sheet_form.wanted_poster }}
+              {% if sheet_form.wanted_poster.errors %}
+                <small class="op-form-errors">{{ sheet_form.wanted_poster.errors }}</small>
+              {% endif %}
+              <small class="text-muted">Imagem exibida no quadro de recompensas.</small>
             </label>
             <label class="op-form-field">
               <span>{{ sheet_form.name.label }}</span>

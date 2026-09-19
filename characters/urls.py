@@ -8,6 +8,7 @@ path('personagem/<slug:slug>/criar/',views.PlayerCharacterCreateView.as_view(),n
 path('personagem/<slug:slug>/criar/preview/',views.CharacterCreationPreviewView.as_view(),name='creation_preview'),
 path('personagem/<slug:slug>/criar/opcoes/',views.CharacterCreationOptionsView.as_view(),name='creation_options'),
 path('personagem/<slug:slug>/ficha/',views.CharacterSheetView.as_view(),name='sheet'),
+path('quadro-de-recompensas/',views.RewardBoardView.as_view(),name='reward_board'),
 path('personagem/<slug:slug>/ficha/pv/dano/',views.PlayerHpActionView.as_view(action='damage'),name='player_damage'),
 path('personagem/<slug:slug>/ficha/pv/cura/',views.PlayerHpActionView.as_view(action='heal'),name='player_heal'),
 path('personagem/<slug:slug>/ficha/pp/gastar/',views.PlayerPowerPointActionView.as_view(action='spend'),name='player_pp_spend'),
