@@ -3,6 +3,13 @@
 {% block content %}
 <h1>Sessão {{ record.session_number }} · {{ record.title }}</h1>
 <p>{{ record.session_date }}</p>
+{% if user.is_authenticated and record.campaign.master_id == user.pk %}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-primary" href="{% url 'history:edit' record.campaign.slug record.pk %}">Editar história</a>
+    <a class="btn btn-outline-primary" href="{% url 'history:master_list' record.campaign.slug %}">Gerenciar histórias</a>
+    {% include 'history/partials/status.html' with campaign=record.campaign %}
+  </div>
+{% endif %}
 {% if record.cover_image %}
   <img class="history-cover" src="{% url 'history:media' record.pk 'cover' %}" alt="Capa">
 {% endif %}

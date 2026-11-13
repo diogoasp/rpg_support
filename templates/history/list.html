@@ -2,6 +2,13 @@
 {% load history_markdown %}
 {% block content %}
 <h1>História das campanhas</h1>
+{% for campaign in managed_campaigns %}
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <strong>{{ campaign.name }}</strong>
+    <a class="btn btn-primary" href="{% url 'history:master_list' campaign.slug %}">Gerenciar histórias</a>
+    <a class="btn btn-outline-primary" href="{% url 'history:create' campaign.slug %}">Nova sessão</a>
+  </div>
+{% endfor %}
 {% for record in records %}
   <article class="card mb-3">
     <div class="card-body">
@@ -11,6 +18,12 @@
         {{ record.summary|truncatewords:55|markdown_to_html }}
       </div>
       <a href="{% url 'history:detail' record.pk %}">Ler registro</a>{% if record.audio_file %} · Áudio disponível{% endif %}
+      {% if user.is_authenticated and record.campaign.master_id == user.pk %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a class="btn btn-outline-primary" href="{% url 'history:edit' record.campaign.slug record.pk %}">Editar história</a>
+          {% include 'history/partials/status.html' with campaign=record.campaign %}
+        </div>
+      {% endif %}
     </div>
   </article>
 {% empty %}

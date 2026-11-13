@@ -11,7 +11,11 @@ def allowed(u):
  if not u.is_authenticated:
   return SessionRecord.objects.filter(is_published=True)
  q=SessionRecord.objects.filter(campaign__in=campaigns_for(u)); return q if u.is_master else q.filter(is_published=True)
-def record_list(request): return render(request,'history/list.html',{'records':allowed(request.user).select_related('campaign')})
+def record_list(request):
+ context={'records':allowed(request.user).select_related('campaign')}
+ if request.user.is_authenticated and request.user.is_master:
+  context['managed_campaigns']=Campaign.objects.filter(master=request.user)
+ return render(request,'history/list.html',context)
 def detail(request,pk): return render(request,'history/detail.html',{'record':get_object_or_404(allowed(request.user),pk=pk)})
 @login_required
 def master_list(request,slug):
