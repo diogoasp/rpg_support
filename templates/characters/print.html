@@ -1,7 +1,8 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ficha impressa de {{ character.name }}</title>
     <style>
       @page { size: A4; margin: 12mm; }
@@ -11,7 +12,8 @@
       h1 { font-size: 22pt; letter-spacing: .02em; }
       h2 { margin-bottom: 6px; border-bottom: 2px solid #111; font-size: 12pt; text-transform: uppercase; }
       h3 { font-size: 10pt; }
-      section { break-inside: avoid; margin-top: 10px; }
+      section { margin-top: 10px; }
+      h2, h3 { break-after: avoid; }
       table { width: 100%; border-collapse: collapse; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; }
       th { background: #eee; text-align: left; font-size: 8.5pt; text-transform: uppercase; }
@@ -29,21 +31,50 @@
       .stat-box small { display: block; color: #444; text-transform: uppercase; }
       .stat-box strong { font-size: 15pt; }
       .skill-table th, .skill-table td { padding: 3px 4px; font-size: 8.2pt; }
-      .combat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-      .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; min-height: 78px; }
+      .combat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; align-items: start; }
+      .combat-card { border: 1px solid #111; padding: 6px; break-inside: avoid; overflow-wrap: anywhere; }
+      .combat-card p { white-space: pre-line; }
+      .print-group-title { margin: 8px 0 5px; }
       .combat-meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr; gap: 4px; margin: 5px 0; }
       .combat-meta-compact { grid-template-columns: 1fr 1fr; }
       .combat-meta span { border: 1px solid #777; padding: 3px; min-height: 22px; }
       .attack-test-box { border: 2px solid #111; padding: 5px; margin: 5px 0; }
       .attack-test-box strong { display: block; text-transform: uppercase; font-size: 8pt; }
       .muted { color: #444; }
-      .no-print { margin-bottom: 8px; }
-      @media print { .no-print { display: none; } }
+      [hidden] { display: none !important; }
+      .print-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+      .card-order-controls { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+      button { cursor: pointer; }
+      button:focus-visible { outline: 2px solid #125ab1; outline-offset: 2px; }
+      [draggable="true"] { cursor: grab; }
+      .drop-target { outline: 2px dashed #125ab1; outline-offset: 2px; }
+      @media screen {
+        body { max-width: 210mm; margin: auto; padding: 16px; }
+        .print-chapter + .print-chapter { margin-top: 24px; }
+      }
+      @media screen and (max-width: 640px) {
+        .combat-grid, .two-col { grid-template-columns: 1fr; }
+        .top-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .print-header { grid-template-columns: 1fr; }
+        .skill-table { overflow-wrap: anywhere; }
+      }
+      @media print {
+        .no-print { display: none !important; }
+        .print-chapter + .print-chapter { break-before: page; }
+        .skill-table tr { break-inside: avoid; }
+      }
     </style>
   </head>
   <body>
-    <button class="no-print" onclick="window.print()">Imprimir</button>
+    <div class="no-print print-toolbar">
+      <button type="button" id="print-sheet">Imprimir</button>
+      <button type="button" id="edit-print-order" aria-pressed="false" hidden>Personalizar ordem</button>
+      <button type="button" id="reset-print-order" hidden>Restaurar ordem padrão</button>
+      <span id="print-order-status" role="status"></span>
+    </div>
 
+    <main data-print-character="{{ character.pk }}" data-print-user="{{ request.user.pk }}">
+    <div class="print-chapter">
     <header>
       <h1>{{ character.name }}</h1>
       <div class="print-header">
@@ -84,6 +115,9 @@
         </table>
         <div class="three-col">
           <div class="stat-box"><small>PV</small><strong>{{ character.current_hp }}/{{ character.max_hp }}</strong></div>
+          {% if character.animal_hp != None %}
+            <div class="stat-box"><small>PV animais</small><strong>{{ character.animal_current_hp }}/{{ character.animal_max_hp }}</strong></div>
+          {% endif %}
           <div class="stat-box"><small>PP</small><strong>{{ character.current_power_points }}/{{ character.max_power_points }}</strong></div>
           <div class="stat-box"><small>CR</small><strong>{{ character.armor_class }}</strong></div>
           <div class="stat-box"><small>Iniciativa</small><strong>{{ character.initiative|stringformat:"+d" }}</strong></div>
@@ -106,13 +140,14 @@
         </tbody>
       </table>
     </section>
+    </div>
 
-    <section>
+    <section class="print-chapter">
       <h2>Combate</h2>
-      <h3>Ataques possíveis</h3>
-      <div class="combat-grid">
+      <h3 class="print-group-title">Ataques possíveis</h3>
+      <div class="combat-grid" data-card-group="attacks">
         {% for attack in attack_rows %}
-          <div class="combat-card">
+          <div class="combat-card" data-print-card="{{ attack.id }}">
             <h3>{{ attack.name }}</h3>
             <div class="attack-test-box">
               <strong>Teste de ataque</strong>
@@ -131,10 +166,10 @@
         {% endfor %}
       </div>
 
-      <h3 style="margin-top:8px">Habilidades e técnicas cadastradas</h3>
-      <div class="combat-grid">
+      <h3 class="print-group-title">Habilidades e técnicas cadastradas</h3>
+      <div class="combat-grid" data-card-group="techniques">
         {% for technique in technique_rows %}
-          <div class="combat-card">
+          <div class="combat-card" data-print-card="{{ technique.id }}">
             <h3>{{ technique.name }} <span class="muted">({{ technique.action }})</span></h3>
             <p><strong>{{ technique.category }}</strong> · {{ technique.technique_type }} · {{ technique.usage_mode }} · <strong>PP:</strong> {{ technique.cost }}</p>
             <div class="attack-test-box">
@@ -159,47 +194,52 @@
           <div class="combat-card"><h3>Nenhuma técnica cadastrada</h3><p class="muted">Use a área de ataques possíveis e registre novas técnicas na ficha do personagem.</p></div>
         {% endfor %}
       </div>
+      {% if combat_feature_rows %}
+        <h3 class="print-group-title">Mecânicas de combate</h3>
+        <div class="combat-grid" data-card-group="combat-features">
+          {% for feature in combat_feature_rows %}
+            {% include "characters/partials/print_feature_card.html" %}
+          {% endfor %}
+        </div>
+      {% endif %}
     </section>
 
-    <section>
-      <h2>Personalidade, Singularidades e Limitações</h2>
-      <div class="two-col">
-        <div>
-          <h3>Traços e Vantagens</h3>
+    <section class="print-chapter">
+      <h2>Fora de combate</h2>
+      {% if character.personality or character.appearance or character.dream or character.dream_path or character.notes %}
+        <h3 class="print-group-title">Personalidade e história</h3>
+        <div class="combat-grid" data-card-group="profile">
+          {% if character.personality %}<div class="combat-card" data-print-card="personality"><h3>Personalidade</h3><p>{{ character.personality }}</p></div>{% endif %}
+          {% if character.appearance %}<div class="combat-card" data-print-card="appearance"><h3>Aparência</h3><p>{{ character.appearance }}</p></div>{% endif %}
+          {% if character.dream or character.dream_path %}<div class="combat-card" data-print-card="dream"><h3>Sonho e caminho</h3><p>{{ character.dream }}</p><p>{{ character.get_dream_path_display }}</p></div>{% endif %}
+          {% if character.notes %}<div class="combat-card" data-print-card="notes"><h3>História e notas</h3><p>{{ character.notes }}</p></div>{% endif %}
+        </div>
+      {% endif %}
+      <h3 class="print-group-title">Traços e Vantagens</h3>
+      <div class="combat-grid" data-card-group="traits">
           {% for feature in positive_feature_rows %}
-            <div class="combat-card">
-              <h3>{{ feature.name }}</h3>
-              <p>{{ feature.description|default:feature.source }}</p>
-            </div>
+            {% include "characters/partials/print_feature_card.html" %}
           {% empty %}
             <div class="combat-card"><h3>Nenhum traço registrado</h3><p class="muted">Traços, vantagens e características positivas aparecerão aqui.</p></div>
           {% endfor %}
-        </div>
-        <div>
-          <h3>Condições e Limitações</h3>
-          {% for feature in limitation_feature_rows %}
-            <div class="combat-card">
-              <h3>{{ feature.name }}</h3>
-              <p>{{ feature.description|default:feature.source }}</p>
+      </div>
+      <h3 class="print-group-title">Condições e Limitações</h3>
+      <div class="combat-grid" data-card-group="limitations">
+          {% for condition in condition_rows %}
+            <div class="combat-card" data-print-card="condition-{{ condition.pk }}">
+              <h3>{{ condition.name }}</h3>
+              <p>{{ condition.description|default:"Condição ativa." }}</p>
             </div>
-          {% empty %}
-            <div class="combat-card"><h3>Nenhuma limitação registrada</h3><p class="muted">Defeitos cadastrados aparecerão aqui.</p></div>
           {% endfor %}
-        </div>
+          {% for feature in limitation_feature_rows %}
+            {% include "characters/partials/print_feature_card.html" %}
+          {% endfor %}
+          {% if not condition_rows and not limitation_feature_rows %}
+            <div class="combat-card"><h3>Nenhuma condição ou limitação registrada</h3></div>
+          {% endif %}
       </div>
     </section>
-    <section>
-      <h2>Condições Ativas</h2>
-      <table>
-        <thead><tr><th>Condição</th><th>Descrição</th></tr></thead>
-        <tbody>
-          {% for condition in condition_rows %}
-            <tr><td>{{ condition.name }}</td><td>{{ condition.description|default:"Condição ativa." }}</td></tr>
-          {% empty %}
-            <tr><td colspan="2">Nenhuma condição ativa.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
+    </main>
+    <script src="{% static 'characters/js/print-sheet.js' %}" defer></script>
   </body>
 </html>

@@ -1,6 +1,7 @@
 import re
 
 from .models import CANONICAL_ATTRIBUTES, CharacterTechnique, Skill
+from .level_up_service import LEVEL_FIVE_STYLE_FEATURES
 
 
 ATTRIBUTE_LABELS = dict(CANONICAL_ATTRIBUTES) | {
@@ -97,6 +98,7 @@ def printable_attack_rows(character):
         modifier = character.attribute_modifier(weapon.attribute_modifier)
         rows.append(
             {
+                "id": weapon.pk,
                 "name": f"Ataque básico: {weapon.name}",
                 "attribute": ATTRIBUTE_LABELS.get(weapon.attribute_modifier, weapon.get_attribute_modifier_display()),
                 "range": weapon.range_text or "-",
@@ -193,6 +195,7 @@ def printable_technique_row(character, technique, weapon=None):
         cost_label = str(technique.power_points_cost) if technique.power_points_cost else "-"
 
     return {
+        "id": technique.pk,
         "name": technique.name,
         "action": technique.get_action_type_display(),
         "category": category_label,
@@ -241,13 +244,20 @@ def printable_condition_rows(character):
 def print_sheet_context(character):
     feature_rows = list(printable_feature_rows(character))
     positive_feature_rows, limitation_feature_rows = split_feature_rows(feature_rows)
+    style_feature = LEVEL_FIVE_STYLE_FEATURES.get(character.combat_style)
+    combat_feature_rows = [
+        feature for feature in positive_feature_rows
+        if (style_feature and feature.name.casefold() == style_feature[0].casefold())
+        or feature.source == "SMILE quase perfeita"
+    ]
     return {
         "attribute_rows": printable_attribute_rows(character),
         "skill_rows": printable_skill_rows(character),
         "attack_rows": printable_attack_rows(character),
         "technique_rows": printable_technique_rows(character),
         "feature_rows": feature_rows,
-        "positive_feature_rows": positive_feature_rows,
+        "combat_feature_rows": combat_feature_rows,
+        "positive_feature_rows": [feature for feature in positive_feature_rows if feature not in combat_feature_rows],
         "limitation_feature_rows": limitation_feature_rows,
         "condition_rows": printable_condition_rows(character),
     }
