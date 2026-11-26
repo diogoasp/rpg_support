@@ -5,6 +5,9 @@
     <div class="col-md-3"><small class="text-muted">PP</small><strong class="d-block">{{ preview.old_current_power_points }}/{{ preview.old_max_power_points }} → {{ preview.new_current_power_points }}/{{ preview.new_max_power_points }}</strong></div>
     <div class="col-md-3"><small class="text-muted">Constituição</small><strong class="d-block">{{ preview.old_constitution }} → {{ preview.new_constitution }}</strong></div>
     <div class="col-md-3"><small class="text-muted">Proficiência</small><strong class="d-block">+{{ preview.proficiency_bonus }}</strong></div>
+    {% if preview.extra_hit_die_value %}
+      <div class="col-md-3"><small class="text-muted">Dado de Vida extra da SMILE</small><strong class="d-block">+{{ preview.extra_hit_die_value }} PV (média)</strong></div>
+    {% endif %}
   </div>
   <p class="small mb-0 mt-2">
     PV:

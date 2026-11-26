@@ -62,7 +62,7 @@ seed-complete: ## Carrega o dump completo de deploy/full_database_seed.sql
 	$(COMPOSE_DEV) exec -T $(DB_SERVICE) psql -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" < deploy/full_database_seed.sql
 seed-player-book: ## Seed idempotente do Livro do Jogador 1.5.7
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_player_book_rules_1_5_7
-seed-level-progression: ## Seed idempotente da progressão 1-4 do Livro do Jogador 1.5.7
+seed-level-progression: ## Seed idempotente da progressão 1-5 do Livro do Jogador 1.5.7
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_level_progression_1_5_7
 seed-level-up-abilities: ## Corrige habilidades disponíveis na passagem de nível
 	$(COMPOSE_DEV) run --rm $(WEB_SERVICE) python manage.py seed_level_up_basic_abilities_1_5_7

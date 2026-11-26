@@ -28,6 +28,7 @@ from characters.models import (
     CombatStyleLevel,
 )
 from characters.character_calculation_service import calculate_character_resistance_class
+from characters.services import damage_character, long_rest_character, toggle_animal_form
 
 
 def make_character(campaign, player, **overrides):
@@ -299,6 +300,57 @@ class LevelUpFlowTests(TestCase):
         complete_level_up(self.player, process)
         character.refresh_from_db()
         self.assertEqual(character.max_hp, 52)
+
+    def test_level_five_updates_resources_profession_and_preserves_attributes(self):
+        character = make_character(
+            self.campaign, self.player, level=4, max_hp=35, current_hp=27,
+            max_power_points=8, current_power_points=3, total_hit_dice=4,
+        )
+        authorization = authorize_level_up(self.master, character)
+        process = start_level_up(self.player, authorization)
+        CharacterDerivedEffect.objects.create(
+            character=character, effect_type="cr_formula", formula="defesa_ofensiva",
+            source="Teste", parameters={"primary_attribute": "dexterity"},
+        )
+        save_level_up_draft(self.player, process)
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual((character.level, character.proficiency_bonus, character.total_hit_dice), (5, 3, 5))
+        self.assertEqual((character.max_hp, character.current_hp), (42, 34))
+        self.assertEqual((character.max_power_points, character.current_power_points), (10, 5))
+        self.assertEqual((character.profession_grade, character.profession_subdivision), ("Profissional", "Intermediário"))
+        self.assertEqual(character.constitution, 14)
+        self.assertEqual(character.armor_class, 14)
+        self.assertTrue(character.features.filter(name="Carga de Adrenalina", level_acquired=5).exists())
+        with self.assertRaises(ValidationError):
+            authorize_level_up(self.master, character)
+
+    def test_chefe_smile_keeps_animal_hp_and_grants_an_extra_hit_die(self):
+        character = make_character(
+            self.campaign, self.player, name="M.D. Chefe", level=4,
+            combat_style="Carateca Homem-Peixe", hit_die_type=12, total_hit_dice=4,
+            max_hp=71, current_hp=60, max_power_points=8, current_power_points=5,
+        )
+        call_command("enable_chefe_smile", character.pk)
+        toggle_animal_form(actor=self.player, character=character)
+        damage_character(actor=self.player, character=character, amount=6)
+        toggle_animal_form(actor=self.player, character=character)
+        toggle_animal_form(actor=self.player, character=character)
+        call_command("enable_chefe_smile", character.pk)
+        character.refresh_from_db()
+        self.assertEqual((character.current_hp, character.animal_hp, character.current_power_points), (60, 50, 5))
+        self.assertTrue(character.animal_form_active)
+        self.assertEqual(character.features.filter(name="Forma animal").count(), 1)
+
+        process = start_level_up(self.player, authorize_level_up(self.master, character))
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual((character.max_hp, character.total_hit_dice, character.animal_max_hp), (87, 6, 69))
+        self.assertEqual(character.animal_hp, 50)
+        self.assertTrue(character.features.filter(name="Manipulação da Água", level_acquired=5).exists())
+        long_rest_character(actor=self.player, character=character)
+        character.refresh_from_db()
+        self.assertEqual(character.animal_hp, 69)
 
     def test_level_4_ava_plus_two_recalculates_constitution_hp_and_profession(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=17, max_hp=39, current_hp=20, max_power_points=6, current_power_points=1, favorite_weapon="Bazuca", profession_subdivision="Veterano")

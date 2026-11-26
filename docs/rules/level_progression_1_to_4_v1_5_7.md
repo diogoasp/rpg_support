@@ -1,5 +1,7 @@
 # Passagem de nivel assistida 1-4 - OP RPG Livro do Jogador 1.5.7
 
+> Registro da primeira versão. Para o fluxo atual, incluindo rolagem física informada, cadastro manual de habilidades e passagem 4 → 5, consulte [Passagem de Nível Assistida](../../documentação.md#passagem-de-nível-assistida--livro-do-jogador-157).
+
 Fonte normativa exclusiva: `OP RPG - Livro do Jogador 1.5.7.pdf`.
 
 Escopo implementado: transicoes 1 -> 2, 2 -> 3 e 3 -> 4. Nao ha Multiestilo, niveis epicos, troca de Estilo, Akuma no Mi automatica ou desbloqueio automatico de Haki.

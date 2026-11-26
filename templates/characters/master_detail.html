@@ -12,10 +12,10 @@
         <button class="btn btn-outline-danger" type="submit">Cancelar autorização</button>
       </form>
     {% else %}
-      {% if character.level < 4 %}
+      {% if character.level < 5 %}
         <a class="btn btn-primary" href="{% url 'characters:level_up_authorize' character.pk %}">Autorizar passagem de nível</a>
       {% else %}
-        <p class="text-muted mb-0">Passagem acima do 4º nível não está implementada.</p>
+        <p class="text-muted mb-0">Passagem acima do 5º nível não está implementada.</p>
       {% endif %}
     {% endif %}
     {% if last_level_up %}

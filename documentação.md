@@ -1824,8 +1824,10 @@ Documento detalhado: `docs/rules/level_progression_1_to_4_v1_5_7.md`.
 
 ### Escopo
 
-- Transições permitidas: 1 → 2, 2 → 3 e 3 → 4.
-- Bloqueado: nível 5 ou superior, redução, salto de nível, Multiestilo, troca de Estilo, progressão épica, Akuma no Mi automática e Haki automático.
+- Transições permitidas: 1 → 2, 2 → 3, 3 → 4 e 4 → 5.
+- Bloqueado: nível 6 ou superior, redução, salto de nível, Multiestilo, troca de Estilo, progressão épica, Akuma no Mi automática e Haki automático.
+- No 5º nível, a proficiência é +3, o máximo de PP é 10 e a profissão avança para Profissional / Intermediário. A passagem acrescenta um Dado de Vida e dispensa AVA. A fórmula estruturada de Defesa Ofensiva incorpora Guarda Aprimorada. Atirador, Carateca Homem-Peixe, Espadachim, Guerreiro-Oni e Ninja recebem a característica do estilo diretamente na confirmação. Seus efeitos de mesa ficam descritos na ficha.
+- A SMILE de M.D. Chefe habilita a Forma animal na seção Recursos. A barra começa com 80% dos PV máximos, arredondados para baixo, conserva o saldo entre transformações e é restaurada no descanso longo. Ao zerar, ele volta à forma híbrida. O dano excedente fica na barra animal. O dado adicional aumenta a reserva de descanso e acrescenta sua média aos PV máximos. Após aplicar as migrations, use `python manage.py enable_chefe_smile 2` na base do homelab para habilitar a ficha. O comando preserva os PV animais se for repetido.
 - O mestre autoriza; o jogador conclui.
 - O nível do personagem só muda na confirmação final do jogador.
 

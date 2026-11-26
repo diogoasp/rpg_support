@@ -90,7 +90,8 @@ def calculate_character_resistance_class(character, *, level=None, attribute_val
         return 10 + modifiers.get(primary, modifiers['strength']) + min(modifiers['constitution'], con_limit) + bonus
     if formula_effect and formula_effect.formula == 'defesa_ofensiva':
         primary = formula_effect.parameters.get('primary_attribute', 'dexterity')
-        return 10 + modifiers.get(primary, modifiers['dexterity']) + proficiency_bonus // 2 + bonus
+        improved_guard = 2 if level >= 13 else 1 if level >= 5 else 0
+        return 10 + modifiers.get(primary, modifiers['dexterity']) + proficiency_bonus // 2 + bonus + improved_guard
     if formula_effect and formula_effect.formula == 'strength':
         return 10 + modifiers['strength'] + bonus
     if feature_names.intersection({'Defesa Aprimorada', 'Defesa Ofensiva', 'Armadura de Músculos'}):

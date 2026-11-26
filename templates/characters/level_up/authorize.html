@@ -20,7 +20,7 @@
       <ul>
         <li>Nível {{ requirements.to_level }}</li>
         <li>PP máximo {{ requirements.to_level|add:requirements.to_level }}</li>
-        <li>Proficiência +2 nos níveis 1 a 4</li>
+        <li>Proficiência +{{ requirements.proficiency_bonus }}</li>
         <li>+1 Dado de Vida d{{ requirements.style.hit_die }}</li>
         <li>PV será calculado pelo jogador com valor médio ou resultado rolado fisicamente.</li>
         {% if requirements.profession_progression %}

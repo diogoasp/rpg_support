@@ -1,0 +1,45 @@
+name: media-subtitles
+
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: media-subtitles-sonarr
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1001"
+      TZ: America/Sao_Paulo
+      UMASK: "002"
+    volumes:
+      - /home/diogo/media-subtitles/config/sonarr:/config
+      - /srv/midia/Séries:/tv
+    ports:
+      - "192.168.18.178:8989:8989"
+    mem_limit: 512m
+    cpus: 1.5
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: media-subtitles-bazarr
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1001"
+      TZ: America/Sao_Paulo
+      UMASK: "002"
+    volumes:
+      - /home/diogo/media-subtitles/config/bazarr:/config
+      - /srv/midia/Séries:/tv
+    ports:
+      - "192.168.18.178:6767:6767"
+    mem_limit: 512m
+    cpus: 1.5
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - sonarr
+

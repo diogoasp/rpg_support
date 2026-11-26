@@ -22,6 +22,29 @@ def log_character_change(*,character:Character,user:Any,action:str,object_type:s
     return CharacterChangeLog.objects.create(character=character,user=user if getattr(user,'is_authenticated',False) else None,action=action,object_type=object_type,object_id=str(object_id or ''),description=description,old_value=old_value or {},new_value=new_value or {})
 def _snapshot(obj:Any,fields:tuple[str,...])->dict:
     return {field:getattr(obj,field) for field in fields}
+
+@transaction.atomic
+def toggle_animal_form(*, actor, character):
+    ensure_owner(actor, character)
+    locked = Character.objects.select_for_update().get(pk=character.pk)
+    if locked.animal_hp is None:
+        raise PermissionDenied
+    if not locked.animal_form_active and not locked.animal_current_hp:
+        raise ValidationError("A forma animal precisa de PV para ser assumida.")
+    locked.animal_form_active = not locked.animal_form_active
+    locked.save(update_fields=("animal_form_active", "updated_at"))
+    return locked
+
+def adjust_animal_hp(*, character, actor, delta):
+    previous = character.animal_current_hp
+    character.animal_hp = min(character.animal_max_hp, max(0, previous + delta))
+    if character.animal_hp == 0:
+        character.animal_form_active = False
+    character.save(update_fields=("animal_hp", "animal_form_active", "updated_at"))
+    log_character_change(character=character, user=actor, action="damage" if delta < 0 else "heal",
+                         object_type="resource", description=f"PV animais {previous} → {character.animal_hp}",
+                         old_value={"animal_hp": previous}, new_value={"animal_hp": character.animal_hp})
+    return character
 @transaction.atomic
 def update_character_resources(*,actor:Any,character:Character,hp:int|None=None,power_points:int|None=None)->Character:
     ensure_master(actor,character); locked=Character.objects.select_for_update().get(pk=character.pk)
@@ -37,6 +60,8 @@ def damage_character(*,actor:Any,character:Character,amount:int)->Character:
     ensure_master_or_owner(actor,character)
     if amount < 1: raise ValidationError('O dano deve ser maior que zero.')
     locked=Character.objects.select_for_update().get(pk=character.pk)
+    if locked.animal_form_active and locked.animal_hp is not None:
+        return adjust_animal_hp(character=locked, actor=actor, delta=-amount)
     old_hp=locked.current_hp
     locked.current_hp=max(0,locked.current_hp-amount)
     validate_resource_bounds(locked); locked.save(update_fields=('current_hp','updated_at')); sync_active_combatants(locked)
@@ -47,6 +72,8 @@ def heal_character(*,actor:Any,character:Character,amount:int)->Character:
     ensure_master_or_owner(actor,character)
     if amount < 1: raise ValidationError('A cura deve ser maior que zero.')
     locked=Character.objects.select_for_update().get(pk=character.pk)
+    if locked.animal_form_active and locked.animal_hp is not None:
+        return adjust_animal_hp(character=locked, actor=actor, delta=amount)
     old_hp=locked.current_hp
     locked.current_hp=min(locked.max_hp,locked.current_hp+amount)
     validate_resource_bounds(locked); locked.save(update_fields=('current_hp','updated_at')); sync_active_combatants(locked)
@@ -208,6 +235,8 @@ def long_rest_character(*,actor:Any,character:Character)->Character:
     locked=Character.objects.select_for_update().get(pk=character.pk)
     old={'current_hp':locked.current_hp,'current_power_points':locked.current_power_points,'great_damage_recovery_days':locked.great_damage_recovery_days}
     locked.current_hp=locked.max_hp
+    if locked.animal_hp is not None:
+        locked.animal_hp = locked.animal_max_hp
     locked.current_power_points=locked.max_power_points
     locked.great_damage_recovery_days=0
     locked.great_damage_recovery_day=0

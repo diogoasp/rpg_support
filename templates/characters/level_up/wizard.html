@@ -55,6 +55,10 @@
           <div>
             <h3 class="h5 mb-1">2. Habilidades recebidas</h3>
             <p class="text-muted mb-0">Cadastre aqui técnicas e características recebidas com base no Livro do Jogador. A quantidade é livre.</p>
+            {% if requirements.style_feature %}
+              <p class="mt-2 mb-0">A ficha recebe <strong>{{ requirements.style_feature.0 }}</strong> ao concluir a passagem.</p>
+              <p class="text-muted mb-0">{{ requirements.style_feature.1 }}</p>
+            {% endif %}
           </div>
           <div class="d-flex flex-wrap gap-2 align-self-start">
             <button class="btn btn-outline-primary btn-sm" type="button" data-add-technique>+ Técnica de Combate</button>

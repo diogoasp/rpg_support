@@ -165,7 +165,9 @@ O mestre revisa personagens em `/mestre/personagens/`. Exceções de regra ficam
 
 ## Livro do Jogador 1.5.7 — passagem de nível assistida
 
-O fluxo implementado cobre apenas os níveis 1 a 4 do OP RPG Livro do Jogador 1.5.7, sem Multiestilo e sem rolagem de Dado de Vida.
+O fluxo cobre os níveis 1 a 5 do OP RPG Livro do Jogador 1.5.7. O jogador pode usar a média do Dado de Vida ou informar o resultado de uma rolagem física. A progressão mantém o estilo atual.
+
+Na passagem 4 → 5, a proficiência sobe para +3, o PP máximo passa a 10 e a profissão avança para Profissional / Intermediário quando aplicável. A confirmação adiciona a característica de nível 5 para os estilos da mesa atual. A migration 0018 cadastra a progressão profissional para bases existentes. A migration 0019 adiciona os campos usados pela forma animal de M.D. Chefe, habilitada separadamente pelo comando `enable_chefe_smile`.
 
 O mestre autoriza pela ficha administrativa do personagem:
 

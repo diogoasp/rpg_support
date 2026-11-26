@@ -103,7 +103,7 @@ LEVEL_3_TECHNIQUES = {
 
 
 class Command(BaseCommand):
-    help = "Cadastra a progressão de personagens do 1º ao 4º nível para o Livro do Jogador 1.5.7."
+    help = "Cadastra a progressão de personagens do 1º ao 5º nível para o Livro do Jogador 1.5.7."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -114,7 +114,7 @@ class Command(BaseCommand):
                 defaults={"name": name, "category": category, "description": description, "effects": effects, "source_pages": "35-38"},
             )
 
-        for level, grade, subdivision in ((1, "Amador", "Novato"), (2, "Amador", "Intermediário"), (3, "Amador", "Veterano"), (4, "Profissional", "Novato")):
+        for level, grade, subdivision in ((1, "Amador", "Novato"), (2, "Amador", "Intermediário"), (3, "Amador", "Veterano"), (4, "Profissional", "Novato"), (5, "Profissional", "Intermediário")):
             ProfessionProgression.objects.update_or_create(
                 ruleset_version=RULESET_PLAYER_BOOK_1_5_7,
                 level=level,
@@ -129,13 +129,13 @@ class Command(BaseCommand):
 
         for style_name, levels in STYLE_FEATURES.items():
             style = CombatStyle.objects.get(ruleset_version=RULESET_PLAYER_BOOK_1_5_7, name=style_name)
-            for level in range(1, 5):
+            for level in range(1, 6):
                 style_level, _ = CombatStyleLevel.objects.update_or_create(
                     combat_style=style,
                     ruleset_version=RULESET_PLAYER_BOOK_1_5_7,
                     level=level,
                     defaults={
-                        "proficiency_bonus": 2,
+                        "proficiency_bonus": 3 if level == 5 else 2,
                         "power_points": level * 2,
                         "hit_die_gain": True,
                         "grants_basic_ability": level in (1, 2, 3),
@@ -176,4 +176,4 @@ class Command(BaseCommand):
                             ruleset_version=RULESET_PLAYER_BOOK_1_5_7,
                         )
 
-        self.stdout.write(self.style.SUCCESS("Progressão 1-4 do Livro do Jogador 1.5.7 cadastrada/atualizada."))
+        self.stdout.write(self.style.SUCCESS("Progressão 1-5 do Livro do Jogador 1.5.7 cadastrada/atualizada."))

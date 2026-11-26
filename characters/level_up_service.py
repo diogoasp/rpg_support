@@ -27,7 +27,7 @@ from .models import (
     RULESET_PLAYER_BOOK_1_5_7,
 )
 
-MAX_IMPLEMENTED_LEVEL = 4
+MAX_IMPLEMENTED_LEVEL = 5
 FIXED_HP_VALUES = {8: 5, 10: 6, 12: 7}
 STYLE_CATEGORIES = {
     "Carateca Homem-Peixe": BasicAbility.Category.WARRIOR,
@@ -41,11 +41,12 @@ STYLE_CATEGORIES = {
     "Guerrilheiro": BasicAbility.Category.DIVERGENT,
     "Ninja": BasicAbility.Category.DIVERGENT,
 }
-PROFESSION_BY_LEVEL = {
-    1: ("Amador", "Novato"),
-    2: ("Amador", "Intermediário"),
-    3: ("Amador", "Veterano"),
-    4: ("Profissional", "Novato"),
+LEVEL_FIVE_STYLE_FEATURES = {
+    "Atirador": ("Carga de Adrenalina", "Como ação bônus, gaste 4, 6 ou 8 PP para ganhar, respectivamente, +1, +2 ou +3 de CR por 1 minuto. O efeito não acumula. São 3 usos, recuperando 1 por descanso longo."),
+    "Carateca Homem-Peixe": ("Manipulação da Água", "Cada movimento de Jujutsu gera um Ponto de Carateca, mesmo se falhar. O limite é o nível de Carateca e os pontos expiram com o encontro. Gaste PC para reforçar dano ou deslocamento de movimentos, impor desvantagem na salvaguarda, impor falha por 3 PC, deter projéteis com uma reação por 2 PC ou ganhar vantagem em teste ou salvaguarda de Força. Consulte a seção do estilo para os custos e movimentos."),
+    "Espadachim": ("Honra de um Espadachim", "Uma vez por rodada, reduza em 5 o primeiro dano de ataque recebido pela frente. Ataques de oportunidade sofridos acrescentam um dado de dano psíquico. Você pode aceitar o dano de um ataque que errou para recuperar 1 PP por 10 de dano, com mínimo 1 e máximo igual ao nível de Espadachim."),
+    "Guerreiro-Oni": ("Brutamontes", "O ataque de oportunidade pode empurrar um alvo Grande ou menor até 9 m após falha na salvaguarda de Força, com 3d8 de dano contundente se colidir com uma estrutura adequada. Um crítico corpo a corpo impõe desvantagem aos ataques de quem o viu contra você até seu próximo turno. A arma favorita causa 2d6 em ataques. Balanço Sanguinário atinge criaturas a até 3 m que falhem na salvaguarda de Destreza, por 2d8 mais 1d8 por criatura adicional afetada, até 5d8, sem combinar outros efeitos."),
+    "Ninja": ("Ataque de Oportunidade Superior", "Use sua reação para atacar corpo a corpo uma criatura que saia voluntariamente do seu alcance, mesmo se ela evitar reações, ou tente acertar outro alvo a até 1,5 m de você. Se acertar, o deslocamento dela fica em zero até o fim do próximo turno dela."),
 }
 ATTRIBUTE_KEYS = tuple(key for key, _ in CANONICAL_ATTRIBUTES)
 
@@ -83,7 +84,7 @@ def calculate_hp_gain(hit_die, constitution_modifier, method=CharacterLevelUp.Hp
 
 def calculate_power_points(level):
     if int(level) < 1 or int(level) > MAX_IMPLEMENTED_LEVEL:
-        raise ValidationError("PP desta entrega só está definido para níveis 1 a 4.")
+        raise ValidationError(f"PP desta entrega só está definido para níveis 1 a {MAX_IMPLEMENTED_LEVEL}.")
     return int(level) * 2
 
 
@@ -131,7 +132,7 @@ def resolve_profession_progression(character, to_level):
 
 def get_level_up_requirements(character):
     if character.level >= MAX_IMPLEMENTED_LEVEL:
-        raise ValidationError("Passagem acima do 4º nível não está implementada.")
+        raise ValidationError(f"Passagem acima do {MAX_IMPLEMENTED_LEVEL}º nível não está implementada.")
     to_level = character.level + 1
     style = _style_for_character(character)
     style_level = optional_style_level(character, to_level)
@@ -139,6 +140,8 @@ def get_level_up_requirements(character):
     return {
         "from_level": character.level,
         "to_level": to_level,
+        "proficiency_bonus": calculate_proficiency_bonus(to_level),
+        "style_feature": LEVEL_FIVE_STYLE_FEATURES.get(style.name) if to_level == 5 else None,
         "style": style,
         "style_level": style_level,
         "automatic_features": [],
@@ -169,7 +172,7 @@ def authorize_level_up(actor, character, master_note=""):
     character = Character.objects.select_for_update().select_related("campaign", "user").get(pk=character.pk)
     validate_master_can_authorize(actor, character)
     if character.level >= MAX_IMPLEMENTED_LEVEL:
-        raise ValidationError("Passagem acima do 4º nível não está implementada.")
+        raise ValidationError(f"Passagem acima do {MAX_IMPLEMENTED_LEVEL}º nível não está implementada.")
     if CharacterLevelUpAuthorization.objects.filter(character=character, status__in=[CharacterLevelUpAuthorization.Status.PENDING, CharacterLevelUpAuthorization.Status.IN_PROGRESS]).exists():
         raise ValidationError("Já existe uma autorização pendente ou em andamento para este personagem.")
     requirements = get_level_up_requirements(character)
@@ -453,7 +456,9 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
     roll_result = hp_roll_result if hp_roll_result is not None else process.hp_roll_result
     raw_value = raw_hp_value(style.hit_die, method, roll_result)
     hp_gain = calculate_hp_gain(style.hit_die, new_con_mod, method, roll_result)
+    extra_die = FIXED_HP_VALUES[style.hit_die] if character.animal_hp is not None else 0
     new_max_hp = recalculate_max_hp(character, to_level, new_constitution=new_con, new_level_fixed_value=raw_value)
+    new_max_hp += extra_die
     hp_diff = new_max_hp - character.max_hp
     new_current_hp = min(character.current_hp + hp_diff, new_max_hp) if hp_diff > 0 else min(character.current_hp, new_max_hp)
     new_max_pp = calculate_power_points(to_level)
@@ -468,7 +473,8 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
         "fixed_hp_value": raw_value,
         "hp_method": method,
         "hp_roll_result": roll_result,
-        "hp_gain": hp_gain,
+        "hp_gain": hp_gain + extra_die,
+        "extra_hit_die_value": extra_die,
         "old_max_hp": character.max_hp,
         "new_max_hp": new_max_hp,
         "old_current_hp": character.current_hp,
@@ -478,7 +484,7 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
         "old_current_power_points": character.current_power_points,
         "new_current_power_points": new_current_pp,
         "proficiency_bonus": calculate_proficiency_bonus(to_level),
-        "total_hit_dice": to_level,
+        "total_hit_dice": max(character.total_hit_dice, character.level) + 1 + bool(extra_die),
         "hit_die_type": style.hit_die,
         "favorite_weapon": character.favorite_weapon,
         "old_armor_class": character.armor_class,
@@ -596,7 +602,7 @@ def complete_level_up(actor, process):
         defaults={
             "fixed_hit_die_value": preview["fixed_hp_value"],
             "constitution_modifier_at_calculation": preview["new_constitution_modifier"],
-            "other_bonus": 0,
+            "other_bonus": preview["extra_hit_die_value"],
         },
     )
     CharacterDerivedEffect.objects.filter(
@@ -635,6 +641,12 @@ def complete_level_up(actor, process):
         for grade in entry.get("grades",[]):
             CharacterTechniqueGrade.objects.create(technique=technique,**grade)
         created_techniques.append(technique)
+    style_feature = requirements["style_feature"]
+    if style_feature:
+        name, description = style_feature
+        existing = [entry["name"].casefold() for entry in draft_features]
+        if name.casefold() not in existing and not character.features.filter(name__iexact=name, is_available=True).exists():
+            draft_features.append({"name": name, "description": description, "source": character.combat_style})
     created_features = []
     for entry in draft_features:
         feature = CharacterFeature.objects.create(

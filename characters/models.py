@@ -48,6 +48,16 @@ class Character(models.Model):
     armor_class=models.PositiveSmallIntegerField('CR',default=10); proficiency_bonus=models.SmallIntegerField('proficiência',default=2)
     initiative=models.SmallIntegerField('iniciativa',default=0); movement=models.PositiveSmallIntegerField('deslocamento',default=9)
     max_hp=models.PositiveIntegerField('PV máximo',default=1); current_hp=models.PositiveIntegerField('PV atual',default=1)
+    animal_hp = models.PositiveIntegerField(null=True, blank=True)
+    animal_form_active = models.BooleanField(default=False)
+
+    @property
+    def animal_max_hp(self):
+        return self.max_hp * 4 // 5
+
+    @property
+    def animal_current_hp(self):
+        return min(self.animal_hp or 0, self.animal_max_hp)
     max_power_points=models.PositiveIntegerField('PP máximo',default=0); current_power_points=models.PositiveIntegerField('PP atual',default=0)
     hit_die_type=models.PositiveSmallIntegerField('tipo de dado de vida',default=0)
     total_hit_dice=models.PositiveSmallIntegerField('dados de vida totais',default=1)
@@ -411,7 +421,7 @@ class CharacterBasicAbility(models.Model):
 
 class CombatStyleLevel(models.Model):
     combat_style=models.ForeignKey(CombatStyle,on_delete=models.CASCADE,related_name='levels')
-    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(4)])
+    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
     proficiency_bonus=models.PositiveSmallIntegerField(default=2)
     power_points=models.PositiveSmallIntegerField()
     hit_die_gain=models.BooleanField(default=True)
@@ -483,7 +493,7 @@ class CombatStyleTechniqueOption(models.Model):
         constraints=[models.UniqueConstraint(fields=('combat_style_level','name','technique_kind'),name='unique_style_level_technique_option')]
 
 class ProfessionProgression(models.Model):
-    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(4)])
+    level=models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
     grade=models.CharField(max_length=40)
     subdivision=models.CharField(max_length=40)
     grants_professional_feature=models.BooleanField(default=False)
@@ -542,7 +552,7 @@ class CharacterLevelUpAuthorization(models.Model):
         constraints=[
             models.UniqueConstraint(fields=('character',),condition=models.Q(status__in=('pending','in_progress')),name='unique_active_level_up_authorization_per_character'),
             models.CheckConstraint(check=models.Q(to_level=models.F('from_level')+1),name='level_up_authorization_single_level'),
-            models.CheckConstraint(check=models.Q(to_level__lte=4),name='level_up_authorization_max_level_4'),
+            models.CheckConstraint(condition=models.Q(to_level__lte=5),name='level_up_authorization_max_level_5'),
         ]
     def clean(self):
         errors={}
@@ -550,8 +560,8 @@ class CharacterLevelUpAuthorization(models.Model):
             errors['campaign']='A campanha da autorização deve ser a campanha do personagem.'
         if self.from_level and self.to_level and self.to_level!=self.from_level+1:
             errors['to_level']='A passagem deve avançar exatamente um nível.'
-        if self.to_level and self.to_level>4:
-            errors['to_level']='A passagem de nível acima do 4º nível não está implementada.'
+        if self.to_level and self.to_level>5:
+            errors['to_level']='A passagem de nível acima do 5º nível não está implementada.'
         if errors: raise ValidationError(errors)
 
 class CharacterLevelUp(models.Model):

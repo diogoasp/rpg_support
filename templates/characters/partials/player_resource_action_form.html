@@ -9,7 +9,11 @@
   {% csrf_token %}
   <p class="op-mobile-current">
     {% if resource == 'hp' %}
-      PV atual: <strong>{{ character.current_hp }}/{{ character.max_hp }}</strong>
+      {% if character.animal_form_active %}
+        PV animais <strong>{{ character.animal_current_hp }}/{{ character.animal_max_hp }}</strong>
+      {% else %}
+        PV atual: <strong>{{ character.current_hp }}/{{ character.max_hp }}</strong>
+      {% endif %}
     {% else %}
       PP atual: <strong>{{ character.current_power_points }}/{{ character.max_power_points }}</strong>
     {% endif %}

@@ -62,6 +62,7 @@ from .services import (
     duplicate_player_technique,
     heal_character,
     long_rest_character,
+    toggle_animal_form,
     recover_power_points,
     short_rest_character,
     spend_power_points,
@@ -219,6 +220,18 @@ def player_sheet_fragment_context(character):
     positive_features,limitation_features=split_character_features(character)
     return {'character':character,'positive_features':positive_features,'limitation_features':limitation_features,'featured_techniques':[tech for tech in character.techniques.all() if tech.is_featured],'can_edit_sheet':True,'carrying_capacity':character.strength*10}
 
+class PlayerAnimalFormView(PlayerRequiredMixin, View):
+    def post(self, request, slug):
+        character = own_character(request, slug)
+        try:
+            character = toggle_animal_form(actor=request.user, character=character)
+        except ValidationError as exc:
+            messages.error(request, exc.messages[0])
+            return redirect("characters:sheet", slug=slug)
+        return render(request, "characters/partials/player_resource_panel.html",
+                      {"character": character, "can_edit_sheet": True})
+
+
 class PlayerHpActionView(PlayerRequiredMixin,View):
     action='damage'
     def get(self,request,slug):
@@ -235,7 +248,7 @@ class PlayerHpActionView(PlayerRequiredMixin,View):
         if form.errors:
             title='Causar dano' if self.action=='damage' else 'Curar'
             return htmx_modal_validation_response(render(request,'characters/partials/player_resource_action_form.html',{'form':form,'character':character,'resource':'hp','action':self.action,'title':title},status=422))
-        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug)}))
+        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug),'can_edit_sheet':True}))
 
 class PlayerPowerPointActionView(PlayerRequiredMixin,View):
     action='spend'
@@ -253,7 +266,7 @@ class PlayerPowerPointActionView(PlayerRequiredMixin,View):
         if form.errors:
             title='Gastar PP' if self.action=='spend' else 'Recuperar PP'
             return htmx_modal_validation_response(render(request,'characters/partials/player_resource_action_form.html',{'form':form,'character':character,'resource':'pp','action':self.action,'title':title},status=422))
-        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug)}))
+        return htmx_close_modal(render(request,'characters/partials/player_resource_panel.html',{'character':own_character(request,slug),'can_edit_sheet':True}))
 
 class PlayerTechniqueManageView(PlayerRequiredMixin,View):
     def _technique(self,request,slug,technique_pk):
