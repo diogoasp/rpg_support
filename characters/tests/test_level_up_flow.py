@@ -20,6 +20,7 @@ from characters.models import (
     Character,
     CharacterBasicAbility,
     CharacterFeature,
+    CharacterHitPointComponent,
     CharacterDerivedEffect,
     CharacterLevelUpAuthorization,
     CharacterRecordSource,
@@ -262,7 +263,6 @@ class LevelUpFlowTests(TestCase):
 
     def test_level_4_preserves_legacy_hp_when_components_are_incomplete(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Guerreiro-Oni", hit_die_type=12, constitution=14, max_hp=56, current_hp=23, max_power_points=6, current_power_points=2)
-        from characters.models import CharacterHitPointComponent
         CharacterHitPointComponent.objects.create(character=character, source_type="level", source_level=2, fixed_hit_die_value=7, constitution_modifier_at_calculation=2)
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
@@ -271,6 +271,28 @@ class LevelUpFlowTests(TestCase):
         character.refresh_from_db()
         self.assertEqual(character.max_hp, 65)
         self.assertEqual(character.current_hp, 32)
+
+    def test_level_five_uses_adjusted_max_hp_with_complete_history(self):
+        character = make_character(
+            self.campaign, self.player, level=4, max_hp=64, current_hp=48,
+            max_power_points=8, total_hit_dice=4,
+        )
+        for level in range(1, 5):
+            CharacterHitPointComponent.objects.create(
+                character=character, source_level=level,
+                source_type="initial" if level == 1 else "level",
+                fixed_hit_die_value=8 if level == 1 else 5,
+                constitution_modifier_at_calculation=2,
+            )
+        CharacterDerivedEffect.objects.create(
+            character=character, effect_type="hp_per_level", value=3,
+            source="Robusto", applied_through_level=2,
+        )
+        process = start_level_up(self.player, authorize_level_up(self.master, character))
+        self.assertEqual(process.new_max_hp, 74)
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual((character.max_hp, character.current_hp), (74, 58))
 
     def test_defensive_features_drive_level_up_resistance_class(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Atirador", dexterity=18, constitution=14, armor_class=14)

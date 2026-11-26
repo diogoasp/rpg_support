@@ -415,32 +415,18 @@ def resolve_favorite_weapon(character, keep_current=True, selected_weapon=""):
 def recalculate_max_hp(character, to_level, new_constitution=None, new_level_fixed_value=None):
     new_constitution = character.constitution if new_constitution is None else int(new_constitution)
     con_mod = calculate_attribute_modifier(new_constitution)
-    components = list(character.hp_components.all())
     current_level = int(character.level)
-    component_levels = {int(component.source_level) for component in components}
-    complete_history = all(level in component_levels for level in range(1, current_level + 1))
-    total = 0
-    if complete_history:
-        for component in components:
-            if component.source_type in ("initial", "level"):
-                total += component.fixed_hit_die_value + con_mod + component.other_bonus
-            else:
-                total += component.other_bonus
-        if new_level_fixed_value is not None:
-            total += int(new_level_fixed_value) + con_mod
-    else:
-        # Legacy characters may have only some level components. Preserve their
-        # audited current total and add only the new level and Constitution delta.
-        if new_level_fixed_value is not None:
-            retroactive_adjustment = apply_constitution_retroactivity(character.constitution_modifier, con_mod, current_level)
-            total = int(character.max_hp) + int(new_level_fixed_value) + con_mod + retroactive_adjustment
-        else:
-            total = int(character.max_hp) + apply_constitution_retroactivity(character.constitution_modifier, con_mod, current_level)
+    # The saved maximum already includes the gains and adjustments of prior levels.
+    current_max_hp = int(character.max_hp)
+    total = current_max_hp + apply_constitution_retroactivity(
+        character.constitution_modifier, con_mod, current_level,
+    )
     if new_level_fixed_value is not None:
+        total += max(1, int(new_level_fixed_value) + con_mod)
         for effect in character.derived_effects.filter(effect_type=CharacterDerivedEffect.EffectType.HP_PER_LEVEL, is_active=True):
-            applied = int(effect.applied_through_level or current_level)
+            applied = max(current_level, int(effect.applied_through_level or 0))
             total += max(0, int(to_level) - applied) * int(effect.value)
-    return max(1, total)
+    return max(1, current_max_hp, total)
 
 
 def preview_level_up(process, selected_attribute_increases=None, hp_method=None, hp_roll_result=None):

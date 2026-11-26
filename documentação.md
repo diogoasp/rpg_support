@@ -1890,7 +1890,7 @@ Funções principais:
 - Dado de Vida pode usar método médio ou resultado rolado fisicamente pelo jogador. O sistema não rola dados.
 - Método médio usa d8 = 5, d10 = 6, d12 = 7.
 - Cada passagem adiciona 1 Dado de Vida total do mesmo tipo do Estilo.
-- PV máximo é recomposto considerando Constituição; personagens antigos sem componentes usam fallback por Estilo/nível.
+- O cálculo parte do PV máximo salvo e acrescenta o ganho da passagem, a diferença retroativa de Constituição quando houver AVA e os efeitos por nível aplicáveis ao novo nível.
 - PV atual acompanha aumento do máximo e é limitado quando o máximo diminui.
 - Habilidades, técnicas e características recebidas na passagem são registradas manualmente pelo jogador como `CharacterTechnique` ou `CharacterFeature`.
 - AVA no 4º nível aceita +2 em um atributo ou +1/+1 em dois atributos diferentes, limite 20.
@@ -1984,9 +1984,7 @@ Cobertura adicionada:
 
 ## Correção da passagem do nível 3 para o 4
 
-O cálculo da passagem de nível preserva o valor atual de PV quando os componentes históricos estão incompletos. Isso é necessário para personagens criados antes do registro completo de `CharacterHitPointComponent`: componentes parciais não são tratados como uma composição completa capaz de substituir o PV auditado.
-
-Na passagem, o sistema soma ao máximo atual apenas o ganho do novo Dado de Vida, o modificador de Constituição do nível novo e a retroatividade da diferença do modificador de Constituição sobre os níveis já alcançados. Com componentes para todos os níveis, a recomposição histórica continua sendo usada. O PV atual acompanha somente a diferença do máximo.
+O PV máximo salvo é a base da passagem em todas as fichas. Ele já inclui os ajustes concedidos pela mesa. Os componentes históricos servem para auditoria. A passagem soma o ganho do novo Dado de Vida com Constituição, o eventual ajuste retroativo decorrente de AVA e os efeitos por nível devidos no novo nível. O PV máximo anterior é o limite inferior do cálculo e o PV atual acompanha a diferença do máximo.
 
 Efeitos numéricos de features são representados por `CharacterDerivedEffect`, vinculado à feature quando possível. A implementação reconhece as seguintes fórmulas defensivas: `Defesa Ofensiva`, `Defesa Aprimorada` e `Armadura de Músculos`. A conclusão do level up usa a mesma função de CR da prévia; não atribui genericamente `10 + Destreza`.
 
