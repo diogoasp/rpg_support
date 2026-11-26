@@ -450,6 +450,16 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
     new_max_pp = calculate_power_points(to_level)
     pp_diff = new_max_pp - character.max_power_points
     new_current_pp = min(character.current_power_points + pp_diff, new_max_pp)
+    new_proficiency_bonus = calculate_proficiency_bonus(to_level)
+    current_formula_cr = calculate_character_resistance_class(character)
+    next_formula_cr = calculate_character_resistance_class(
+        character,
+        level=to_level,
+        attribute_values={key: getattr(character, key) + int(increments.get(key, 0) or 0) for key in ATTRIBUTE_KEYS},
+        proficiency_bonus=new_proficiency_bonus,
+    )
+    # The stored CR can include table adjustments beyond the structured formula.
+    new_armor_class = max(0, character.armor_class + next_formula_cr - current_formula_cr)
     return {
         "old_constitution": old_con,
         "new_constitution": new_con,
@@ -469,17 +479,12 @@ def preview_level_up(process, selected_attribute_increases=None, hp_method=None,
         "new_max_power_points": new_max_pp,
         "old_current_power_points": character.current_power_points,
         "new_current_power_points": new_current_pp,
-        "proficiency_bonus": calculate_proficiency_bonus(to_level),
+        "proficiency_bonus": new_proficiency_bonus,
         "total_hit_dice": max(character.total_hit_dice, character.level) + 1 + bool(extra_die),
         "hit_die_type": style.hit_die,
         "favorite_weapon": character.favorite_weapon,
         "old_armor_class": character.armor_class,
-        "new_armor_class": calculate_character_resistance_class(
-            character,
-            level=to_level,
-            attribute_values={key: getattr(character, key) + int(increments.get(key, 0) or 0) for key in ATTRIBUTE_KEYS},
-            proficiency_bonus=calculate_proficiency_bonus(to_level),
-        ),
+        "new_armor_class": new_armor_class,
         "favorite_weapon_changed": False,
         "selected_basic_ability": "",
         "attribute_increases": increments,

@@ -326,7 +326,7 @@ class LevelUpFlowTests(TestCase):
     def test_level_five_updates_resources_profession_and_preserves_attributes(self):
         character = make_character(
             self.campaign, self.player, level=4, max_hp=35, current_hp=27,
-            max_power_points=8, current_power_points=3, total_hit_dice=4,
+            max_power_points=8, current_power_points=3, total_hit_dice=4, armor_class=16,
         )
         authorization = authorize_level_up(self.master, character)
         process = start_level_up(self.player, authorization)
@@ -342,7 +342,7 @@ class LevelUpFlowTests(TestCase):
         self.assertEqual((character.max_power_points, character.current_power_points), (10, 5))
         self.assertEqual((character.profession_grade, character.profession_subdivision), ("Profissional", "Intermediário"))
         self.assertEqual(character.constitution, 14)
-        self.assertEqual(character.armor_class, 14)
+        self.assertEqual(character.armor_class, 17)
         self.assertTrue(character.features.filter(name="Carga de Adrenalina", level_acquired=5).exists())
         with self.assertRaises(ValidationError):
             authorize_level_up(self.master, character)
@@ -373,6 +373,27 @@ class LevelUpFlowTests(TestCase):
         long_rest_character(actor=self.player, character=character)
         character.refresh_from_db()
         self.assertEqual(character.animal_hp, 69)
+
+    def test_defesa_aprimorada_preserves_saved_cr_and_applies_formula_delta(self):
+        character = make_character(
+            self.campaign, self.player, level=3, strength=16, constitution=14,
+            dexterity=10, armor_class=17, max_power_points=6,
+        )
+        CharacterDerivedEffect.objects.create(
+            character=character, effect_type="cr_formula", formula="defesa_aprimorada",
+            source="Defesa Aprimorada", parameters={"primary_attribute": "strength"},
+        )
+        process = start_level_up(self.player, authorize_level_up(self.master, character))
+        process = save_level_up_draft(self.player, process, selected_attribute_increases={"mode": "plus2", "strength": 2})
+        self.assertEqual(process.snapshot_after["new_armor_class"], 19)
+        complete_level_up(self.player, process)
+        character.refresh_from_db()
+        self.assertEqual(character.armor_class, 19)
+        next_process = start_level_up(self.player, authorize_level_up(self.master, character))
+        self.assertEqual(next_process.snapshot_after["new_armor_class"], 19)
+        complete_level_up(self.player, next_process)
+        character.refresh_from_db()
+        self.assertEqual(character.armor_class, 19)
 
     def test_level_4_ava_plus_two_recalculates_constitution_hp_and_profession(self):
         character = make_character(self.campaign, self.player, level=3, combat_style="Ciborgue", hit_die_type=12, constitution=17, max_hp=39, current_hp=20, max_power_points=6, current_power_points=1, favorite_weapon="Bazuca", profession_subdivision="Veterano")

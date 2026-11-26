@@ -1986,7 +1986,7 @@ Cobertura adicionada:
 
 O PV máximo salvo é a base da passagem em todas as fichas. Ele já inclui os ajustes concedidos pela mesa. Os componentes históricos servem para auditoria. A passagem soma o ganho do novo Dado de Vida com Constituição, o eventual ajuste retroativo decorrente de AVA e os efeitos por nível devidos no novo nível. O PV máximo anterior é o limite inferior do cálculo e o PV atual acompanha a diferença do máximo.
 
-Efeitos numéricos de features são representados por `CharacterDerivedEffect`, vinculado à feature quando possível. A implementação reconhece as seguintes fórmulas defensivas: `Defesa Ofensiva`, `Defesa Aprimorada` e `Armadura de Músculos`. A conclusão do level up usa a mesma função de CR da prévia; não atribui genericamente `10 + Destreza`.
+Efeitos numéricos de features são representados por `CharacterDerivedEffect`, vinculado à feature quando possível. A implementação reconhece as fórmulas de `Defesa Ofensiva`, `Defesa Aprimorada` e `Armadura de Músculos`. A prévia e a confirmação usam o CR salvo na ficha e somam a diferença entre a fórmula no nível atual e no nível de destino. Se a fórmula de uma habilidade defensiva antiga ainda não estiver estruturada, a passagem conserva o CR salvo.
 
 O comando `python manage.py reconcile_character_derived_effects` executa uma simulação. Use `--apply` somente após revisar a saída. A reconciliação é idempotente e reconhece apenas features com efeito inequívoco: Defesa Ofensiva, Defesa Aprimorada, Armadura de Músculos e Robusto. Features como Corpo Vigoroso exigem registro adicional das duas rolagens físicas e permanecem sem automação até essa informação existir.
 
